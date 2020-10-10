@@ -1,9 +1,9 @@
 ## ---------------------------
-## Pilot2_Words_Selection.R
+## [script name] ed03_words_conuterbalance.R
 ##
-## SCRIPT to re-select words for the second pilot of the CP00 project.
+## SCRIPT to match words between conditions for both 1-word and 2-words tasks.
 ##
-## By Shuai Wang, 31-05-2020
+## By Shuai Wang, [date] 2020-05-31
 ##
 ## ---------------------------
 ## Notes:
@@ -20,10 +20,18 @@ rm(list=ls())
 library('psych')  # describeBy()
 library('vwr')    # levenshtein.distance()
 # working path
-wdir <- '/data/agora/Chotiga_VOTmultimod/experiment_design/LabView_Scripts/'
-pdir <- file.path(wdir,'Pilot2')
+wdir <- '/media/wang/BON/Projects/CP00/experiment_design/labview_scripts/'
+pdir <- file.path(wdir,'Pilot3')
 setwd(pdir)
 # constant variables
+match.realwords <- c('nbsyll','freqlivres','freqfilms2','nblettres','nbphons','old20','pld20','puphon')
+match.pseudowords <- c('nbsyll','nblettres','nbphons')
+NumOfWords.1word <- 60
+nruns.1word <- 5
+keepNumbOfSylls <- TRUE  # keep the number of sylls constant within a trial
+firstLetterDiff <- TRUE  # make the first letter between the two words are different
+NumOfTrls <- 12  # 12 trials for Pilot3 (and formal collection); 18 trials for Pilot2
+conditions.2word <- c('SISMa','SISMv','SIDMa','SIDMv','DISMa','DISMv','DIDMa','DIDMv') 
 # custom functions
 LDM <- function(Wds){                      
   # LDM(), Levenshtein Distance Matrix
@@ -58,17 +66,12 @@ LDM <- function(Wds){
 
 ## read selected words
 # words for 1-word trials
-load(file=file.path(pdir,'Pilot2_words_and_pseudowords_1wordTrials.Rdata'))
+load(file=file.path(pdir,'Pilot3_words_and_pseudowords_1wordTrials.Rdata'))
 # words for 2-word trials
-load(file=file.path(pdir,'Pilot2_words_2wordTrials.Rdata'))
+load(file=file.path(pdir,'Pilot3_words_2wordTrials.Rdata'))
 ## ---------------------------
 
 ## design 1-word trials (5 runs)
-# match real words and pseudowords to 5 units
-match.realwords <- c('nbsyll','freqlivres','freqfilms2','nblettres','nbphons','old20','pld20','puphon')
-match.pseudowords <- c('nbsyll','nblettres','nbphons')
-NumOfWords.1word <- 60
-nruns.1word <- 5
 # real words
 ComparisonP.1word <- rep(0,length(match.realwords))
 words.1word.assign <- words.1word.selected
@@ -95,18 +98,13 @@ while (any(ComparisonP.pword < 0.1)){
 print(paste('#####Quick Check - pseudoword##### The Comparison results are: P =',ComparisonP.pword))  # check the matches
 # output 
 save(match.realwords,match.pseudowords,Comparison.1word,Comparison.pword,words.1word.assign,pwords.1word.assign,
-     file=file.path(pdir,'Pilot2_words_and_pseudowords_1wordTrials_byRuns.Rdata'))
-write.csv(words.1word.assign,file=file.path(pdir,'Pilot2_words_1wordTrials_byRuns.csv'),row.names=FALSE)
-write.csv(pwords.1word.assign,file=file.path(pdir,'Pilot2_pseudowords_1wordTrials_byRuns.csv'),row.names=FALSE)
+     file=file.path(pdir,'Pilot3_words_and_pseudowords_1wordTrials_byRuns.Rdata'))
+write.csv(words.1word.assign,file=file.path(pdir,'Pilot3_words_1wordTrials_byRuns.csv'),row.names=FALSE)
+write.csv(pwords.1word.assign,file=file.path(pdir,'Pilot3_pseudowords_1wordTrials_byRuns.csv'),row.names=FALSE)
 ## ---------------------------
 
-
 ## design 2-word trials
-words.2word.selected <- read.csv(file=file.path(pdir,'Pilot2_words_2wordTrials.csv'),stringsAsFactors=FALSE)
-keepNumbOfSylls <- TRUE  # keep the number of sylls constant within a trial
-firstLetterDiff <- TRUE  # make the first letter between the two words are different
-NumOfTrls <- 18
-conditions.2word <- c('SISMa','SISMv','SIDMa','SIDMv','DISMa','DISMv','DIDMa','DIDMv') 
+words.2word.selected <- read.csv(file=file.path(pdir,'Pilot3_words_2wordTrials.csv'),stringsAsFactors=FALSE)
 # generate trials
 words.2word.trials <- data.frame('conditions'=rep(conditions.2word,each=NumOfTrls),
                                  'A1'=rep('',NumOfTrls*length(conditions.2word)),
@@ -182,8 +180,7 @@ words.2word.trials.DI <- words.2word.trials[words.2word.trials$conditions %in% c
 Comparison.2word.OLD <- kruskal.test(words.2word.trials.DI$OLD.A1A2,as.factor(words.2word.trials.DI$conditions))
 Comparison.2word.PLD <- kruskal.test(words.2word.trials.DI$PLD.A1A2,as.factor(words.2word.trials.DI$conditions))
 # output 2-word trials
-write.csv(words.2word.trials,file=file.path(pdir,'Pilot2_words_2wordTrials_byTrials.csv'))
+write.csv(words.2word.trials,file=file.path(pdir,'Pilot3_words_2wordTrials_byTrials.csv'),row.names=FALSE)
 save(words.2word.trials,words.2word.trials.DI,Comparison.2word.OLD,Comparison.2word.PLD,
-     file=file.path(pdir,'Pilot2_words_2wordTrials_byTrials.Rdata'))
+     file=file.path(pdir,'Pilot3_words_2wordTrials_byTrials.Rdata'))
 ## ---------------------------
-
