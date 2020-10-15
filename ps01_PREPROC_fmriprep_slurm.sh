@@ -30,6 +30,7 @@ singularity run --cleanenv -B $wdir:/work $simg/fmriprep-20.2.0 --fs-license-fil
   --return-all-components \
   --stop-on-first-crash \
   --skip_bids_validation
+
 rm -r $wdir/SWAP/*
 #singularity run --cleanenv -B $wdir:/work $simg/fmriprep-20.1.1 --fs-license-file /work/license.txt \
 #  /work/AudioVisAsso /work/AudioVisAsso/derivatives participant --participant-label $subj --task-id LocaVis1p75 \
