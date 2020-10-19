@@ -25,6 +25,7 @@ singularity run --cleanenv -B $wdir:/work $simg/fmriprep-20.2.0 --fs-license-fil
   --participant-label 01 02 03 \
   -w /work/SWAP \
   --ignore slicetiming \
+  --use-syn-sdc \
   --output-spaces MNI152NLin2009cAsym \
   --fs-no-reconall \
   --return-all-components \
