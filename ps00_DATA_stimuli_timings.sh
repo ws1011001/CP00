@@ -44,26 +44,25 @@ while read subj;do
   if [ ! -d "$sdir/task-AudioVisAssos1word" ];then mkdir -p $sdir/task-AudioVisAssos1word;fi 
   cp -r $fdir/${subj}_task-AudioVisAssos1word_*_events.tsv $sdir  # copy BIDS .tsv event files
   1dTimingTools stiming_bids2afni bidsdir=$sdir subj="$subj" task='task-AudioVisAssos1word' nrun=5 \
-    conditions="WA,WV,PA,PV" baseline='none' \
-    afnidir=$sdir/task-AudioVisAssos1word
+    conditions="WA,WV,PA,PV" afnidir=$sdir/task-AudioVisAssos1word
   # task-AudioVisAssos2words, 2 runs
   if [ ! -d "$sdir/task-AudioVisAssos2words" ];then mkdir -p $sdir/task-AudioVisAssos2words;fi
   1dTimingTools stiming_tsv2bids funcdir=$fdir subj="$subj" task='task-AudioVisAssos2words' nrun=2 \
     oldpatterns="catch[AV][AV]" replacements="catch" \
     bidsdir=$sdir
   1dTimingTools stiming_bids2afni bidsdir=$sdir subj="$subj" task='task-AudioVisAssos2words' nrun=2 \
-    conditions="SISMa,SISMv,SIDMa,SIDMv,DISMa,DISMv,DIDMa,DIDMv,catch" baseline='none' \
+    conditions="SISMa,SISMv,SIDMa,SIDMv,DISMa,DISMv,DIDMa,DIDMv,catch" \
     afnidir=$sdir/task-AudioVisAssos2words
   # task-LocaVis1p75, 1 run
   if [ ! -d "$sdir/task-LocaVis1p75" ];then mkdir -p $sdir/task-LocaVis1p75;fi 
   1dTimingTools stiming_tsv2bids funcdir=$fdir subj="$subj" task='task-LocaVis1p75' nrun=1 bidsdir=$sdir
   1dTimingTools stiming_bids2afni bidsdir=$sdir subj="$subj" task='task-LocaVis1p75' nrun=1 \
-    conditions="Words,Consonants,catch" baseline='none' \
+    conditions="Words,Consonants,catch" \
     afnidir=$sdir/task-LocaVis1p75
   # task-LocaAudio2p5, 1 run
   if [ ! -d "$sdir/task-LocaAudio2p5" ];then mkdir -p $sdir/task-LocaAudio2p5;fi 
   1dTimingTools stiming_tsv2bids funcdir=$fdir subj="$subj" task='task-LocaAudio2p5' nrun=1 bidsdir=$sdir
   1dTimingTools stiming_bids2afni bidsdir=$sdir subj="$subj" task='task-LocaAudio2p5' nrun=1 \
-    conditions="Words,Pseudowords,Vocoded,catch" baseline='none' \
+    conditions="Words,Pseudowords,Vocoded,catch" \
     afnidir=$sdir/task-LocaAudio2p5
 done < $sfile
