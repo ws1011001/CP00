@@ -19,5 +19,8 @@ mdir='/scratch/swang/agora/CP00'     # the project main directory
 scripts='/CP00/scripts'        # scripts folder in Sy
 
 # processing log
-echo -e 'Running ps01_PREPROC_ricor_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps01_PREPROC_ricor_afni.sh
+echo -e 'Running ps00_DATA_stimuli_timings.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps00_DATA_stimuli_timings.sh
+
+#echo -e 'Running ps01_PREPROC_ricor_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps01_PREPROC_ricor_afni.sh
