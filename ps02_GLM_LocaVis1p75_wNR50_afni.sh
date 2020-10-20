@@ -55,7 +55,7 @@ for subj in ${subjects[@]};do
   wdir="$adir/$subj/$task"          # the Working folder
   oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -runtag 'run-0' -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
