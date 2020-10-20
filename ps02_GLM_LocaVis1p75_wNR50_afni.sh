@@ -49,14 +49,13 @@ fwhm=4                            # double the voxel size (1.75 mm)
 hmth=0.5                          # head motion threshold used for censoring
 ## ---------------------------
 
-## prepare data for GLM
-3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
-## ---------------------------
-
 ## run GLM for each subject
 for subj in ${subjects[@]};do
+  echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"          # the Working folder
   oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
+  # prepare data for GLM
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
