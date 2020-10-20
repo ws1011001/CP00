@@ -37,13 +37,13 @@ adir="$ddir/derivatives/afni"            # AFNI output folder
 readarray subjects < $mdir/CP00_subjects_RF.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
+bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
+regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regressors
+anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
 deno='NR50'                       # denoising strategy (J-L recommended)
 hmpv="dfile_motion_${deno}"       # all head motion NRs that should be regressed out 
 ortv="dfile_signal_${deno}"       # all non-motion NRs that should be regressed out
 cenv='dfile_censor_FD'            # censors
-bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
-regs='desc-confounds_regressors'  # the token for fMRIPrep output nuisance regressors
-anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
 nrun=1                            # number of runs
 fwhm=4                            # double the voxel size (1.75 mm)
 hmth=0.5                          # head motion threshold used for censoring
