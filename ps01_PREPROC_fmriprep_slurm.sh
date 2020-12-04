@@ -36,7 +36,8 @@ declare -a subjects=$(seq -w 1 22)
 ## do pre-process for each subject
 for sid in ${subjects[@]};do
   echo -e “Pre-processing subject: sub-${sid} using fMRIPrep on: $SLURM_NODELIST”
-  rm -r $wdir/SWAP/*  # remove temporary files 
+  # remove temporary files if exist
+  if [ "$(ls -A $wdir/SWAP)" ];then rm -r $wdir/SWAP/*;fi
   # pre-processing using fMRIPrep 
   singularity run --cleanenv -B $wdir:/work $simg/fmriprep-20.2.0 --fs-license-file /work/license.txt \
     /work/AudioVisAsso /work/AudioVisAsso/derivatives participant \
@@ -51,7 +52,8 @@ for sid in ${subjects[@]};do
     --skip_bids_validation
   echo -e "Finish pre-processing for subject :sub-${sid}. Please check it out."
 done
-rm -r $wdir/SWAP/*  # double-check to clean temporary files
+# double-check to clean temporary files
+if [ "$(ls -A $wdir/SWAP)" ];then rm -r $wdir/SWAP/*;fi
 ## ---------------------------
 
 ## process logs
