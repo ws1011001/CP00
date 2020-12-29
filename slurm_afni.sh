@@ -25,6 +25,9 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 ## 2020-12-27T18:23
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNRmin_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNRmin_afni.sh
-# 2020-12-29T09:45
-echo -e 'Running ps02_GLM_LocaVis1p75_wNR12_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR12_afni.sh
+## 2020-12-29T09:45
+#echo -e 'Running ps02_GLM_LocaVis1p75_wNR12_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR12_afni.sh
+# 2020-12-29T11:45
+echo -e 'Running ps02_GLM_LocaVis1p75_wNR14_afni.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR14_afni.sh
