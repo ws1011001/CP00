@@ -34,6 +34,9 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 ## 2020-12-30T10:38
 #echo -e 'Running ps02_GLM_LocaAudio2p5_wNR14.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaAudio2p5_wNR14.sh
-# 2020-12-30T11:43
-echo -e 'Running ps03_GLM_AudioVisAssos1word_wNR14_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos1word_wNR14_afni.sh
+## 2020-12-30T11:43
+#echo -e 'Running ps03_GLM_AudioVisAssos1word_wNR14_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos1word_wNR14_afni.sh
+# 2020-12-30T21:50
+echo -e 'Running ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
