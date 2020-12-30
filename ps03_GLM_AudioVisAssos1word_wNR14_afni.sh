@@ -43,7 +43,7 @@ deno='NR14'                       # denoising strategy
 hmpv="dfile_motion_${deno}"       # all head motion NRs that should be regressed out
 ortv="dfile_signal_${deno}"       # all non-motion NRs that should be regressed out
 cenv='dfile_censor_FD'            # censors
-nrun=1                            # number of runs
+nrun=5                            # number of runs
 fwhm=4                            # double the voxel size (1.75 mm)
 hmth=0.5
 ## ---------------------------
