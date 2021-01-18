@@ -40,6 +40,9 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 ## 2020-12-30T21:50
 #echo -e 'Running ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
-# 2020-12-31T10:33
-echo -e 'Running ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh
+## 2020-12-31T10:33
+#echo -e 'Running ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh
+# 2021-01-18T10:05
+echo -e 'Running ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh
