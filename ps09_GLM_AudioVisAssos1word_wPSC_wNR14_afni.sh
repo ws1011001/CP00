@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
+## [script name] ps09_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -33,7 +33,8 @@ esac
 ddir="$mdir/AudioVisAsso"                # experiment Data folder (BIDS put into fMRIPrep)
 adir="$ddir/derivatives/afni"            # AFNI output folder
 # processing parameters
-readarray subjects < $mdir/CP00_subjects.txt
+#readarray subjects < $mdir/CP00_subjects.txt
+subjects=("sub-01")
 task='task-AudioVisAssos1word'    # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)

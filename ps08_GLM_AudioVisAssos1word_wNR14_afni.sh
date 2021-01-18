@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps03_GLM_AudioVisAssos1word_wNR14_afni.sh
+## [script name] ps08_GLM_AudioVisAssos1word_wNR14_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -33,7 +33,8 @@ esac
 ddir="$mdir/AudioVisAsso"                # experiment Data folder (BIDS put into fMRIPrep)
 adir="$ddir/derivatives/afni"            # AFNI output folder
 # processing parameters
-readarray subjects < $mdir/CP00_subjects.txt
+#readarray subjects < $mdir/CP00_subjects.txt
+subjects=("sub-01")
 task='task-AudioVisAssos1word'    # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
@@ -54,7 +55,8 @@ for subj in ${subjects[@]};do
   wdir="$adir/$subj/$task"          # the Working folder
   oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -runtag 'run-0' -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+#  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -runtag 'run-0' -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
@@ -97,7 +99,7 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-## summarize data quality metrics
-gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
-  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
-## ---------------------------
+### summarize data quality metrics
+#gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
+#  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+### ---------------------------
