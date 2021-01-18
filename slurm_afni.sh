@@ -19,30 +19,21 @@ mdir='/scratch/swang/agora/CP00'  # the project main directory
 scripts='/CP00/scripts'           # scripts folder in Sy
 
 # processing log
-## 2020-12-27T14:30
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR50_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR50_afni.sh
-## 2020-12-27T18:23
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNRmin_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNRmin_afni.sh
-## 2020-12-29T09:45
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR12_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR12_afni.sh
-## 2020-12-29T11:45
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR14_afni.sh
-## 2020-12-30T10:38
 #echo -e 'Running ps02_GLM_LocaAudio2p5_wNR14.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaAudio2p5_wNR14.sh
-## 2020-12-30T11:43
-echo -e 'Running ps08_GLM_AudioVisAssos1word_wNR14_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps08_GLM_AudioVisAssos1word_wNR14_afni.sh
-## 2020-12-30T21:50
-#echo -e 'Running ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
-#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
-## 2020-12-31T10:33
+#echo -e 'Running ps08_GLM_AudioVisAssos1word_wNR14_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps08_GLM_AudioVisAssos1word_wNR14_afni.sh
+echo -e 'Running ps09_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps09_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
 #echo -e 'Running ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh
-## 2021-01-18T10:05
 #echo -e 'Running ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh
