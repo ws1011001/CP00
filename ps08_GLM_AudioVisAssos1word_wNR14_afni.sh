@@ -33,8 +33,7 @@ esac
 ddir="$mdir/AudioVisAsso"                # experiment Data folder (BIDS put into fMRIPrep)
 adir="$ddir/derivatives/afni"            # AFNI output folder
 # processing parameters
-#readarray subjects < $mdir/CP00_subjects.txt
-subjects=("sub-01")
+readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos1word'    # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
@@ -99,7 +98,7 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-### summarize data quality metrics
-#gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
-#  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
-### ---------------------------
+## summarize data quality metrics
+gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
+  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+## ---------------------------
