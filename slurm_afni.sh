@@ -35,7 +35,9 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps09_GLM_AudioVisAssos1word_wPSC_wNR14_afni.sh
 #echo -e 'Running ps10_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps10_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh
-echo -e 'Running ps11_GLM_AudioVisAssos2words_wPSC_wTENT_wNR14_afni.sh with singularity'
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps11_GLM_AudioVisAssos2words_wPSC_wTENT_wNR14_afni.sh
+#echo -e 'Running ps11_GLM_AudioVisAssos2words_wPSC_wTENT_wNR14_afni.sh with singularity'
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps11_GLM_AudioVisAssos2words_wPSC_wTENT_wNR14_afni.sh
 #echo -e 'Running ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh
+echo -e 'Running ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity'
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps13_LSS_AudioVisAssos1word_estimates_afni.sh
