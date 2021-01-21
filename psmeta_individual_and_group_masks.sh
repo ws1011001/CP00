@@ -47,7 +47,7 @@ gmth=0.2                          # gray matter threshold
 
 ## create masks for each subject
 for subj in ${subjects[@]};do
-  echo -e "create masks for subject : $subj ......"
+  echo -e "========== start creating masks for subject : $subj at $(date) =========="
 
   gdir="$pdir/$subj/anat"                   # individual folder that contains anatomical segments
   wdir="$adir/$subj/$task"                  # the Working folder
@@ -60,9 +60,14 @@ for subj in ${subjects[@]};do
   gm_mask0="$sdir/${subj}_${spac}_GM${gmth}_mask_res-anat.nii.gz"     # gray matter mask in T1 resolution
   gm_mask1="$sdir/${subj}_${spac}_GM${gmth}_mask_res-${task}.nii.gz"  # gray matter mask in task resolution
   epi_mask="$wdir/$oglm/mask_epi_anat.${subj}_${task}+tlrc."          # EPI extent mask
+  gm_epi_mask="$sdir/${subj}_${spac}_GM+EPI_mask_res-${task}.nii.gz"  # EPI constrained GM mask
 
   # create individual gray matter masks
   3dcalc -a $gm_seg -expr "ispositive(a-$gmth)" -prefix $gm_mask0
   3dresample -master $epi_mask -prefix $gm_mask1 -input $gm_mask0
+  # create EPI-constrained gray matter masks
+  3dcalc -a $gm_mask1 -b $epi_mask -expr 'a*b' -prefix $gm_epi_mask
+
+  echo -e "========== finish creating masks for subject : $subj at $(date) =========="
 done
 ## ---------------------------

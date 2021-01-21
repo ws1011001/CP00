@@ -50,6 +50,10 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 #echo -e 'Running ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh
 
-echo -e "========== Start running ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity at $(date) =========="
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps13_LSS_AudioVisAssos1word_estimates_afni.sh
-echo -e "========== Finish ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity at $(date) =========="
+#echo -e "========== Start running ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity at $(date) =========="
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps13_LSS_AudioVisAssos1word_estimates_afni.sh
+#echo -e "========== Finish ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity at $(date) =========="
+
+echo -e "========== Start running psmeta_individual_and_group_masks.sh with singularity at $(date) =========="
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/psmeta_individual_and_group_masks.sh
+echo -e "========== Finish psmeta_individual_and_group_masks.sh with singularity at $(date) =========="
