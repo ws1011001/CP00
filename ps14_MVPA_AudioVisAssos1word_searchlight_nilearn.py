@@ -1,17 +1,14 @@
 ## ---------------------------
-## [script name] ps05_MVPA_AudioVisAssos1word_Searchlight_nilearn.py 
+## [script name] ps14_MVPA_AudioVisAssos1word_Searchlight_nilearn.py 
 ##
 ## SCRIPT to ...
 ##
-## By Shuai Wang, [date]
+## By Shuai Wang, [date] 2021-01-21
 ##
 ## ---------------------------
 ## Notes:
 ##   
 ##
-## ---------------------------
-
-## clean up
 ## ---------------------------
 
 ## set environment (packages, functions, working path etc.)
@@ -26,7 +23,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit
 # setup path
 mdir='/scratch/swang/agora/CP00/AudioVisAsso'        # the project main folder
-#mdir='/data/mesocentre/data/agora/CP00/AudioVisAsso'        # the project main folder
 ddir=os.path.join(mdir,'derivatives')
 vdir=os.path.join(ddir,'multivariate')  # multivariate analyses folder
 ## ---------------------------
