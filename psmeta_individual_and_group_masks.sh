@@ -71,3 +71,6 @@ for subj in ${subjects[@]};do
   echo -e "========== finish creating masks for subject : $subj at $(date) =========="
 done
 ## ---------------------------
+
+## create group-averaged masks
+## ---------------------------
