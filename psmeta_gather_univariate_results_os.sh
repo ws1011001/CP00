@@ -7,29 +7,14 @@
 ## By Shuai Wang, [date] 2021-01-21
 ##
 ## ---------------------------
-## Notes: - do not have to use AFNI
+## Notes: - only use Bash so it could run on the local node.
 ##   
 ##
 ## ---------------------------
 
 ## set environment (packages, functions, working path etc.)
-# platform
-platform='mesoc'
-case "$platform" in
-  mesoc)
-    mdir='/CP00'                       # the project Main folder @mesocentre
-    export PATH="$mdir/nitools:$PATH"  # setup tools if @mesocentre
-    njob=16
-    ;;
-  totti)
-    mdir='/data/mesocentre/data/agora/CP00'  # the project Main folder @totti
-    njob=4
-    ;;
-  *)
-    echo -e "Please input a valid platform!"
-    exit 1
-esac
 # setup path
+mdir="/scratch/swang/agora/CP00"
 ddir="$mdir/AudioVisAsso"                # experiment Data folder (BIDS put into fMRIPrep)
 rdir="$mdir/results"
 adir="$ddir/derivatives/afni"            # AFNI output folder
