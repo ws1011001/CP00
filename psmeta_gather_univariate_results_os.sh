@@ -21,6 +21,8 @@ adir="$ddir/derivatives/afni"            # AFNI output folder
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+# additional options
+isClean_QCVols=true
 ## ---------------------------
 
 echo -e "========== START JOB : $(date) =========="
@@ -41,11 +43,19 @@ for task in ${tasks[@]};do
       glm=${oglm:7}      # remove the starting subject id
       gdir="$tdir/$glm"  # GLM folder in the task result folder
       if [ ! -d $gdir ];then mkdir -p $gdir;fi
-      # copy stats.* files to the GLM folder
-      cp -r $wdir/$oglm/stats*tlrc* $gdir
-      # copy QC report to the GLM folder
-      cp -r $wdir/$oglm/QC_${subj}_${task} $gdir      # QC report
-      cp -r $wdir/$oglm/X.* $gdir/QC_${subj}_${task}  # design matrix
+      ## copy stats.* files to the GLM folder
+      #cp -r $wdir/$oglm/stats*tlrc* $gdir
+      ## copy QC report to the GLM folder
+      #cp -r $wdir/$oglm/QC_${subj}_${task} $gdir      # QC report
+      #cp -r $wdir/$oglm/X.* $gdir/QC_${subj}_${task}  # design matrix
+
+      # additional option: remove AFNI volumes that used for QC report
+      if $isClean_QCVols;then
+        echo -e "clean up AFNI QC volumes in $oglm"
+        rm -r $wdir/$oglm/pb00.${subj}_${task}.*.tcat+orig.*
+        rm -r $wdir/$oglm/pb02.${subj}_${task}.*.volreg+tlrc.*
+        touch $wdir/$oglm/CLEANUP_Removed_AFNI_QC_Volumes.note  # leave a message in the folder
+      fi
     done
   done
   echo -e "========== finish gathering results (stats.* files) for $task =========="
