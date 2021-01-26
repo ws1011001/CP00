@@ -16,39 +16,45 @@
 import os
 import nilearn.decoding
 import pandas as pd
+from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from sklearn import svm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit
 # setup path
-mdir='/scratch/swang/agora/CP00/AudioVisAsso'        # the project main folder
-ddir=os.path.join(mdir,'derivatives')
-vdir=os.path.join(ddir,'multivariate')  # multivariate analyses folder
+mdir='/scratch/swang/agora/CP00/AudioVisAsso'  # the project main folder
+ddir=os.path.join(mdir,'derivatives')          # different analyses after pre-processing
+vdir=os.path.join(ddir,'multivariate')         # multivariate analyses folder
+kdir=os.path.join(ddir,'masks')                # masks folder
 ## ---------------------------
 
 ## MVPA parameters
-# prepare classifiers
+# prepare classifiers without tuning parameters
 clf_tokens=['lda','gnb','svclin','svcrbf']  # classifier tokens and order
 clf_models=[LinearDiscriminantAnalysis(),
             GaussianNB(),
             svm.SVC(kernel='linear',max_iter=-1),
             svm.SVC(max_iter=-1)]
 # searchlight parameters
-radius=4                              # searchlight radius in mm
-njobs=-1                              # -1 means all CPUs
+radius=4  # searchlight radius in mm
+njobs=-1  # -1 means all CPUs
+# load up group mask (GM with EPI constrains)
 ## ---------------------------
+
+now=datetime.now()
+print("========== START JOB : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S"))
 
 ## MVPA
 # read subjects info
-sfile=os.path.join(vdir,'participants.tsv')  # subjects list
-subjects=pd.read_table(sfile).set_index('participant_id')
+sfile=os.path.join(vdir,'participants_final.tsv')          # subjects info
+subjects=pd.read_table(sfile).set_index('participant_id')  # the list of subjects
 # do MVPA for each subject
 CV=LeaveOneGroupOut()  # leave-one-run-out cross-validation
 for subj in subjects.index[:]:
-  print("do MVPA with classifiers: %s and leave-one-run-out CV for subject: %s ......" % (clf_tokens,subj))
+  print("do MVPA with classifiers: %s and leave-one-run-out CV for subject: %s ......\n" % (clf_tokens,subj))
   # setup subject path
-  sdir=os.path.join(vdir,subj)
+  sdir=os.path.join(vdir,subj)          # subject working folder 
   bdir=os.path.join(sdir,'betas_afni')  # beta estimates
   pdir=os.path.join(sdir,'tvsMVPC')     # Trial-wise Volume-based Searchlight MVPC
   if not os.path.exists(pdir): os.makedirs(pdir)
@@ -62,11 +68,11 @@ for subj in subjects.index[:]:
   mask_audtrl=labels_trl.isin(['WA','PA'])
   audtrain=labels['audtrain']
   vistrain=labels['vistrain']
-  # load up searchlight mask
-  mask_token='iGMepi'
+#  # load up searchlight mask
+#  mask_token='iGMepi'
 #  mfile=os.path.join(sdir,'masks','iLVOT.nii')  # left vOT (Fusiform + ITC in AAL)
-  mfile=os.path.join(sdir,'masks',"%s.nii" % mask_token)  # GM mask file (individual GM with EPI constrains)
-  mask_slight=load_img(mfile)
+#  mfile=os.path.join(sdir,'masks',"%s.nii" % mask_token)  # GM mask file (individual GM with EPI constrains)
+#  mask_slight=load_img(mfile)
   # load up betas
   fbetas="%s/%s_LSS_nilearn.nii.gz" % (bdir,subj)
   betas_all=load_img(fbetas)
@@ -105,3 +111,5 @@ for subj in subjects.index[:]:
   print("finish MVPA for subject: %s !" % subj) 
 ## ---------------------------
 
+now=datetime.now()
+print("========== ALL DONE : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S"))
