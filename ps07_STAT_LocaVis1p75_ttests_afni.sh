@@ -42,9 +42,9 @@ models=("GLM.wNRmin" "GLM.wNR12" "GLM.wNR14" "GLM.wNR50")  # GLM with different 
 eidx=10                  # coefficients
 fidx=11                  # T values
 flab='words-consonants'  # contrast label
-mask="$rdir/group_lim-GM_boxLVOT.nii.gz"
-gpgm="$rdir/group_${spac}_ref-stat_mean-GM_mask.nii.gz"
 ## ---------------------------
+
+echo -e "========== START JOB at $(date) =========="
 
 ## extract beta coefficients
 for subj in ${subjects[@]};do
@@ -63,8 +63,16 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-## group ROIs
+## group T-tests
+tdir="$adir/group/$task"
+if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
-  3dttest++ -setA $cdir/stats.B_*${model}*.nii.gz -mask $gpgm -prefix $cdir/stats.group_${task}_${model}_${flab}
+  # stack up subjects for group analysis
+  3dbucket -fbuc -aglueto $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz \
+    $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
+  # T-test
+  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -prefix $tdir/stats.group_${task}_${model}_${flab}
 done
 ## ---------------------------
+
+echo -e "========== ALL DONE! at $(date) =========="

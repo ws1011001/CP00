@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH -J AFNI-GLM
+#SBATCH -J AFNI
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A a222
 #SBATCH -t 1-12
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64gb
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128gb
 #SBATCH -o ./AFNI_%j.out
 #SBATCH -e ./AFNI_%j.err
 #SBATCH --mail-type=ALL
@@ -32,6 +32,10 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR14_afni.sh
 
+echo -e "========== Start running ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps07_STAT_LocaVis1p75_ttests_afni.sh
+echo -e "========== Finish ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
+
 #echo -e 'Running ps02_GLM_LocaAudio2p5_wNR14.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaAudio2p5_wNR14.sh
 
@@ -55,6 +59,6 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps13_LSS_AudioVisAssos1word_estimates_afni.sh
 #echo -e "========== Finish ps13_LSS_AudioVisAssos1word_estimates_afni.sh with singularity at $(date) =========="
 
-echo -e "========== Start running psmeta_individual_and_group_masks_afni.sh with singularity at $(date) =========="
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/psmeta_individual_and_group_masks_afni.sh
-echo -e "========== Finish psmeta_individual_and_group_masks_afni.sh with singularity at $(date) =========="
+#echo -e "========== Start running psmeta_individual_and_group_masks_afni.sh with singularity at $(date) =========="
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/psmeta_individual_and_group_masks_afni.sh
+#echo -e "========== Finish psmeta_individual_and_group_masks_afni.sh with singularity at $(date) =========="
