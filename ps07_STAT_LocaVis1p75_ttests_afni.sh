@@ -37,7 +37,8 @@ kdir="$ddir/derivatives/masks"  # masks folder
 readarray subjects < $mdir/CP00_subjects.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-models=("GLM.wNRmin" "GLM.wNR12" "GLM.wNR14" "GLM.wNR50")  # GLM with different denoising strategies
+mask="$kdir/group/group_${spac}_mask-gm-final_res-${task}.nii.gz"  # GM mask
+models=("GLM.wNRmin" "GLM.wNR12" "GLM.wNR14" "GLM.wNR50")          # GLM with different denoising strategies
 # index the stat volumes
 eidx=10                  # coefficients
 fidx=11                  # T values
@@ -46,32 +47,32 @@ flab='words-consonants'  # contrast label
 
 echo -e "========== START JOB at $(date) =========="
 
-## extract beta coefficients
-for subj in ${subjects[@]};do
-  echo -e "extract beta maps for $task for subject : $subj ......"
-  wdir="$adir/$subj/$task"
-  # specify stat files
-  for model in ${models[@]};do
-    oglm="${subj}_${task}_${model}"
-    stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
-    coef="$wdir/$oglm/stats.beta_${oglm}_${flab}.nii.gz"
-    # extract coef maps for group analysis
-    if [ ! -f $coef ];then
-      3dbucket -fbuc -prefix $coef "${stat}[$eidx]"
-    fi
-  done
-done
-## ---------------------------
+### extract beta coefficients
+#for subj in ${subjects[@]};do
+#  echo -e "extract beta maps for $task for subject : $subj ......"
+#  wdir="$adir/$subj/$task"
+#  # specify stat files
+#  for model in ${models[@]};do
+#    oglm="${subj}_${task}_${model}"
+#    stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
+#    coef="$wdir/$oglm/stats.beta_${oglm}_${flab}.nii.gz"
+#    # extract coef maps for group analysis
+#    if [ ! -f $coef ];then
+#      3dbucket -fbuc -prefix $coef "${stat}[$eidx]"
+#    fi
+#  done
+#done
+### ---------------------------
 
 ## group T-tests
 tdir="$adir/group/$task"
 if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
-  # stack up subjects for group analysis
-  3dbucket -fbuc -aglueto $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz \
-    $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
+#  # stack up subjects for group analysis
+#  3dbucket -fbuc -aglueto $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz \
+#    $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
   # T-test
-  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -prefix $tdir/stats.group_${task}_${model}_${flab}
+  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -prefix $tdir/stats.group_${task}_${model}_${flab}
 done
 ## ---------------------------
 
