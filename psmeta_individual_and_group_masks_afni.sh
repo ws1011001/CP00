@@ -45,8 +45,9 @@ deno='NR14'                       # denoising strategy
 gmth=0.2                          # gray matter threshold between [0 1]
 ## ---------------------------
 
+echo -e "========== START JOB at $(date) =========="
+
 ## create masks for each subject
-echo -e "========== start creating masks at $(date) =========="
 for subj in ${subjects[@]};do
 
   gdir="$pdir/$subj/anat"                   # individual folder that contains anatomical segments
@@ -73,8 +74,18 @@ for subj in ${subjects[@]};do
   3dcalc -a $gm_mask_bd -b $stats_mask -expr 'a*b' -prefix $gm_fF_mask
 
 done
-echo -e "========== finish creating masks at $(date) =========="
 ## ---------------------------
 
 ## create group-averaged masks
+if [ ! -d "$kdir/group" ];then
+  mkdir -p $kdir/group
+fi
+# gray matter mask
+3dbucket -fbuc -aglueto $kdir/group/group_${spac}_label-GM_probseg.nii.gz $kdir/sub-*/sub-*_${spac}_label-GM_probseg.nii.gz
+3dTstat -prefix $kdir/group/group_${spac}_label-GM_probseg-mean.nii.gz -mean $kdir/group/group_${spac}_label-GM_probseg.nii.gz
+# functional mask (i.e. full F)
+3dmask_tool -input $kdir/sub-*/sub-*_${spac}_mask-full-F_res-${task}.nii.gz \
+  -prefix $kdir/group/group_${spac}_mask-full-F_res-${task}.nii.gz -frac 1.0
 ## ---------------------------
+
+echo -e "========== ALL DONE! at $(date) =========="
