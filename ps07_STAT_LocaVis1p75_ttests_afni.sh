@@ -72,7 +72,7 @@ for model in ${models[@]};do
 #  3dbucket -fbuc -aglueto $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz \
 #    $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
   # T-test
-  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${flab}
+  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -exblur 4 -prefix $tdir/stats.group_${task}_${model}_${flab}
 done
 ## ---------------------------
 
