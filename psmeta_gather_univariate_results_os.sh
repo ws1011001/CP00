@@ -24,8 +24,8 @@ qdir="$rdir/QC_fmriprep"           # QC reports of fMRIPrep
 readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 # manip options
-isCollect_AFNI=false
 isQCs_FMRIPREP=false
+isCollect_AFNI=true
 isClean_QCVols=true
 ## ---------------------------
 
@@ -66,12 +66,14 @@ for task in ${tasks[@]};do
       gdir="$tdir/$glm"  # GLM folder in the task result folder
       if [ ! -d $gdir ];then mkdir -p $gdir;fi
       # collect AFNI results
-      if $isCollect_AFNI;then
+      clnote="$wdir/$oglm/COLLECT_Copied_AFNI_Stats_and_QC.note"
+      if $isCollect_AFNI && [ ! -f $clnote];then
         # copy stats.* files to the GLM folder
         cp -r $wdir/$oglm/stats*tlrc* $gdir
         # copy QC report to the GLM folder
         cp -r $wdir/$oglm/QC_${subj}_${task} $gdir      # QC report
         cp -r $wdir/$oglm/X.* $gdir/QC_${subj}_${task}  # design matrix
+        touch $clnote  # leave a message in the folder
       fi
       # remove AFNI volumes that used for QC report
       qcnote="$wdir/$oglm/CLEANUP_Removed_AFNI_QC_Volumes.note"
