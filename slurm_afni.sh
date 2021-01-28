@@ -20,6 +20,10 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 
 # processing log
 
+#echo -e "========== Start running ps00_DATA_stimuli_timings_afni.sh with singularity at $(date) =========="
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps07_STAT_LocaVis1p75_ttests_afni.sh
+#echo -e "========== Finish ps00_DATA_stimuli_timings_afni.sh with singularity at $(date) =========="
+
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR50_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR50_afni.sh
 
