@@ -3,7 +3,7 @@
 #SBATCH -J AFNI
 #SBATCH -p skylake
 #SBATCH --nodes=1
-#SBATCH -A a222
+#SBATCH -A b222
 #SBATCH -t 1-12
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128gb
