@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## ---------------------------
-## [script name] ps02_GLM_LocaVis1p75_wNR14_afni.sh
+## [script name] ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -52,8 +52,8 @@ hmth=0.5                          # head motion threshold used for censoring
 ## run GLM for each subject
 for subj in ${subjects[@]};do
   echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
-  wdir="$adir/$subj/$task"          # the Working folder
-  oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
+  wdir="$adir/$subj/$task"                  # the Working folder
+  oglm="${subj}_${task}_GLM.wPSC.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
   3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
@@ -63,7 +63,7 @@ for subj in ${subjects[@]};do
     -copy_anat $adir/$subj/${subj}_${spac}_${anat}.nii.gz \
     -anat_has_skull no \
     -dsets $wdir/${subj}_${task}_run-*_${spac}_${bold}.nii.gz \
-    -blocks blur mask regress \
+    -blocks blur mask scale regress \
     -blur_size $fwhm \
     -mask_apply anat \
     -regress_polort 2 \
@@ -90,7 +90,7 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-## summarize data quality metrics
-gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
-  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
-## ---------------------------
+### summarize data quality metrics
+#gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
+#  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+### ---------------------------

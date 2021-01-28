@@ -17,8 +17,16 @@
 idir='/home/swang/simages'        # singularity images directory
 mdir='/scratch/swang/agora/CP00'  # the project main directory
 scripts='/CP00/scripts'           # scripts folder in Sy
+afni_log="$scripts/run_AFNI.log"  # records of running AFNI scripts with slurm
 
-# processing log
+# set an array of scripts 
+scripts_afni=("ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh")
+script_run=${scripts_afni[0]}
+
+# run AFNI script
+echo -e "========== Start running $script_run with singularity at $(date) ==========" >> $afni_log
+singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/$script_run
+echo -e "========== Finish $script_run with singularity at $(date) ==========" >> $afni_log
 
 #echo -e "========== Start running ps00_DATA_stimuli_timings_afni.sh with singularity at $(date) =========="
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps07_STAT_LocaVis1p75_ttests_afni.sh
@@ -36,9 +44,11 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 #echo -e 'Running ps02_GLM_LocaVis1p75_wNR14_afni.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaVis1p75_wNR14_afni.sh
 
-echo -e "========== Start running ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
-singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps07_STAT_LocaVis1p75_ttests_afni.sh
-echo -e "========== Finish ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
+
+
+#echo -e "========== Start running ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
+#singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps07_STAT_LocaVis1p75_ttests_afni.sh
+#echo -e "========== Finish ps07_STAT_LocaVis1p75_ttests_afni.sh with singularity at $(date) =========="
 
 #echo -e 'Running ps02_GLM_LocaAudio2p5_wNR14.sh with singularity'
 #singularity exec --bind $mdir:/CP00 $idir/nidebian-1.1.2 bash $scripts/ps02_GLM_LocaAudio2p5_wNR14.sh
