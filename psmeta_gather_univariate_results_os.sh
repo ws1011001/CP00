@@ -67,7 +67,7 @@ for task in ${tasks[@]};do
       if [ ! -d $gdir ];then mkdir -p $gdir;fi
       # collect AFNI results
       clnote="$wdir/$oglm/COLLECT_Copied_AFNI_Stats_and_QC.note"
-      if $isCollect_AFNI && [ ! -f $clnote];then
+      if $isCollect_AFNI && [ ! -f $clnote ];then
         # copy stats.* files to the GLM folder
         cp -r $wdir/$oglm/stats*tlrc* $gdir
         # copy QC report to the GLM folder
