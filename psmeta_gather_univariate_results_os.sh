@@ -25,7 +25,7 @@ readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 # manip options
 isQCs_FMRIPREP=false
-isCollect_AFNI=true
+isCollect_AFNI=false
 isClean_QCVols=true
 ## ---------------------------
 
