@@ -20,7 +20,8 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 
 # set an array of scripts 
 scripts_afni[0]='ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh'
-scripts_afni[1]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
+scripts_afni[1]='ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh'
+scripts_afni[2]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
 script_id=1
 
 # run AFNI script
