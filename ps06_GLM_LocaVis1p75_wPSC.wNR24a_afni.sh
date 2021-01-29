@@ -53,9 +53,9 @@ hmth=0.5                          # head motion threshold used for censoring
 for subj in ${subjects[@]};do
   echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"          # the Working folder
-  oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
+  oglm="${subj}_${task}_GLM.wPSC.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -runtag 'run-0' -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
@@ -63,10 +63,11 @@ for subj in ${subjects[@]};do
     -copy_anat $adir/$subj/${subj}_${spac}_${anat}.nii.gz \
     -anat_has_skull no \
     -dsets $wdir/${subj}_${task}_run-*_${spac}_${bold}.nii.gz \
-    -blocks blur mask regress \
+    -blocks blur mask scale regress \
     -blur_size $fwhm \
     -mask_apply anat \
     -regress_polort 2 \
+    -regress_bandpass 0.008 1 \
     -regress_local_times \
     -regress_stim_times $wdir/stimuli/${subj}_${task}_events-cond*.txt \
     -regress_stim_labels words consonants catch \
@@ -91,6 +92,6 @@ done
 ## ---------------------------
 
 ## summarize data quality metrics
-gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.w${deno}.tsv \
-  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wPSC.w${deno}.tsv \
+  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
 ## ---------------------------
