@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## ---------------------------
-## [script name] ps02_GLM_LocaVis1p75_wNR50_afni.sh
+## [script name] ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -67,7 +67,6 @@ for subj in ${subjects[@]};do
     -blur_size $fwhm \
     -mask_apply anat \
     -regress_polort 2 \
-    -regress_bandpass 0.008 1 \
     -regress_local_times \
     -regress_stim_times $wdir/stimuli/${subj}_${task}_events-cond*.txt \
     -regress_stim_labels words consonants catch \

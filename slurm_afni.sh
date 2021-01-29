@@ -22,7 +22,7 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 scripts_afni[0]='ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh'
 scripts_afni[1]='ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh'  # scale + 12 motion + 6 first WM + 6 first CSF + highpass 128s
 scripts_afni[2]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
-script_id=2
+script_id=1
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
