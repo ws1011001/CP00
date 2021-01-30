@@ -70,8 +70,10 @@ tdir="$adir/group/$task"
 if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
   # stack up subjects for group analysis
-  3dbucket -fbuc -aglueto $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz \
-    $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
+  gcoef="$tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz"
+  if [ ! -f $gcoef ];then
+    3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
+  fi
   # T-test
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -exblur 4 -prefix $tdir/stats.group_${task}_${model}_${flab}
 done
