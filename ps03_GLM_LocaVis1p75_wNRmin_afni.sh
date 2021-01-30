@@ -53,7 +53,7 @@ for subj in ${subjects[@]};do
   wdir="$adir/$subj/$task"          # the Working folder
   oglm="${subj}_${task}_GLM.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm -dsgn 'fix'
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
@@ -66,14 +66,16 @@ for subj in ${subjects[@]};do
     -mask_apply anat \
     -regress_polort 2 \
     -regress_local_times \
-    -regress_stim_times $wdir/stimuli/${subj}_${task}_events-cond*.txt \
-    -regress_stim_labels words consonants catch \
-    -regress_basis_multi 'BLOCK(11.809,1)' 'BLOCK(11.809,1)' GAM \
+    -regress_stim_times $wdir/stimuli/${subj}_${task}_events-fix-cond*.txt \
+    -regress_stim_labels words consonants fixation catch \
+    -regress_basis_multi 'BLOCK(11.808,1)' 'BLOCK(11.808,1)' 'BLOCK(11.808,1)' GAM \
     -regress_motion_file $wdir/confounds/${subj}_${task}_${hmpv}.1D \
     -regress_motion_per_run \
     -regress_censor_extern $wdir/confounds/${subj}_${task}_${cenv}.1D \
     -regress_opts_3dD \
-      -gltsym 'SYM: +words -consonants' -glt_label 1 words-consonants \
+      -gltsym 'SYM: +words -fixation' -glt_label 1 words-fixation \
+      -gltsym 'SYM: +consonants -fixation' -glt_label 2 consonants-fixation \
+      -gltsym 'SYM: +words -consonants' -glt_label 3 words-consonants \
     -jobs $njob \
     -html_review_style pythonic
   # modify the script nd run it

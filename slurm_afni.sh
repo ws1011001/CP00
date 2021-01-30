@@ -20,10 +20,11 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 
 # set an array of scripts 
 scripts_afni[0]='ps00_DATA_stimuli_timings_afni.sh'
-scripts_afni[1]='ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh'
-scripts_afni[2]='ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh'  # scale + 12 motion + 6 first WM + 6 first CSF + highpass 128s
-scripts_afni[3]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
-script_id=0
+scripts_afni[1]='ps03_GLM_LocaVis1p75_wNRmin_afni.sh'
+scripts_afni[2]='ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh'
+scripts_afni[3]='ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh'  # scale + 12 motion + 6 first WM + 6 first CSF + highpass 128s
+scripts_afni[4]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
+script_id=1
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
