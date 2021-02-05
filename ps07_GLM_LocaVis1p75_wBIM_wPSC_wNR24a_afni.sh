@@ -92,7 +92,7 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-### summarize data quality metrics
-#gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wPSC.w${deno}.tsv \
-#  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
-### ---------------------------
+## summarize data quality metrics
+gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wBIM.wPSC.w${deno}.tsv \
+  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+## ---------------------------
