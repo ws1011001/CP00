@@ -39,7 +39,7 @@ task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 mask="$kdir/group/group_${spac}_mask-gm-final_res-${task}.nii.gz"  # GM mask
 #models=("GLM.wNRmin" "GLM.wNR12" "GLM.wNR14" "GLM.wPSC.wNR14" "GLM.wNR50")          # GLM with different denoising strategies
-models=("GLM.wPSC.wNR24a")
+models=("GLM.wBIM.wPSC.wNR24a")
 # index the stat volumes
 eidx=10                  # coefficients
 fidx=11                  # T values
