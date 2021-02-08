@@ -23,10 +23,12 @@ qdir="$rdir/QC_fmriprep"           # QC reports of fMRIPrep
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
-isCollect_AFNI=true
-isClean_QCVols=true
+isCollect_AFNI=false
+isClean_Models=true
+isClean_QCVols=false
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -59,6 +61,13 @@ for task in ${tasks[@]};do
     wdir="$adir/$subj/$task"  
     echo -e "# enter the task folder : $wdir #"
     cd $wdir
+    # clean up obsolete models
+    if $isClean_Models;then
+      for om in ${obsoltete_models[@]};do
+        rm -r *${om}*
+        rm -r confounds/*${om}*
+      done
+    fi
     # check each model
     for iglm in $(ls -d *GLM*/);do
       oglm=${iglm%%/}    # remove the ending /
