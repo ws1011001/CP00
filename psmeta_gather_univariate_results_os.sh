@@ -63,9 +63,10 @@ for task in ${tasks[@]};do
     cd $wdir
     # clean up obsolete models
     if $isClean_Models;then
-      for om in ${obsoltete_models[@]};do
+      for om in ${obsolete_models[@]};do
         rm -r *${om}*
         rm -r confounds/*${om}*
+        echo -e "Clean up results of models with $om ......"
       done
     fi
     # check each model
