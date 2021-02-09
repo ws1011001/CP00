@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps13_LSS_AudioVisAssos1word_estimates_afni.sh
+## [script name] ps14_LSS_AudioVisAssos1word_estimates_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -35,19 +35,19 @@ adir="$ddir/derivatives/afni"          # AFNI output folder
 vdir="$ddir/derivatives/multivariate"  # MVPA working folder
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
-task='task-AudioVisAssos1word'        # task name
-deno='NR14'                           # denoising strategy
-cons=("WA" "WV" "PA" "PV")            # conditions
+task='task-AudioVisAssos1word'  # task name
+deno='NR24a'                    # denoising strategy
+cons=("WA" "WV" "PA" "PV")      # conditions
 ## ---------------------------
 
 ## run GLM for each subject
 for subj in ${subjects[@]};do
   echo -e "extract betas from LSS for $task for subject : $subj ......"
 
-  wdir="$adir/$subj/$task"                  # the task folder
-  oglm="${subj}_${task}_GLM.wPSC.w${deno}"  # scaled model token
-  tdir="$wdir/$oglm/trial-wise_estimates"   # LSS results folder
-  sdir="$vdir/$subj"                        # multivariate subject folder
+  wdir="$adir/$subj/$task"                       # the task folder
+  oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # scaled model token
+  tdir="$wdir/$oglm/trial-wise_estimates"        # LSS results folder
+  sdir="$vdir/$subj"                             # multivariate subject folder
   
   # create subject folder
   if [ ! -d "$sdir/betas_afni" ];then
