@@ -30,7 +30,8 @@ scripts_afni[7]='ps09_GLM_LocaAudio2p5_wPSC_wNR48_afni.sh'
 scripts_afni[8]='ps12_GLM_AudioVisAssos1word_wBIM_wPSC_wNR24a_afni.sh'
 scripts_afni[9]='ps13_LSS_AudioVisAssos1word_wPSC_wNR24a_afni.sh'
 scripts_afni[10]='ps14_LSS_AudioVisAssos1word_estimates_afni.sh'
-script_id=10
+scripts_afni[11]='ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh'
+script_id=11
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
