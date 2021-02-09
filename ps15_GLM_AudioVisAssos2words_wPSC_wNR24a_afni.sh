@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps03_GLM_AudioVisAssos2words_wPSC_wNR14_afni.sh
+## [script name] ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -39,7 +39,7 @@ spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocess
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
 regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regressors
 anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
-deno='NR14'                       # denoising strategy
+deno='NR24a'                      # denoising strategy
 hmpv="dfile_motion_${deno}"       # all head motion NRs that should be regressed out
 ortv="dfile_signal_${deno}"       # all non-motion NRs that should be regressed out
 cenv='dfile_censor_FD'            # censors
@@ -52,10 +52,10 @@ hmth=0.5
 for subj in ${subjects[@]};do
   echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"                  # the Working folder
-  oglm="${subj}_${task}_GLM.wPSC.w${deno}"  # the token for the Output GLM
+  oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
 
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -runtag 'run-0' -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm -bdmask $nrun
   
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
@@ -66,6 +66,8 @@ for subj in ${subjects[@]};do
     -dsets $wdir/${subj}_${task}_run-*_${spac}_${bold}.nii.gz \
     -blocks blur mask scale regress \
     -blur_size $fwhm \
+    -blur_in_mask yes \
+    -blur_opts_BIM -mask $wdir/${subj}_${task}_${spac}_desc-brain_mask.nii.gz \
     -mask_apply anat \
     -regress_polort 2 \
     -regress_local_times \
@@ -93,6 +95,6 @@ done
 ## ---------------------------
 
 ## summarize data quality metrics
-gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wPSC.w${deno}.tsv \
-  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wBIM.wPSC.w${deno}.tsv \
+  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
 ## ---------------------------
