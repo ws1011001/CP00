@@ -26,9 +26,9 @@ tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-Au
 obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
-isCollect_AFNI=false
-isClean_Models=true
-isClean_QCVols=false
+isClean_Models=false
+isCollect_AFNI=true
+isClean_QCVols=true
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="

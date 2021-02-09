@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps12_LSS_AudioVisAssos1word_wPSC_wNR14_afni.sh
+## [script name] ps13_LSS_AudioVisAssos1word_wPSC_wNR24a_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -39,7 +39,7 @@ spac='space-MNI152NLin2009cAsym'      # anatomical template that used for prepro
 bold='desc-preproc_bold'              # the token for the preprocessed BOLD data (without smoothing)
 regs='desc-confounds_timeseries'      # the token for fMRIPrep output nuisance regressors
 anat='desc-preproc_T1w_brain'         # skull-stripped anatomical image
-deno='NR14'                           # denoising strategy
+deno='NR24a'                          # denoising strategy
 hmpv="dfile_motion_${deno}"           # all head motion NRs that should be regressed out
 ortv="dfile_signal_${deno}"           # all non-motion NRs that should be regressed out
 cenv='dfile_censor_FD'                # censors
@@ -55,9 +55,10 @@ cons=("WA" "WV" "PA" "PV")            # conditions
 for subj in ${subjects[@]};do
   echo -e "run LSS for $task for subject : $subj ......"
 
-  wdir="$adir/$subj/$task"                  # the Working folder
-  oglm="${subj}_${task}_GLM.wPSC.w${deno}"  # the token for the Output GLM, psc means "percent signal change"
-  ldir="$wdir/$oglm/trial-wise_estimates"   # the LSS working folder
+  wdir="$adir/$subj/$task"                              # the Working folder
+  oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"         # the token for the Output GLM, psc means "percent signal change"
+  ldir="$wdir/$oglm/trial-wise_estimates"               # the LSS working folder
+  mask="$wdir/${subj}_${task}_${spac}_desc-brain_mask"  # brain mask that used for 3dLSS
   
   # create a working folder for LSS
   if [ ! -d $ldir ];then
@@ -69,8 +70,6 @@ for subj in ${subjects[@]};do
 
   # concatenate all scaled runs
   3dTcat -prefix LSS.${subj}_${task}.all.scale $wdir/$oglm/pb02.${subj}_${task}.r*.scale+tlrc.HEAD  
-#  # create individual mask by combining EPI extent and gray matter mask
-#  3dcalc -a $wdir/$oglm/mask_epi_anat.${subj}_${task}+tlrc. -b $adir/$subj/individual_ROIs/${subj}_iGrayMatter_ref-${task}_wGM0.2.nii.gz -expr 'a*b' -prefix ${subj}_EPI_GM_mask4LSS
   
   # prepare nuisance regressors
   tar -mvxf $wdir/confounds/${oglm}.1D.tar.gz --strip-components 7 -C $wdir/confounds  # use --strip-components 7 to remove folder structure (a bad but only solution)
@@ -192,7 +191,7 @@ for subj in ${subjects[@]};do
   for icon in ${cons[@]};do
     echo -e "run LSS for condition $i $icon ......"
     cprefix=`printf "con%d_%s" $i $icon`
-    3dLSS -matrix ${cprefix}_X.xmat.1D -input LSS.${subj}_${task}.all.scale+tlrc.HEAD -save1D LSS_${cprefix}.1D -prefix LSS.stats.${subj}_${task}_${cprefix}
+    3dLSS -matrix ${cprefix}_X.xmat.1D -input LSS.${subj}_${task}.all.scale+tlrc.HEAD -mask $mask -save1D LSS_${cprefix}.1D -prefix LSS.stats.${subj}_${task}_${cprefix}
     let i+=1
   done
 
