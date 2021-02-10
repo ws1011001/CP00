@@ -29,6 +29,7 @@ isQCs_FMRIPREP=false
 isClean_Models=false
 isCollect_AFNI=true
 isClean_QCVols=true
+isClean_LSSraw=true
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -92,6 +93,13 @@ for task in ${tasks[@]};do
         rm -r $wdir/$oglm/pb00.${subj}_${task}.*.tcat+orig.*
         rm -r $wdir/$oglm/pb02.${subj}_${task}.*.volreg+tlrc.*
         touch $qcnote  # leave a message in the folder
+      fi
+      # remove raw data that used to do LSS
+      lsnote="$wdir/$oglm/trial-wise_estimates/CLEANUP_Removed_LSS_Inputs.note"
+      if $isClean_LSSraw && [ ! -f $lsnote ] && [ -d "$wdir/$oglm/trial-wise_estimates" ];then
+        echo -e "clean up inputs to 3dLSS in $oglm"
+        rm -r $wdir/$oglm/trial-wise_estimates/LSS.${subj}_${task}.all.scale+tlrc*
+        touch $lsnote
       fi
     done
   done
