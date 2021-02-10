@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps11_GLM_AudioVisAssos2words_wPSC_wTENT_wNR14_afni.sh
+## [script name] ps16_GLM_AudioVisAssos2words_wBIM_wPSC_wTENT_wNR24a_afni.sh
 ##
 ## SCRIPT to ...
 ##
@@ -39,7 +39,7 @@ spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocess
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
 regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regressors
 anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
-deno='NR14'                       # denoising strategy
+deno='NR24a'                      # denoising strategy
 hmpv="dfile_motion_${deno}"       # all head motion NRs that should be regressed out
 ortv="dfile_signal_${deno}"       # all non-motion NRs that should be regressed out
 cenv='dfile_censor_FD'            # censors
@@ -51,8 +51,8 @@ hmth=0.5
 ## run GLM for each subject
 for subj in ${subjects[@]};do
   echo -e "run GLM with TENT for $task for subject : $subj ......"
-  wdir="$adir/$subj/$task"                  # the Working folder
-  oglm="${subj}_${task}_GLM.wPSC.wTENT.w${deno}"        # the token for the Output GLM
+  wdir="$adir/$subj/$task"                             # the Working folder
+  oglm="${subj}_${task}_GLM.wBIM.wPSC.wTENT.w${deno}"  # the token for the Output GLM
   
   # prepare data for GLM
   3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
@@ -66,6 +66,8 @@ for subj in ${subjects[@]};do
     -dsets $wdir/${subj}_${task}_run-*_${spac}_${bold}.nii.gz \
     -blocks blur mask scale regress \
     -blur_size $fwhm \
+    -blur_in_mask yes \
+    -blur_opts_BIM -mask $wdir/${subj}_${task}_${spac}_desc-brain_mask.nii.gz \
     -mask_apply anat \
     -regress_polort 2 \
     -regress_local_times \
