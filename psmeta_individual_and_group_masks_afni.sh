@@ -40,7 +40,7 @@ spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocess
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
 regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regressors
 anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
-deno='NR14'                       # denoising strategy
+deno='NR24a'                      # denoising strategy
 gmth=0.2                          # gray matter threshold between [0 1]
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word")
 ## ---------------------------

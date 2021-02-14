@@ -18,6 +18,7 @@ mdir="/scratch/swang/agora/CP00"
 ddir="$mdir/AudioVisAsso"          # experiment Data folder (BIDS put into fMRIPrep)
 fdir="$ddir/derivatives/fmriprep"  # fMRIPrep output folder
 adir="$ddir/derivatives/afni"      # AFNI output folder
+kdir="$ddir/derivatives/masks"     # individual masks
 rdir="$mdir/results"               # gathered results
 qdir="$rdir/QC_fmriprep"           # QC reports of fMRIPrep
 # processing parameters
@@ -26,10 +27,11 @@ tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-Au
 obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
+isCollect_AFNI=false
+isClean_tmasks=true  # remove task masks
 isClean_Models=false
-isCollect_AFNI=true
-isClean_QCVols=true
-isClean_LSSraw=true
+isClean_QCVols=false
+isClean_LSSraw=false
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -49,6 +51,17 @@ if $isQCs_FMRIPREP;then
     cp -r $fdir/$subj/figures $qdir/$subj
     cp -r $fdir/$subj/log $qdir/$subj
   done
+fi
+## ---------------------------
+
+## remove task EPI based masks
+if $isClean_tmasks;then
+  # remove individual masks
+  for subj in ${subjects[@]};do
+    rm -r $kdir/$subj/*_res-task*
+  done
+  # remove group masks
+  rm -r $kdir/group/*_res-task*
 fi
 ## ---------------------------
 
