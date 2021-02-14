@@ -9,6 +9,7 @@
 ##
 ## ---------------------------
 ## Notes: - BIM, stands for Blur In Mask. 3dBlurInMask is used in this script instead of 3dmerge.
+##        - BIGM, stands for Blur In Gray-matter Mask
 ##   
 ##
 ## ---------------------------
@@ -31,8 +32,9 @@ case "$platform" in
     exit 1
 esac
 # setup path
-ddir="$mdir/AudioVisAsso"                # experiment Data folder (BIDS put into fMRIPrep)
-adir="$ddir/derivatives/afni"            # AFNI output folder
+ddir="$mdir/AudioVisAsso"             # experiment Data folder (BIDS put into fMRIPrep)
+adir="$ddir/derivatives/afni"         # AFNI output folder
+kdir="$ddir/derivatives/masks/group"  # group-averaged masks
 # processing parameters
 readarray subjects < $mdir/CP00_subjects_BIM.txt
 task='task-LocaVis1p75'           # task name
@@ -53,9 +55,9 @@ hmth=0.5                          # head motion threshold used for censoring
 for subj in ${subjects[@]};do
   echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"          # the Working folder
-  oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
+  oglm="${subj}_${task}_GLM.wBIGM.wPSC.w${deno}"  # the token for the Output GLM
   # prepare data for GLM
-  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm -bdmask $nrun
+  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
   # generate AFNI script
   afni_proc.py -subj_id ${subj}_${task} \
     -script $wdir/${oglm}.tcsh \
@@ -66,7 +68,7 @@ for subj in ${subjects[@]};do
     -blocks blur mask scale regress \
     -blur_size $fwhm \
     -blur_in_mask yes \
-    -blur_opts_BIM -mask $wdir/${subj}_${task}_${spac}_desc-brain_mask.nii.gz \
+    -blur_opts_BIM -mask $kdir/group_${spac}_mask-gm0.2_res-${task}.nii.gz \
     -mask_apply anat \
     -regress_polort 2 \
     -regress_local_times \
@@ -93,6 +95,6 @@ done
 ## ---------------------------
 
 ## summarize data quality metrics
-gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wBIM.wPSC.w${deno}.tsv \
-  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
+gen_ss_review_table.py -write_table $adir/review_QC_${task}_GLM.wBIGM.wPSC.w${deno}.tsv \
+  -infiles $adir/sub-*/$task/sub-*_${task}_GLM.wBIGM.wPSC.w${deno}/out.ss_review.sub-*_${task}.txt -overwrite
 ## ---------------------------
