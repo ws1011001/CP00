@@ -55,7 +55,7 @@ hmth=0.5                          # head motion threshold used for censoring
 for subj in ${subjects[@]};do
   echo -e "run GLM and statistical contrasts for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"          # the Working folder
-  oglm="${subj}_${task}_GLM.wBIGM.wPSC.w${deno}"  # the token for the Output GLM
+  oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
 #  # prepare data for GLM
 #  3dDATAfMRIPrepToAFNI -fmriprep $ddir -subj $subj -task $task -nrun $nrun -deno $deno -spac $spac -cens $hmth -apqc $wdir/$oglm
 #  # generate AFNI script
