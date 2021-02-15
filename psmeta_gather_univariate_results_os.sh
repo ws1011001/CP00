@@ -27,10 +27,10 @@ tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-Au
 obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
-isCollect_AFNI=false
-isClean_tmasks=true  # remove task masks
+isCollect_AFNI=true
+isClean_tmasks=false  # remove task masks
 isClean_Models=false
-isClean_QCVols=false
+isClean_QCVols=true
 isClean_LSSraw=false
 ## ---------------------------
 
