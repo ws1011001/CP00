@@ -24,7 +24,7 @@ scripts_afni[1]='ps03_GLM_LocaVis1p75_wNRmin_afni.sh'
 scripts_afni[2]='ps05_GLM_LocaVis1p75_wPSC_wNR14_afni.sh'
 scripts_afni[3]='ps06_GLM_LocaVis1p75_wPSC_wNR24a_afni.sh'  # scale + 12 motion + 6 first WM + 6 first CSF + highpass 128s
 scripts_afni[4]='ps07_GLM_LocaVis1p75_wBIM_wPSC_wNR24a_afni.sh'
-scripts_afni[5]='ps07_STAT_LocaVis1p75_ttests_afni.sh'
+scripts_afni[5]='ps08_STAT_LocaVis1p75_ttests_afni.sh'
 scripts_afni[6]='ps08_GLM_LocaAudio2p5_wPSC_wNR24a_afni.sh'
 scripts_afni[7]='ps09_GLM_LocaAudio2p5_wPSC_wNR48_afni.sh'
 scripts_afni[8]='ps12_GLM_AudioVisAssos1word_wBIM_wPSC_wNR24a_afni.sh'
@@ -33,7 +33,7 @@ scripts_afni[10]='ps14_LSS_AudioVisAssos1word_estimates_afni.sh'
 scripts_afni[11]='ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh'
 scripts_afni[12]='ps16_GLM_AudioVisAssos2words_wBIM_wPSC_wTENT_wNR24a_afni.sh'
 scripts_afni[13]='psmeta_individual_and_group_masks_afni.sh'
-script_id=4
+script_id=5
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}

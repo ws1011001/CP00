@@ -1,6 +1,6 @@
 #!/bin/bash
 ## ---------------------------
-## [script name] ps07_STAT_LocaVis1p75_ttests_afni.sh
+## [script name] ps08_STAT_LocaVis1p75_ttests_afni.sh
 ##
 ## SCRIPT to perform T-tests to extract individual and group-averaged VWFA and to determine the denoising strategy.
 ##
@@ -37,13 +37,18 @@ kdir="$ddir/derivatives/masks"  # masks folder
 readarray subjects < $mdir/CP00_subjects.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$kdir/group/group_${spac}_mask-gm-final_res-${task}.nii.gz"  # GM mask
-#models=("GLM.wNRmin" "GLM.wNR12" "GLM.wNR14" "GLM.wPSC.wNR14" "GLM.wNR50")          # GLM with different denoising strategies
-models=("GLM.wBIM.wPSC.wNR24a")
+models=("GLM.wBIM.wPSC.wNR24a" "GLM.wBIGM.wPSC.wNR24a")   # the final GLM 
+mask="$kdir/group/group_${spac}_mask-gm-0.2_res-${task}.nii.gz"  # GM mask
 # index the stat volumes
-eidx=10                  # coefficients
-fidx=11                  # T values
-flab='words-consonants'  # contrast label
+eidx_words=1
+fidx_words=2
+flab_words='words'
+eidx_conso=4
+fidx_conso=5
+flab_conso='consonants'
+eidx_pairs=10                  # coefficients
+fidx_pairs=11                  # T values
+flab_pairs='words-consonants'  # contrast label
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -56,10 +61,18 @@ for subj in ${subjects[@]};do
   for model in ${models[@]};do
     oglm="${subj}_${task}_${model}"
     stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
-    coef="$wdir/$oglm/stats.beta_${oglm}_${flab}.nii.gz"
+    coef_words="$wdir/$oglm/stats.beta_${oglm}_${flab_words}.nii.gz"
+    coef_conso="$wdir/$oglm/stats.beta_${oglm}_${flab_conso}.nii.gz"
+    coef_pairs="$wdir/$oglm/stats.beta_${oglm}_${flab_pairs}.nii.gz"
     # extract coef maps for group analysis
-    if [ ! -f $coef ];then
-      3dbucket -fbuc -prefix $coef "${stat}[$eidx]"
+    if [ ! -f "$coef_words" ];then 3dbucket -fbuc -prefix $coef_words "${stat}[$eidx_words]";fi
+    if [ ! -f "$coef_conso" ];then 3dbucket -fbuc -prefix $coef_conso "${stat}[$eidx_conso]";fi
+    if [ ! -f "$coef_pairs" ];then 3dbucket -fbuc -prefix $coef_pairs "${stat}[$eidx_pairs]";fi
+    # confine stats with group-averaged GM mask
+    stat_gm="$wdir/$oglm/stats.gm_${subj}_${task}+tlrc."
+    if [ ! -f "$stat_gm" ];then
+      3dcalc -a $wdir/$oglm/stats.${subj}_${task}+tlrc. -b $mask -expr 'a*b' -prefix $stat_gm
+      3drefit -addFDR $stat_gm
     fi
   done
 done
@@ -70,12 +83,26 @@ tdir="$adir/group/$task"
 if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
   # stack up subjects for group analysis
-  gcoef="$tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz"
-  if [ ! -f $gcoef ];then
-    3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
+  gcoef_words="$tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz"
+  gcoef_conso="$tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz"
+  gcoef_pairs="$tdir/stats.beta_group_${task}_${model}_${flab_pairs}.nii.gz"
+  if [ ! -f "$gcoef_words" ];then
+    3dbucket -fbuc -aglueto $gcoef_words $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab_words}.nii.gz
   fi
-  # T-test
-  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -exblur 4 -prefix $tdir/stats.group_${task}_${model}_${flab}
+  if [ ! -f "$gcoef_conso" ];then
+    3dbucket -fbuc -aglueto $gcoef_conso $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab_conso}.nii.gz
+  fi
+  if [ ! -f "$gcoef_pairs" ];then
+    3dbucket -fbuc -aglueto $gcoef_pairs $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab_pairs}.nii.gz
+  fi
+  # T-test on one sample of paired contrasts
+  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_pairs}.nii.gz -mask $mask -exblur 6 \
+    -prefix $tdir/stats.group_${task}_${model}_paired1-${flab_pairs}
+  # T-test on paried two samples
+  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz \
+    -setB $tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz \
+    -mask $mask -exblur 6 -paried \
+    -prefix $tdir/stats.group_${task}_${model}_paired2-${flab_pairs}
 done
 ## ---------------------------
 
