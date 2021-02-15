@@ -71,6 +71,7 @@ for subj in ${subjects[@]};do
     # confine stats with group-averaged GM mask
     stat_gm="$wdir/$oglm/stats.gm_${subj}_${task}+tlrc"
     if [ ! -f "${stat_gm}.HEAD" ];then
+      echo -e "confine stats for $task for subject : $subj ......"
       3dcalc -a $wdir/$oglm/stats.${subj}_${task}+tlrc. -b $mask -expr 'a*b' -prefix $stat_gm
       3drefit -addFDR $stat_gm
     fi
@@ -82,6 +83,7 @@ done
 tdir="$adir/group/$task"
 if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
+  echo -e "carry out T-tests for model : $model ......"
   # stack up subjects for group analysis
   gcoef_words="$tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz"
   gcoef_conso="$tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz"
@@ -101,7 +103,7 @@ for model in ${models[@]};do
   # T-test on paried two samples
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz \
-    -mask $mask -exblur 6 -paried \
+    -mask $mask -exblur 6 -paired \
     -prefix $tdir/stats.group_${task}_${model}_paired2-${flab_pairs}
 done
 ## ---------------------------
