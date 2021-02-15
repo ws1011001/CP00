@@ -38,7 +38,7 @@ readarray subjects < $mdir/CP00_subjects.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 models=("GLM.wBIM.wPSC.wNR24a" "GLM.wBIGM.wPSC.wNR24a")   # the final GLM 
-mask="$kdir/group/group_${spac}_mask-gm-0.2_res-${task}.nii.gz"  # GM mask
+mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 # index the stat volumes
 eidx_words=1
 fidx_words=2
@@ -69,8 +69,8 @@ for subj in ${subjects[@]};do
     if [ ! -f "$coef_conso" ];then 3dbucket -fbuc -prefix $coef_conso "${stat}[$eidx_conso]";fi
     if [ ! -f "$coef_pairs" ];then 3dbucket -fbuc -prefix $coef_pairs "${stat}[$eidx_pairs]";fi
     # confine stats with group-averaged GM mask
-    stat_gm="$wdir/$oglm/stats.gm_${subj}_${task}+tlrc."
-    if [ ! -f "$stat_gm" ];then
+    stat_gm="$wdir/$oglm/stats.gm_${subj}_${task}+tlrc"
+    if [ ! -f "${stat_gm}.HEAD" ];then
       3dcalc -a $wdir/$oglm/stats.${subj}_${task}+tlrc. -b $mask -expr 'a*b' -prefix $stat_gm
       3drefit -addFDR $stat_gm
     fi
