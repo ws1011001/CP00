@@ -98,7 +98,7 @@ for i in range(0, n):
     # do MVPA with each classifier
     acc_scores = [subj, imod]
     for clf_token, clf_model in zip(clf_tokens, clf_models):
-      for iperc in feature_selections:
+      for iperc in fs_perc:
         feature_selected = SelectPercentile(f_classif, percentile = iperc)  # feature selection
         clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
         acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
