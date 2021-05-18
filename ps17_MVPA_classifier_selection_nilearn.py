@@ -92,7 +92,7 @@ for i in range(0, n):
   fbet = "%s/%s_LSS_nilearn.nii.gz" % (bdir,subj)
   for imod in mods:
     # read labels and betas according to the modality
-    labs_mod = labs_trl.isin(['WV','PV']) if imod == 'visual' else labs_mod = labs_trl.isin(['WA','PA'])
+    labs_mod = labs_trl.isin(['WV','PV']) if imod == 'visual' else labs_trl.isin(['WA','PA'])
     betas = index_img(fbet, labs_mod)
     betas_box = masker_box.fit_transform(betas)  # left-vOT box masked
     # do MVPA with each classifier
