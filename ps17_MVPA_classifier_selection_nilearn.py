@@ -67,10 +67,10 @@ labels = pd.read_csv(flab)             # trial labels
 labs_trl = labels['conditions']        # WA, WV, PA, PV
 labs_lex = labels['lexicon']           # word, pseudoword
 labs_run = labels['runs']              # 5 runs, from run-01 to run-05
-# load up group mask (left-vOT box)
-fbox = os.path.join(kdir, 'group', "group_%s_mask-lVOT-box_res-%s.nii.gz" % (spac, task))
+# load up group mask (left-vOT box without CBL)
+fbox = os.path.join(kdir, 'group', "group_%s_mask-lVOT-woCBL_res-%s.nii.gz" % (spac, task))
 mbox = load_img(fbox)
-masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer of left-vOT box
+masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer of left-vOT (3486 voxels)
 # initialize performance tables
 acc_scores = ["participant_id", "modality"]
 for c in clf_tokens:
