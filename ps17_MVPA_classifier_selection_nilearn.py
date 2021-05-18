@@ -102,7 +102,7 @@ for i in range(0, n):
         feature_selected = SelectPercentile(f_classif, percentile = iperc)  # feature selection
         clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
         acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-                                                 n_permutations = nperm, groups = labs_runs[labs_mod], n_jobs=-1)
+                                                 n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
         acc_scores.extend(["%f" % acc, "%f" % np.mean(perm), "%f" % pval])
     # output performance data
     with open(facc, 'a') as fid: fid.write(','.join(acc_scores) + '\n')
