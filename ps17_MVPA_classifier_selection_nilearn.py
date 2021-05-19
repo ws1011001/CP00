@@ -27,7 +27,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.model_selection import permutation_test_score
 from sklearn.pipeline import Pipeline
-from sklearn.feature_selection import SelectPercentile, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif
 # setup path
 mdir = '/scratch/swang/agora/CP00/AudioVisAsso'  # the project main folder
 ddir = os.path.join(mdir,'derivatives')          # different analyses after pre-processing
@@ -52,9 +52,9 @@ clf_models = [LinearDiscriminantAnalysis(),
 clf_tokens = ['LDA','GNB','SVClin','SVCrbf']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # ROI-based parameters
-fs_perc = [1, 2, 5]  # feature selection percentile
-nperm = 1000         # number of permutations
-njobs = -1           # -1 means all CPUs
+fs_perc = [57, 93, 171, 389, 751]  # feature selection K best: radius 4, 5, 6, 8, 10 mm
+nperm = 1000                       # number of permutations
+njobs = -1                         # -1 means all CPUs
 ## ---------------------------
 
 now = datetime.now()
@@ -99,7 +99,7 @@ for i in range(0, n):
     acc_scores = [subj, imod]
     for clf_token, clf_model in zip(clf_tokens, clf_models):
       for iperc in fs_perc:
-        feature_selected = SelectPercentile(f_classif, percentile = iperc)  # feature selection
+        feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
         clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
         acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
                                                  n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
