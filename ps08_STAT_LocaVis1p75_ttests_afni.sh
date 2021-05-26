@@ -37,8 +37,9 @@ kdir="$ddir/derivatives/masks"  # masks folder
 readarray subjects < $mdir/CP00_subjects.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-models=("GLM.wBIM.wPSC.wNR24a" "GLM.wBIGM.wPSC.wNR24a")   # the final GLM 
+models=("GLM.wBIM.wPSC.wNR24a" "GLM.wBIGM.wPSC.wNR24a")         # the final GLM 
 mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
+lvot="$kdir/group/group_${task}_mask-lvOT-Bouhali2019.nii.gz"   # anatomical defined left-vOT mask (Bouhali et al., 2019)
 # index the stat volumes
 eidx_words=1
 fidx_words=2
@@ -75,6 +76,13 @@ for subj in ${subjects[@]};do
       3dcalc -a $wdir/$oglm/stats.${subj}_${task}+tlrc. -b $mask -expr 'a*b' -prefix $stat_gm
       3drefit -addFDR $stat_gm
     fi
+    # confine stats with anatomial defined left-vOT mask
+    stat_lvot="$wdir/$oglm/stats.lvOT_${subj}_${task}+tlrc"
+    if [ ! -f "${stat_lvot}.HEAD" ];then
+      echo -e "confine stats for $task for subject : $subj ......"
+      3dcalc -a $wdir/$oglm/stats.${subj}_${task}+tlrc. -b $lvot -expr 'a*b' -prefix $stat_lvot
+      3drefit -addFDR $stat_lvot
+    fi
   done
 done
 ## ---------------------------
@@ -97,14 +105,19 @@ for model in ${models[@]};do
   if [ ! -f "$gcoef_pairs" ];then
     3dbucket -fbuc -aglueto $gcoef_pairs $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab_pairs}.nii.gz
   fi
-  # T-test on one sample of paired contrasts
-  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_pairs}.nii.gz -mask $mask -exblur 6 \
-    -prefix $tdir/stats.group_${task}_${model}_paired1-${flab_pairs}
-  # T-test on paried two samples
+#  # T-test on one sample of paired contrasts
+#  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_pairs}.nii.gz -mask $mask -exblur 6 \
+#    -prefix $tdir/stats.group_${task}_${model}_paired1-${flab_pairs}
+#  # T-test on paried two samples
+#  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz \
+#    -setB $tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz \
+#    -mask $mask -exblur 6 -paired \
+#    -prefix $tdir/stats.group_${task}_${model}_paired2-${flab_pairs}
+  # T-test on paried two samples within the left-vOT mask
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab_words}.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_${flab_conso}.nii.gz \
-    -mask $mask -exblur 6 -paired \
-    -prefix $tdir/stats.group_${task}_${model}_paired2-${flab_pairs}
+    -mask $lvot -exblur 6 -paired \
+    -prefix $tdir/stats.lvOT.group_${task}_${model}_paired2-${flab_pairs}
 done
 ## ---------------------------
 
