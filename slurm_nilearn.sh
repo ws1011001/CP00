@@ -20,11 +20,11 @@ script_id=1
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}
-ni_log="$mdir/scripts/run_nilearn.log"  # records of running nilearn scripts with slurm
+ni_log='run_nilearn.log'  # records of running nilearn scripts with slurm
 SECONDS=0
 echo -e "========== Start running $script_run with slurm at $(date) =========="
 echo -e "$(date) : $script_run" >> $ni_log
-conda run --name base python $script_run
+#conda run --name base python $script_run
 echo -e "========== Finish $script_run with slurm at $(date) =========="
 duration=$SECONDS
 echo -e "$(date) : $script_run - $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed." >> $ni_log

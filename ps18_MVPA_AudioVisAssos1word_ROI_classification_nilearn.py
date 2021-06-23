@@ -88,7 +88,7 @@ for i in range(0, n):
     labs_crs[labs_mod] = -1             # this modality is for training
     # do MVPA with each ROI
     for iroi in range(0, nroi):
-      thisroi = rois.index[i]
+      thisroi = rois.index[iroi]
       # load up group/individual mask
       if thisroi[0] == 'i':
         fbox = os.path.join(kdir, subj, "%s_%s_mask-%s.nii.gz" % (subj, spac, thisroi))  # individual mask
@@ -101,10 +101,12 @@ for i in range(0, n):
       # do MVPA with each classifier
       for clf_token, clf_model in zip(clf_tokens, clf_models):
         # permutation MVPA
-        if rois.fixed[i]:
+        if rois.fixed[iroi]:
           # uni-modal MVPA
+          #acc, perm, pval = permutation_test_score(clf_model, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
+          #                                         n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
           acc, perm, pval = permutation_test_score(clf_model, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-                                                   n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+                                                   n_permutations = nperm, n_jobs=-1)
           # cross-modal MVPA
           acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
           for j in range(0, nrun):
@@ -119,7 +121,7 @@ for i in range(0, n):
             betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
             # carry out MVPA for this run
             jacc, jperm, jpval = permutation_test_score(clf_model, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
-                                                        n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+                                                        n_permutations = nperm, n_jobs=-1)
             acc_crs[j, 0] = jacc            # ACC of this run
             acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
             acc_crs[j, 2] = pval            # p-value of this run            
@@ -134,7 +136,7 @@ for i in range(0, n):
             clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
             # uni-modal MVPA
             acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-                                                     n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+                                                     n_permutations = nperm, n_jobs=-1)
             # cross-modal MVPA
             acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
             for j in range(0, nrun):
@@ -149,7 +151,7 @@ for i in range(0, n):
               betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
               # carry out MVPA for this run
               jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
-                                                          n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+                                                          n_permutations = nperm, n_jobs=-1)
               acc_crs[j, 0] = jacc            # ACC of this run
               acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
               acc_crs[j, 2] = pval            # p-value of this run            
