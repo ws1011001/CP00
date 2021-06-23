@@ -21,8 +21,7 @@ from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from nilearn.input_data import NiftiMasker
 from sklearn import svm
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.model_selection import permutation_test_score
+from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 # setup path
@@ -92,15 +91,14 @@ for i in range(0, n):
       thisroi = rois.index[i]
       # load up group/individual mask
       if thisroi[0] == 'i':
-        fbox = os.path.join(kdir, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisroi))
+        fbox = os.path.join(kdir, subj, "%s_%s_mask-%s.nii.gz" % (subj, spac, thisroi))  # individual mask
       else:
-        fbox = os.path.join(kdir, subj, "%s_%s_mask-%s.nii.gz" % (subj, spac, thisroi))
+        fbox = os.path.join(kdir, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisroi))
       mbox = load_img(fbox)
       nvox = np.sum(mbox.get_data())
       masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer
       betas_box = masker_box.fit_transform(betas)                                     # masked betas
       # do MVPA with each classifier
-      
       for clf_token, clf_model in zip(clf_tokens, clf_models):
         # permutation MVPA
         if rois.fixed[i]:
