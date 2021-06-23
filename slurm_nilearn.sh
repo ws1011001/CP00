@@ -15,7 +15,8 @@
 
 # set an array of scripts
 scripts_ni[0]='ps17_MVPA_classifier_selection_nilearn.py'
-script_id=0
+scripts_ni[1]='ps18_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
+script_id=1
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}
