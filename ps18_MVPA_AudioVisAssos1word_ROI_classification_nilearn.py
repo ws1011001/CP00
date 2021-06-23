@@ -42,7 +42,7 @@ mods = ['visual', 'auditory']       # stimulus modalities
 
 ## MVPA parameters
 # prepare classifiers without tuning parameters - only use linear-SVM
-clf_models = [svm.SVC(kernel='linear',max_iter=-1)]
+clf_models = [svm.SVC(kernel = 'linear', max_iter = -1)]
 clf_tokens = ['SVClin']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # ROI-based parameters
@@ -61,10 +61,12 @@ print("========== START JOB : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S
 ## MVPA
 # read trial labels
 flab = os.path.join(vdir, "group_%s_labels-trial.csv" % task)  # trial-wise labels
-labels = pd.read_csv(flab)             # trial labels
-labs_trl = labels['conditions']        # WA, WV, PA, PV
-labs_lex = labels['lexicon']           # word, pseudoword
-labs_run = labels['runs']              # 5 runs, from run-01 to run-05
+labels = pd.read_csv(flab)       # trial labels
+labs_trl = labels['conditions']  # WA, WV, PA, PV
+labs_lex = labels['lexicon']     # word, pseudoword
+labs_run = labels['runs']        # 5 runs, from run1 to run5
+runs = np.unique(labs_run)       # run labels
+nrun = len(runs)                 # number of runs 
 # initialize performance tables
 facc = os.path.join(vdir, "group_%s_MVPA-PermACC_unimodal+crossmodal.csv" % task)  # performance table
 dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'Perm', 'P'])
@@ -82,10 +84,9 @@ for i in range(0, n):
   for imod in mods:
     # read labels and betas according to the modality
     labs_mod = labs_trl.isin(['WV','PV']) if imod == 'visual' else labs_trl.isin(['WA','PA'])
-    betas = index_img(fbet, labs_mod)
-    # extend labels for cross-modal decoding
+    betas = index_img(fbet, labs_mod)   # select betas with this modality
     labs_crs = np.zeros(len(labs_run))  # initialize labels for PredefinedSplit() in which 0 is for test while -1 is for training
-    labs_crs[labs_mod] = -1
+    labs_crs[labs_mod] = -1             # this modality is for training
     # do MVPA with each ROI
     for iroi in range(0, nroi):
       thisroi = rois.index[i]
@@ -99,6 +100,7 @@ for i in range(0, n):
       masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer
       betas_box = masker_box.fit_transform(betas)                                     # masked betas
       # do MVPA with each classifier
+      
       for clf_token, clf_model in zip(clf_tokens, clf_models):
         # permutation MVPA
         if rois.fixed[i]:
@@ -106,22 +108,63 @@ for i in range(0, n):
           acc, perm, pval = permutation_test_score(clf_model, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
                                                    n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
           # cross-modal MVPA
+          acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
+          for j in range(0, nrun):
+            thisrun = runs[j]
+            # select labels for cross-modal decoding CV
+            labs_train = ~labs_run.isin([thisrun]) & labs_mod     # train set of other 4 runs with this modality
+            labs_test = labs_run.isin([thisrun]) & ~labs_mod      # test set of this run with another modality
+            labs_thisrun = labs_train | labs_test                 # selected labels
+            CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
+            # prepare betas
+            betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
+            betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
+            # carry out MVPA for this run
+            jacc, jperm, jpval = permutation_test_score(clf_model, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
+                                                        n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+            acc_crs[j, 0] = jacc            # ACC of this run
+            acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
+            acc_crs[j, 2] = pval            # p-value of this run            
+          acc_crs = np.mean(acc_crs, axis=0)  # averaged performance
           # output ACC
           dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, nvox, acc, np.mean(perm), pval]
+          dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, nvox, acc_crs[0], acc_crs[1], acc_crs[2]]       
         else:
           # select features if the ROI is too big (not fixed)
           for iperc in fs_perc:
             feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
             clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
+            # uni-modal MVPA
             acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
                                                      n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+            # cross-modal MVPA
+            acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
+            for j in range(0, nrun):
+              thisrun = runs[j]
+              # select labels for cross-modal decoding CV
+              labs_train = ~labs_run.isin([thisrun]) & labs_mod     # train set of other 4 runs with this modality
+              labs_test = labs_run.isin([thisrun]) & ~labs_mod      # test set of this run with another modality
+              labs_thisrun = labs_train | labs_test                 # selected labels
+              CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
+              # prepare betas
+              betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
+              betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
+              # carry out MVPA for this run
+              jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
+                                                          n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+              acc_crs[j, 0] = jacc            # ACC of this run
+              acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
+              acc_crs[j, 2] = pval            # p-value of this run            
+            acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
             # output ACC
             dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, np.mean(perm), pval]
-
-
-
+            dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2]]
+            
   print("Finish ROI-based MVPA for subject: %s.\n" % subj) 
+# output the performance table
+dacc = dacc.set_index('participant_id')
+dacc.to_csv(facc)
 ## ---------------------------
 
-now=datetime.now()
+now = datetime.now()
 print("========== ALL DONE : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S"))
