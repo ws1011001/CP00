@@ -62,7 +62,7 @@ print("========== START JOB : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S
 
 ## MVPA
 # read trial labels
-flab = os.path.join(vdir, "group_trial-labels_%s_within-modality.csv" % task)  # trial-wise labels
+flab = os.path.join(vdir, "group_%s_labels-trial.csv" % task)  # trial-wise labels
 labels = pd.read_csv(flab)             # trial labels
 labs_trl = labels['conditions']        # WA, WV, PA, PV
 labs_lex = labels['lexicon']           # word, pseudoword
@@ -76,7 +76,7 @@ acc_scores = ["participant_id", "modality"]
 for c in clf_tokens:
   for s in fs_perc:
     acc_scores.extend(["ACC_%s_perc%s" % (c, s), "Perm_%s_perc%s" % (c, s), "P_%s_perc%s" % (c, s)])
-facc = os.path.join(vdir, "group_MVPA-ACC-scores_%s_within-modality.csv" % task)
+facc = os.path.join(vdir, "group_%s_MVPA-classifier-selection-PermACC_unimodal.csv" % task)
 with open(facc, 'w') as fid: fid.write(','.join(acc_scores) + '\n')
 fid.close()
 # do MVPA for each subject
