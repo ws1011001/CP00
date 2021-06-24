@@ -122,7 +122,7 @@ for i in range(0, n):
                                                         n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
             acc_crs[j, 0] = jacc            # ACC of this run
             acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
-            acc_crs[j, 2] = pval            # p-value of this run            
+            acc_crs[j, 2] = jpval            # p-value of this run            
           acc_crs = np.mean(acc_crs, axis=0)  # averaged performance
           # output ACC
           dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, nvox, acc, np.mean(perm), pval]
@@ -152,7 +152,7 @@ for i in range(0, n):
                                                           n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
               acc_crs[j, 0] = jacc            # ACC of this run
               acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
-              acc_crs[j, 2] = pval            # p-value of this run            
+              acc_crs[j, 2] = jpval            # p-value of this run            
             acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
             # output ACC
             dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, np.mean(perm), pval]
