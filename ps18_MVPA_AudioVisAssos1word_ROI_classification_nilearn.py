@@ -46,7 +46,7 @@ clf_tokens = ['SVClin']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # ROI-based parameters
 fs_perc = [57, 93, 171, 389, 751]  # feature selection K best: radius 4, 5, 6, 8, 10 mm
-nperm = 1000                       # number of permutations
+nperm = 100                       # number of permutations
 njobs = -1                         # -1 means all CPUs
 # read ROIs information
 froi = os.path.join(vdir, 'group_labels-ROI.csv')  # ROIs info
