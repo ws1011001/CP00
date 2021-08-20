@@ -49,8 +49,8 @@ fs_perc = [57, 93, 171, 389, 751]  # feature selection K best: radius 4, 5, 6, 8
 nperm = 100                       # number of permutations
 njobs = -1                         # -1 means all CPUs
 # read ROIs information
-froi = os.path.join(vdir, 'group_labels-ROI.csv')  # ROIs info
-rois = pd.read_csv(froi).set_index('label')        # the list of ROIs
+froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
+rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
 nroi = len(rois)
 ## ---------------------------
 
