@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J AFNI
+#SBATCH -J AFNI-tvsMVPA
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
@@ -33,8 +33,9 @@ scripts_afni[10]='ps14_LSS_AudioVisAssos1word_estimates_afni.sh'
 scripts_afni[11]='ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh'
 scripts_afni[12]='ps16_GLM_AudioVisAssos2words_wBIM_wPSC_wTENT_wNR24a_afni.sh'
 scripts_afni[13]='ps17_STAT_AudioVisAssos1word_factorial_afni.sh'
-scripts_afni[14]='psmeta_individual_and_group_masks_afni.sh'
-script_id=13
+scripts_afni[14]='ps22_STAT_AudioVisAssos1word_searchlight_maps_afni.sh'
+scripts_afni[15]='psmeta_individual_and_group_masks_afni.sh'
+script_id=14
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
