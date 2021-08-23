@@ -52,20 +52,20 @@ for roi in ${rois[@]};do
   mask="$kdir/group/group_${spac}_mask-${roi}.nii.gz"
   for clf in ${clfs[@]};do
     echo -e "carry out T-tests for classifier $clf within ROI $roi ......"
-    # calculate the average for cross-modal maps
-    for subj in ${subjects[@]};do
-      sdir="$vdir/$subj/$mvpc"
-      # auditory-to-visual maps
-      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-auditory2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-auditory2_mask-${roi}.nii.gz
-      # visual-to-auditory maps
-      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-visual2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-visual2_mask-${roi}.nii.gz
-    done
+#    # calculate the average for cross-modal maps
+#    for subj in ${subjects[@]};do
+#      sdir="$vdir/$subj/$mvpc"
+#      # auditory-to-visual maps
+#      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-auditory2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-auditory2_mask-${roi}.nii.gz
+#      # visual-to-auditory maps
+#      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-visual2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-visual2_mask-${roi}.nii.gz
+#    done
     # stack up subjects for group analysis
     for imod in ${mods};do
       facc="$gdir/stats.acc_group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz"
       3dbucket -fbuc -aglueto $facc $vdir/sub-*/$mvpc/sub-*_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
       # T-test on one sample againest the chance level
-      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -exblur 6 -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
+      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
     done
   done
 done
