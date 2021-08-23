@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH -J MVPA
+#SBATCH -J tvsMVPA
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
-#SBATCH -t 1-12
+#SBATCH -t 3-12
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128gb
 #SBATCH -o ./run_slurm.log/nilearn_%j.out
@@ -16,7 +16,8 @@
 # set an array of scripts
 scripts_ni[0]='ps17_MVPA_classifier_selection_nilearn.py'
 scripts_ni[1]='ps18_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
-script_id=1
+scripts_ni[2]='ps21_MVPA_AudioVisAssos1word_searchlight_classification_nilearn.py'
+script_id=2
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}
