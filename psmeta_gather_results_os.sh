@@ -25,7 +25,7 @@ qdir="$rdir/QC_fmriprep"               # QC reports of fMRIPrep
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
-mvpcs=("tvsMVPA")
+mvpcs=("tvsMVPC")
 obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
