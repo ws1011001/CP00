@@ -15,23 +15,26 @@
 ## set environment (packages, functions, working path etc.)
 # setup path
 mdir="/scratch/swang/agora/CP00"
-ddir="$mdir/AudioVisAsso"          # experiment Data folder (BIDS put into fMRIPrep)
-fdir="$ddir/derivatives/fmriprep"  # fMRIPrep output folder
-adir="$ddir/derivatives/afni"      # AFNI output folder
-kdir="$ddir/derivatives/masks"     # individual masks
-rdir="$mdir/results"               # gathered results
-qdir="$rdir/QC_fmriprep"           # QC reports of fMRIPrep
+ddir="$mdir/AudioVisAsso"              # experiment Data folder (BIDS put into fMRIPrep)
+fdir="$ddir/derivatives/fmriprep"      # fMRIPrep output folder
+adir="$ddir/derivatives/afni"          # AFNI output folder
+kdir="$ddir/derivatives/masks"         # individual masks
+vdir="$ddir/derivatives/multivariate"  # MVPA results
+rdir="$mdir/results"                   # gathered results
+qdir="$rdir/QC_fmriprep"               # QC reports of fMRIPrep
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+mvpcs=("tvsMVPA")
 obsolete_models=("NR12" "NR14")
 # manip options
 isQCs_FMRIPREP=false
-isCollect_AFNI=true
+isCollect_AFNI=false
 isClean_tmasks=false  # remove task masks
 isClean_Models=false
-isClean_QCVols=true
+isClean_QCVols=false
 isClean_LSSraw=false
+isCollect_MVPC=true
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -65,7 +68,7 @@ if $isClean_tmasks;then
 fi
 ## ---------------------------
 
-## gather results for each task
+## gather AFNI results for each task
 for task in ${tasks[@]};do
   echo -e "========== start gathering results (stats.* files) for $task =========="
   tdir="$rdir/$task"
@@ -116,7 +119,27 @@ for task in ${tasks[@]};do
       fi
     done
   done
-  echo -e "========== finish gathering results (stats.* files) for $task =========="
+  echo -e "========== finish gathering AFNI results (stats.* files) for $task =========="
+done
+## ---------------------------
+
+## gather MVPA results
+for mvpc in ${mvpcs[@]};do
+  echo -e "========== start gathering MVPA results for $mvpc =========="
+  tdir="$rdir/$mvpc"
+  if [ ! -d $tdir ];then mkdir -p $tdir;fi
+  # check each subject
+  for subj in ${subjects[@]};do
+    wdir="$vdir/$subj/$mvpc"  
+    echo -e "# enter the method folder : $wdir #"
+    cd $wdir
+    # check each approach
+    if $isCollect_MVPC;then
+      # copy MVPC results
+      cp -r $wdir/*.nii.gz $tdir
+    fi
+  done
+  echo -e "========== finish gathering MVPA results for $mvpc =========="
 done
 ## ---------------------------
 
