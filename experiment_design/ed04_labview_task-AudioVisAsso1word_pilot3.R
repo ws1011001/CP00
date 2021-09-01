@@ -18,36 +18,36 @@ rm(list=ls())
 ## set environment (packages, functions, working path etc.)
 # working path
 wdir <- '/media/wang/BON/Projects/CP00/experiment_design/labview_scripts/'
-pdir <- file.path(wdir,'Pilot3')
+pdir <- file.path(wdir, 'Pilot3')
 setwd(pdir)
-odir <- file.path(pdir,'AVA-1word')
+odir <- file.path(pdir, 'AVA-1word')
 # scan parameters
-trigger.duration <- 0.082              # trigger duration in LabView in seconds, i.e. 82 ms  
-triggers.slice <- 14
-TR <- trigger.duration*triggers.slice  # 1148ms
+trigger.duration <- 0.082                # trigger duration in seconds for LabView, i.e. 82 ms  
+triggers.slice <- 14                     # number of slices per trigger, which equals to N(slices) / N(multiband factors)
+TR <- trigger.duration * triggers.slice  # 1148ms
 # task parameters
-subjects <- c('sub-01','sub-02','sub-03','sub-04','sub-05','sub-06','sub-07','sub-08','sub-09','sub-10')
-ntrls <- 48  # 48 stimuli per run
-nruns <- 5   # 5 runs
-dur.stimulus <- 10  # 820ms
-iti.range <- 37:51  # from 3034ms to 4182ms
+subjects <- c('sub-01')  # generate a task sequence per subject. The data collection used the task sequence of sub-01 for all subjects.
+ntrls <- 48              # 48 stimuli per run
+nruns <- 5               # 5 runs
+dur.stimulus <- 10       # 820ms
+iti.range <- 37:51       # from 3034ms to 4182ms
 va.seqs <- c(3,4,5,1,2)  # the sequence of runs for auditory stimuli
-nTR <- 200  # make all of the 5 runs having 200 TRs
+nTR <- 200               # make all of the 5 runs having 200 TRs
 ## ---------------------------
 
 ## generate LabView script
 for (subj in subjects){
-  sdir <- file.path(odir,subj)
+  sdir <- file.path(odir, subj)
   # read the individual stimuli list
-  words <- read.csv(file=file.path(sdir,sprintf('Pilot3_%s_words_1wordTrials_byRuns.csv',subj)),stringsAsFactors=FALSE)
-  pwords <- read.csv(file=file.path(sdir,sprintf('Pilot3_%s_pseudowords_1wordTrials_byRuns.csv',subj)),stringsAsFactors=FALSE) 
+  words <- read.csv(file = file.path(sdir, sprintf('Pilot3_%s_words_1wordTrials_byRuns.csv', subj)), stringsAsFactors = FALSE)
+  pwords <- read.csv(file = file.path(sdir, sprintf('Pilot3_%s_pseudowords_1wordTrials_byRuns.csv', subj)), stringsAsFactors = FALSE) 
   # create fMRI experiment sequence
   cond.seqs <- list(NA)
   for (irun in 1:nruns){
     cond.rep <- 0
-    while (cond.rep!=ntrls){
+    while (cond.rep != ntrls){
       # randomized but no repeated conditions
-      cond.trls <- as.vector(replicate(ntrls/4,sample(c('WV','WA','PV','PA'))))  
+      cond.trls <- as.vector(replicate(ntrls/4, sample(c('WV','WA','PV','PA'))))  
       cond.rep <- length(rle(cond.trls)$length)
     }
     cond.seqs[[irun]] <- cond.trls
