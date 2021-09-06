@@ -137,4 +137,7 @@ models_neworder = [1:ntrl, ...           % WA
 models_trialwise_beta = structfun(@(x) x(models_neworder, models_neworder), models_trialwise, 'UniformOutput', 0);
 models_trialwise_beta_RDMs = constructModelRDMs(models_trialwise_beta, ds_models);
 figureRDMs(models_trialwise_beta_RDMs, ds_models);
+% output models
+fout = fullfile(vdir, 'RSA_AudioVisAssos1word_models-design.mat');
+save(fout);
 %% ---------------------------

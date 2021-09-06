@@ -150,7 +150,8 @@ if $isCopyMaskRSA;then
       else
         froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
       fi
-      3dcopy $froi $tvrRSA/${thisroi}.nii
+      3dcopy $froi $tvrRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+      rm -r $tvrRSA/*-*.nii                    # remove any NIFTI files with a '-' in name
     done
     # copy masks for searchlight RSA
     if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
@@ -161,7 +162,8 @@ if $isCopyMaskRSA;then
       else
         froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
       fi
-      3dcopy $froi $tvsRSA/${thisroi}.nii
+      3dcopy $froi $tvsRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+      rm -r $tvsRSA/*-*.nii                    # remove any NIFTI files with a '-' in name
     done
     # re-assign IFS to read subjects otherwise it will cause an error in file path
     IFS=$OLDIFS
