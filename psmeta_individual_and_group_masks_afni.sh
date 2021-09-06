@@ -2,12 +2,12 @@
 ## ---------------------------
 ## [script name] psmeta_individual_and_group_masks.sh
 ##
-## SCRIPT to ...
+## SCRIPT to create individual and group masks, such as gray matter mask, EPI-constrained GM, multiple ROIs.
 ##
 ## By Shuai Wang, [date] 2021-01-20
 ##
 ## ---------------------------
-## Notes:
+## Notes: 
 ##
 ##
 ## ---------------------------
@@ -34,7 +34,7 @@ ddir="$mdir/AudioVisAsso"              # experiment Data folder (BIDS put into f
 pdir="$ddir/derivatives/fmriprep"      # fMRIPrep output folder
 adir="$ddir/derivatives/afni"          # AFNI output folder
 kdir="$ddir/derivatives/masks"         # masks folder
-vdir="$ddir/deritatives/multivariate"  # MVPA/RSA folder
+vdir="$ddir/derivatives/multivariate"  # MVPA/RSA folder
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
