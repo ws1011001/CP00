@@ -56,9 +56,9 @@ for i = 1:n
   ds_working.analysisName = sid;   % original subject ID
   ds_working.subjectNames = subj;  % subject ID (in a cell) without any '-'
   ds_working.rootPath     = fullfile(vdir, sid, 'tvrRSA');  % Trial-wise Volume-based ROIs-only RSA    
-  ds_working.maskPath     = fullfile(ds_common.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
-  if ~exist(fullfile(ds_common.rootPath, 'SWAP'), 'dir')
-    mkdir(fullfile(ds_common.rootPath, 'SWAP'));
+  ds_working.maskPath     = fullfile(ds_working.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
+  if ~exist(fullfile(ds_working.rootPath, 'SWAP'), 'dir')
+    mkdir(fullfile(ds_working.rootPath, 'SWAP'));
   end
   % prepare fMRI data
   bdir = fullfile(vdir, sid, 'betas_afni');  % betas folder
@@ -81,5 +81,4 @@ for i = 1:n
   save(fout, 'ds_working', 'betas*');
   clear betas* data_*
 end
-
 %% ---------------------------

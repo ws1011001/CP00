@@ -119,7 +119,7 @@ for i = 1:length(models_names)
 end
 % RSA settings
 ds_models.rootPath       = vdir;
-ds_models.analysisName   = 'RSA_AudioVisAssos1word';
+ds_models.analysisName   = 'RSA_AudioVisAssos1word_WAPAWVPV';
 %ds_models.conditionLabels = repelem(conditions, ntrl);
 %ds_models.conditionColours = [repmat([1 0.5 0], ntrl, 1); repmat([1 0 0], ntrl, 1); repmat([0 1 0], ntrl, 1); repmat([0 0.5 1], ntrl, 1)];
 ds_models.displayFigures = false;
@@ -128,4 +128,13 @@ ds_models.saveFiguresJpg = true;
 models_trialwise_RDMs = constructModelRDMs(models_trialwise, ds_models);
 figureRDMs(models_trialwise_RDMs, ds_models);
 %MDSConditions(models_trialwise_RDMs, ds_models, struct('alternativeConditionLabels', cell(ntrl*ncon, 1)));
+% reorder the models to be used in RSA : new order of conditions is WA WV PA PV
+ds_models.analysisName   = 'RSA_AudioVisAssos1word_WAWVPAPV';
+models_neworder = [1:ntrl, ...           % WA
+                   ntrl*2+1:ntrl*3, ...  % WV
+                   ntrl+1:ntrl*2, ...    % PA
+                   ntrl*3+1:ntrl*4];     % PV
+models_trialwise_beta = structfun(@(x) x(models_neworder, models_neworder), models_trialwise, 'UniformOutput', 0);
+models_trialwise_beta_RDMs = constructModelRDMs(models_trialwise_beta, ds_models);
+figureRDMs(models_trialwise_beta_RDMs, ds_models);
 %% ---------------------------
