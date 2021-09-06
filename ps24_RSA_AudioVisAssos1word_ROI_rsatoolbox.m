@@ -73,7 +73,7 @@ for i = 1:n
   % calculate RDMs
   data_masked_betas = fMRIDataMasking(data_betas, data_masks, betas, ds_working);
   data_RDMs = constructRDMs(data_masked_betas, betas, ds_working);
-  % output figures of RDM and MDS  
+  % output figures of RDM 
   for iROI = 1:nROI
     figureRDMs(data_RDMs(iROI), ds_working, struct('fileName', sprintf('RDM_mask-%s', ROIs{iROI})));   
   end
