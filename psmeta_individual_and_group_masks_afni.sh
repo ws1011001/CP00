@@ -143,6 +143,7 @@ if $isCopyMaskRSA;then
     IFS=','      # delimiter of CSV
     # copy masks for ROI-based RSA
     if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
+    rm -r $tvrRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvr | while read thisroi fixed;do
       echo -e "Copy mask $thisroi to ROI-based RSA for subject $subj ......"
       if [ "${thisroi::1}" = 'i' ];then
@@ -151,10 +152,10 @@ if $isCopyMaskRSA;then
         froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
       fi
       3dcopy $froi $tvrRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
-      rm -r $tvrRSA/*-*.nii                    # remove any NIFTI files with a '-' in name
     done
     # copy masks for searchlight RSA
     if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
+    rm -r $tvsRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvs | while read thisroi fixed;do
       echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
       if [ "${thisroi::1}" = 'i' ];then
@@ -163,7 +164,6 @@ if $isCopyMaskRSA;then
         froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
       fi
       3dcopy $froi $tvsRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
-      rm -r $tvsRSA/*-*.nii                    # remove any NIFTI files with a '-' in name
     done
     # re-assign IFS to read subjects otherwise it will cause an error in file path
     IFS=$OLDIFS
