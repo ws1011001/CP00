@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH -J CP00_tvrRSA
+#SBATCH -J CP00_tvsRSA
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
 #SBATCH -t 3-12
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128gb
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=192gb
 #SBATCH -o ./run_slurm.log/MATLAB_%j.out
 #SBATCH -e ./run_slurm.log/MATLAB_%j.err
 #SBATCH --mail-type=ALL
@@ -21,7 +21,7 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 # set an array of scripts
 scripts_matlab[0]='ps24_RSA_AudioVisAssos1word_ROI_rsatoolbox.m'
 scripts_matlab[1]='ps25_RSA_AudioVisAssos1word_searchlight_rsatoolbox.m'
-script_id=0
+script_id=1
 
 # run MATLAB script
 script_run=${scripts_matlab[$script_id]}
