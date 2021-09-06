@@ -140,7 +140,10 @@ if $isCopyMaskRSA;then
     tvrRSA="$vdir/$subj/tvrRSA/masks"  # masks for ROI-base RSA
     tvsRSA="$vdir/$subj/tvsRSA/masks"  # masks for searchlight RSA
     # copy masks for ROI-based RSA
-    if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
+    if [ ! -d $tvrRSA ];then 
+     # mkdir -p $tvrRSA
+     echo -e "$tvrRSA is no exist!"
+    fi
     sed 1d $ftvr | while read thisroi fixed;do
       echo -e "Copy mask $thisroi to ROI-based RSA for subject $subj ......"
       if [ "${thisroi::1}" = 'i' ];then
@@ -148,19 +151,19 @@ if $isCopyMaskRSA;then
       else
         froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
       fi
-      3dcopy $froi $tvrRSA/${thisroi}.nii
+#      3dcopy $froi $tvrRSA/${thisroi}.nii
     done
-    # copy masks for searchlight RSA
-    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
-    sed 1d $ftvs | while read thisroi fixed;do
-      echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
-      if [ "${thisroi::1}" = 'i' ];then
-        froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
-      else
-        froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
-      fi
-      3dcopy $froi $tvsRSA/${thisroi}.nii
-    done
+#    # copy masks for searchlight RSA
+#    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
+#    sed 1d $ftvs | while read thisroi fixed;do
+#      echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
+#      if [ "${thisroi::1}" = 'i' ];then
+#        froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
+#      else
+#        froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
+#      fi
+#      3dcopy $froi $tvsRSA/${thisroi}.nii
+#    done
   done
 fi
 ## ---------------------------
