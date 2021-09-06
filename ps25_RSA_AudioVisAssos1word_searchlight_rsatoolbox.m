@@ -41,11 +41,9 @@ ds_common.distance          = 'Correlation';
 ds_common.RoIColor          = [0 0 1];
 ds_common.displayFigures    = false;
 ds_common.saveFiguresJpg    = true; 
-%% ---------------------------
-
-%% RDM models
-% trial-wise RDM models
-
+% load RDM models
+frdm = fullfile(vdir, 'RSA_AudioVisAssos1word_WAWVPAPV_Models.mat');
+load(frdm);  % Models
 %% ---------------------------
 
 %% perform searchlight RSA
@@ -59,9 +57,9 @@ for i=1:n
   ds_working.analysisName = sid;   % original subject ID
   ds_working.subjectNames = subj;  % subject ID (in a cell) without any '-'
   ds_working.rootPath     = fullfile(vdir, sid, 'tvsRSA');  % Trial-wise Volume-based searchlight RSA    
-  ds_working.maskPath     = fullfile(ds_common.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
-  if ~exist(fullfile(ds_common.rootPath, 'SWAP'), 'dir')
-    mkdir(fullfile(ds_common.rootPath, 'SWAP'));
+  ds_working.maskPath     = fullfile(ds_working.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
+  if ~exist(fullfile(ds_working.rootPath, 'SWAP'), 'dir')
+    mkdir(fullfile(ds_working.rootPath, 'SWAP'));
   end  
   % prepare fMRI data
   bdir = fullfile(vdir, sid, 'betas_afni');  % betas folder
@@ -82,13 +80,12 @@ end
 % searchlight one subject at a time
 for j = 1:n
   sid = subjects{j};               % original subject ID
-  subj = {strrep(sid, '-', '_')};  % replace '-' by '_' 
   fprintf('Perform trial-wise volume-based searchlight RSA for subject: %s ......\n', sid)  
   % load up working data
   fout = fullfile(ds_working.rootPath, 'SWAP', sprintf('%s_tvsRSA_working_data.mat', sid));
   load(filename);
   % searchlight RSA
-  fMRISingleSearchlight(data_betas, data_masks, RDMs_models{i}, betas, ds_working, 0);  % 0: do not save voxel-wise RDMs  
+  fMRISingleSearchlight(data_betas, data_masks, Models, betas, ds_working, 0);  % 0: do not save voxel-wise RDMs  
   clear betas* data_*
   fprintf('Finished the trial-wise volume-based searchlight RSA for subject: %s.\n', sid) 
 end
