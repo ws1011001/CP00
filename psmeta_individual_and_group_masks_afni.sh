@@ -53,7 +53,7 @@ isCopyMaskRSA=true
 echo -e "========== START JOB at $(date) =========="
 
 ## create masks for each subject
-if $isCreateGMind
+if $isCreateGMind;then
   for subj in ${subjects[@]};do
     gdir="$pdir/$subj/anat"  # individual folder that contains anatomical segments
     sdir="$kdir/$subj"       # individual masks folder
@@ -94,7 +94,7 @@ fi
 ## ---------------------------
 
 ## create group-averaged masks
-if $isCreateGMgrp
+if $isCreateGMgrp;then
   if [ ! -d "$kdir/group" ];then
     mkdir -p $kdir/group
   fi
@@ -131,7 +131,7 @@ fi
 ## ---------------------------
 
 ## copy individual and group masks for RSA
-if $isCopyMaskRSA 
+if $isCopyMaskRSA;then 
   ftvr="$vdir/group_masks_labels-ROI.csv"
   ftvs="$vdir/group_masks_labels-searchlight.csv"
   IFS=,
