@@ -38,8 +38,9 @@ n = length(subjects);
 ROIs = readtable(fullfile(vdir, 'group_masks_labels-ROI.csv'));
 ROIs = ROIs.label;
 nROI = length(ROIs);
+ROIs = cellfun(@(x) strrep(x, '-', '_'), ROIs, 'UniformOutput', 0);  % make sure ROI labels dont have any '-'
 % setup RSA common parameters
-ds_common.maskNames      = ROIs;  % ROI labels without any '-'
+ds_common.maskNames      = ROIs;  
 ds_common.distance       = 'Correlation';
 ds_common.RoIColor       = [0 0 1];
 ds_common.displayFigures = false;
