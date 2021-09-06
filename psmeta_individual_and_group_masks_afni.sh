@@ -136,11 +136,11 @@ if $isCopyMaskRSA;then
   ftvs="$vdir/group_masks_labels-searchlight.csv"
   IFS=,
   for subj in ${subjects[@]};do
-    idir="$kdir/$subj"
+    idir="$kdir/$subj"                 # individual masks folder
     tvrRSA="$vdir/$subj/tvrRSA/masks"  # masks for ROI-base RSA
     tvsRSA="$vdir/$subj/tvsRSA/masks"  # masks for searchlight RSA
     # copy masks for ROI-based RSA
-    if [ ! -d "$tvrRSA" ];then mkdir -p $tvrRSA;fi
+    if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
     sed 1d $ftvr | while read thisroi fixed;do
       echo -e "Copy mask $thisroi to ROI-based RSA for subject $subj ......"
       if [ "${thisroi::1}" = 'i' ];then
@@ -151,7 +151,7 @@ if $isCopyMaskRSA;then
       3dcopy $froi $tvrRSA/${thisroi}.nii
     done
     # copy masks for searchlight RSA
-    if [ ! -d "$tvsRSA" ];then mkdir -p $tvsRSA;fi
+    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
     sed 1d $ftvs | while read thisroi fixed;do
       echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
       if [ "${thisroi::1}" = 'i' ];then
