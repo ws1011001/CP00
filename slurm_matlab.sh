@@ -6,7 +6,7 @@
 #SBATCH -A b222
 #SBATCH -t 3-12
 #SBATCH --cpus-per-task=32
-#SBATCH --mem=192gb
+#SBATCH --mem=180gb
 #SBATCH -o ./run_slurm.log/MATLAB_%j.out
 #SBATCH -e ./run_slurm.log/MATLAB_%j.err
 #SBATCH --mail-type=ALL
