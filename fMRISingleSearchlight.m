@@ -99,13 +99,10 @@ if ~isfield(userOptions, 'voxelSize'), error('fMRISearchlight:NoVoxelSize', 'vox
 % The analysisName will be used to label the files which are eventually saved.
 mapsFilename    = [userOptions.analysisName, '_searchlight-maps_mask-', userOptions.maskNames{1}, '.mat'];
 RDMsFilename    = [userOptions.analysisName, '_searchlight-RDMs_mask-', userOptions.maskNames{1}, '.mat'];
-DetailsFilename = [userOptions.analysisName, '_searchlight-details_mask-', userOptions.maskNames{1}, '.mat'];
 
 % searchlight parameters
-nSubjects = numel(userOptions.subjectNames);  % should be only one subject
-nMasks    = numel(userOptions.maskNames);     % should be only one mask
-searchlightOptions.monitor = false;
-searchlightOptions.fisher = true;
+searchlightOptions.fisher   = true;      % true: the similarity value would be Fisher-transformed value
+searchlightOptions.saveRDMs = saveRDMs;  % false: do not save voxel-wise searchlight RDMs
 
 % parameters for structural images
 warpFlags.interp   = 1;
@@ -130,8 +127,9 @@ else
 end
 
 % beta parameters
-searchlightOptions.nSessions   = size(betas, 1);  % number of sessions; should be 1
-searchlightOptions.nConditions = size(betas, 2);  % number of conditions; it is number of trials if using trial-wise betas
+searchlightOptions.nSessions       = size(betas, 1);  % number of sessions; should be 1
+searchlightOptions.nConditions     = size(betas, 2);  % number of conditions; it is number of trials if using trial-wise betas
+searchlightOptions.averageSessions = false;           % only one session
 readFile = replaceWildcards(userOptions.betaPath, '[[subjectName]]', subject, '[[betaIdentifier]]', betas(1,1).identifier);
 subjectMetadataStruct = spm_vol(readFile);
 %		subjectMetadataStruct = spawnSPMStruct;
@@ -141,9 +139,10 @@ maskName = userOptions.maskNames{1};
 mask     = binaryMasks_nS.(subject).(maskName);
 
 % do the searchlight! ZOMG, this takes a while...
-singleSubjectVols                       = fullBrainVols.(subject);  % full brain data volume to perform searchlight on
-[rs, ps, ns, searchlightRDMs.(subject)] = searchlightMapping_fMRI(singleSubjectVols, models, mask, userOptions, searchlightOptions); % ps are from linear correlation p-values, and so aren't too useful here.
-nMaps_nS.(subject).(maskName)           = ns(:, :, :); % How many voxels contributed to the searchlight centred at each point. (Those with n==1 are excluded because the results aren't multivariate.)
+singleSubjectVols                        = fullBrainVols.(subject);  % full brain data volume to perform searchlight on
+[rs, ps, bestModel, ns, searchlightRDMs] = searchlightMapping_fMRI(singleSubjectVols, models, mask, userOptions, searchlightOptions); % ps are from linear correlation p-values, and so aren't too useful here.
+bMaps_nS.(subject).(maskName)            = bestModel(:, :, :);  % best model indices as a map
+nMaps_nS.(subject).(maskName)            = ns(:, :, :); % How many voxels contributed to the searchlight centred at each point. (Those with n==1 are excluded because the results aren't multivariate.)
 
 % report the time spent
 t = toc;
@@ -173,7 +172,7 @@ for modelNumber = 1:numel(models)
   pMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-pMap_model-%s_mask-%s.nii', userOptions.analysisName, modelLabel, maskName));
   pMapMetadataStruct_nS.descrip = 'P-map';
   pMapMetadataStruct_nS.dim     = size(pMaps_nS.(modelName).(subject).(maskName));        
-  spm_write_vol(pMapMetadataStruct_nS, pMaps_nS.(modelName).(subject).(maskName));
+  spm_write_vol(pMapMetadataStruct_nS, pMaps_nS.(modelName).(subject).(maskName));  
 
   % not very useful ...
   if isfield(userOptions, 'structuralsPath')
@@ -185,7 +184,7 @@ for modelNumber = 1:numel(models)
     spm_write_vol(maskMetadataStruct_nS, mask);
     % Load in common space warp definition
     %wildFiles = replaceWildcards(fullfile(userOptions.structuralsPath, ['*' subject '*_seg_sn.mat']), '[[subjectName]]', subject);
-    wildFiles = replaceWildcards(fullfile(userOptions.structuralsPath, ['*_seg_sn.mat']), '[[subjectName]]', subject);
+    wildFiles = replaceWildcards(fullfile(userOptions.structuralsPath, '*_seg_sn.mat'), '[[subjectName]]', subject);
     matchingFiles = dir(wildFiles);
     warpDefFilename = replaceWildcards(fullfile(userOptions.structuralsPath, matchingFiles(1).name), '[[subjectName]]', subject);
     % Warp and write common space r-maps to disk
@@ -237,6 +236,20 @@ for modelNumber = 1:numel(models)
 end
 clear fullBrainVolumes rs ps ns;
 
+% write the b-map (best model indices) to a file
+bMapMetadataStruct_nS         = subjectMetadataStruct;
+bMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-bMap_model-best_mask-%s.nii', userOptions.analysisName, maskName));
+bMapMetadataStruct_nS.descrip = 'B-map_bestmodel-index';
+bMapMetadataStruct_nS.dim     = size(bMaps_nS.(subject).(maskName));        
+spm_write_vol(bMapMetadataStruct_nS, bMaps_nS.(subject).(maskName));
+
+% write the n-map to a file
+nMapMetadataStruct_nS         = subjectMetadataStruct;
+nMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-nMap_mask-%s.nii', userOptions.analysisName, maskName));
+nMapMetadataStruct_nS.descrip = 'N-map';
+nMapMetadataStruct_nS.dim     = size(nMaps_nS.(subject).(maskName));        
+spm_write_vol(nMapMetadataStruct_nS, nMaps_nS.(subject).(maskName));
+
 % save voxle-wise RDMs which might be huge!
 if saveRDMs
   frdm = fullfile(userOptions.rootPath, 'RDMs', RDMsFilename);
@@ -276,16 +289,11 @@ end
 cd(returnHere); % And go back to where you started
 %% ---------------------------
 
-end%function
+end
 
 
-%%%%%%%%%%%%%%%%%%%
-%% Sub functions %%
-%%%%%%%%%%%%%%%%%%%
-
-
-function [smm_rs, smm_ps, n, searchlightRDMs] = searchlightMapping_fMRI(fullBrainVolumes, models, mask, userOptions, localOptions)
-
+%% core (sub)function
+function [smm_rs, smm_ps, smm_bestModel, n, searchlightRDMs] = searchlightMapping_fMRI(fullBrainVolumes, models, mask, userOptions, localOptions)
 	% ARGUMENTS
 	% fullBrainVolumes	A voxel x condition x session matrix of activity
 	% 				patterns.
@@ -324,163 +332,144 @@ function [smm_rs, smm_ps, n, searchlightRDMs] = searchlightMapping_fMRI(fullBrai
 
 	localOptions = setIfUnset(localOptions, 'averageSessions', true);
 
-	%% Figure out whether to average over sessions or not
+	% figure out whether to average over sessions or not
 	if localOptions.averageSessions
-		for sessionNumber = 1:size(fullBrainVolumes,3)
+    for sessionNumber = 1:size(fullBrainVolumes, 3)
 			thisSessionId = ['s' num2str(sessionNumber)];
-			t_patsPerSession.(thisSessionId) = fullBrainVolumes(:,:,sessionNumber)';
-		end%for:sessionNumber
+			t_patsPerSession.(thisSessionId) = fullBrainVolumes(:, :, sessionNumber)';
+    end
 	else
 		justThisSession = 1;
-		t_pats = fullBrainVolumes(:,:,justThisSession)';
-		
-		fprintf(['\nYou have selected not to average over sessions.\n         Only session number ' num2str(justThisSession) ' will be used.\n']);
-		
-	end%if
+		t_pats = fullBrainVolumes(:, :, justThisSession)';				
+  end
 
-	%% Get parameters
-	voxSize_mm = userOptions.voxelSize;
+	% get searchlight parameters
+  nConditions       = size(fullBrainVolumes, 2);
+	voxSize_mm        = userOptions.voxelSize;
 	searchlightRad_mm = userOptions.searchlightRadius;
-	monitor = localOptions.monitor;
-	nConditions = size(fullBrainVolumes, 2);
-	
 	clear fullBrainVolumes;
 
-	% Prepare models
+	% prepare models
 	modelRDMs_ltv = permute(unwrapRDMs(vectorizeRDMs(models)), [3 2 1]);
 
-	% Prepare masks
+	% prepare masks
 	mask(isnan(mask)) = 0; % Just in case!
-	if ndims(mask)==3
-		inputDataMask=logical(mask);
-		mappingMask_request=logical(mask);
+	if ndims(mask) == 3
+		inputDataMask = logical(mask);
+		mappingMask_request = logical(mask);
 	else
-		inputDataMask=logical(mask(:,:,:,1));
-		mappingMask_request=logical(mask(:,:,:,2));
+		inputDataMask = logical(mask(:, :, :, 1));
+		mappingMask_request = logical(mask(:, :, :, 2));
 	end
 
 	% Check to see if there's more data than mask...
 	if localOptions.averageSessions
-		for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
+    for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
 			thisSessionId = ['s' num2str(sessionNumber)];
 			t_patsPerSession.(thisSessionId) = t_patsPerSession.(thisSessionId)(:, inputDataMask(:));
-		end%for:sessionNumber
-	else
-		if (size(t_pats,2)>sum(inputDataMask(:)))
-			t_pats=t_pats(:,inputDataMask(:));
-		end%if
-	end%if
+    end
+  else
+    if (size(t_pats, 2) > sum(inputDataMask(:)))
+			t_pats = t_pats(:, inputDataMask(:));
+    end
+  end
 
 	% Other data
-	volSize_vox=size(inputDataMask);
-	nModelRDMs=size(modelRDMs_ltv,1);
-	rad_vox=searchlightRad_mm./voxSize_mm;
-	minMargin_vox=floor(rad_vox);
+	volSize_vox   = size(inputDataMask);
+	nModelRDMs    = size(modelRDMs_ltv,1);
+	rad_vox       = searchlightRad_mm ./ voxSize_mm;
+	minMargin_vox = floor(rad_vox);
 
-
-	%% create spherical multivariate searchlight
-	[x,y,z]=meshgrid(-minMargin_vox(1):minMargin_vox(1),-minMargin_vox(2):minMargin_vox(2),-minMargin_vox(3):minMargin_vox(3));
-	sphere=((x*voxSize_mm(1)).^2+(y*voxSize_mm(2)).^2+(z*voxSize_mm(3)).^2)<=(searchlightRad_mm^2);  % volume with sphere voxels marked 1 and the outside 0
-	sphereSize_vox=[size(sphere),ones(1,3-ndims(sphere))]; % enforce 3D (matlab stupidly autosqueezes trailing singleton dimensions to 2D, try: ndims(ones(1,1,1)). )
-
-	if monitor, figure(50); clf; showVoxObj(sphere); end % show searchlight in 3D
+	% create spherical multivariate searchlight
+	[x, y, z] = meshgrid(-minMargin_vox(1):minMargin_vox(1), -minMargin_vox(2):minMargin_vox(2), -minMargin_vox(3):minMargin_vox(3));
+	sphere = ((x * voxSize_mm(1)) .^ 2 + (y * voxSize_mm(2)) .^ 2 + (z * voxSize_mm(3)) .^ 2) <= (searchlightRad_mm ^ 2);  % volume with sphere voxels marked 1 and the outside 0
+	sphereSize_vox = [size(sphere), ones(1, 3 - ndims(sphere))]; % enforce 3D (matlab stupidly autosqueezes trailing singleton dimensions to 2D, try: ndims(ones(1,1,1)). )
 
 	% compute center-relative sphere SUBindices
-	[sphereSUBx,sphereSUBy,sphereSUBz]=ind2sub(sphereSize_vox,find(sphere)); % (SUB)indices pointing to sphere voxels
-	sphereSUBs=[sphereSUBx,sphereSUBy,sphereSUBz];
-	ctrSUB=sphereSize_vox/2+[.5 .5 .5]; % (c)en(t)e(r) position (sphere necessarily has odd number of voxels in each dimension)
-	ctrRelSphereSUBs=sphereSUBs-ones(size(sphereSUBs,1),1)*ctrSUB; % (c)en(t)e(r)-relative sphere-voxel (SUB)indices
+	[sphereSUBx, sphereSUBy, sphereSUBz] = ind2sub(sphereSize_vox, find(sphere));  % (SUB)indices pointing to sphere voxels
+	sphereSUBs = [sphereSUBx, sphereSUBy, sphereSUBz];
+	ctrSUB = sphereSize_vox / 2 + [.5 .5 .5];  % (c)en(t)e(r) position (sphere necessarily has odd number of voxels in each dimension)
+	ctrRelSphereSUBs = sphereSUBs - ones(size(sphereSUBs, 1), 1) * ctrSUB;  % (c)en(t)e(r)-relative sphere-voxel (SUB)indices
+	%nSearchlightVox = size(sphereSUBs, 1);  % number of voxels per kernel
 
-	nSearchlightVox=size(sphereSUBs,1);
 
-
-	%% define masks
-	validInputDataMask=inputDataMask;
-
+	% define masks
+	validInputDataMask = inputDataMask;
 	if localOptions.averageSessions
-		for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
+    for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
 			thisSessionId = ['s' num2str(sessionNumber)];
-			sumAbsY=sum(abs(t_patsPerSession.(thisSessionId)),1);
-		end%for:sessionNumber
+			sumAbsY = sum(abs(t_patsPerSession.(thisSessionId)), 1);
+    end
 	else
-		sumAbsY=sum(abs(t_pats),1);
-	end%if
+		sumAbsY = sum(abs(t_pats), 1);
+  end
+	validYspace_logical = (sumAbsY ~= 0) & ~isnan(sumAbsY); 
+  clear sumAbsY;
+	validInputDataMask(inputDataMask) = validYspace_logical;  % define valid-input-data brain mask
 
-	validYspace_logical= (sumAbsY~=0) & ~isnan(sumAbsY); clear sumAbsY;
-	validInputDataMask(inputDataMask)=validYspace_logical; % define valid-input-data brain mask
-
+  % reduce t_pats to the valid-input-data brain mask
 	if localOptions.averageSessions
-		for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
+    for sessionNumber = 1:numel(fieldnames(t_patsPerSession))
 			thisSessionId = ['s' num2str(sessionNumber)];
-			t_patsPerSession.(thisSessionId) = t_patsPerSession.(thisSessionId)(:,validYspace_logical);
-			nVox_validInputData=size(t_patsPerSession.(thisSessionId),2);
-		end%for:sessionNumber
+			t_patsPerSession.(thisSessionId) = t_patsPerSession.(thisSessionId)(:, validYspace_logical);
+			nVox_validInputData = size(t_patsPerSession.(thisSessionId), 2);
+    end
 	else
-		t_pats=t_pats(:,validYspace_logical); % reduce t_pats to the valid-input-data brain mask
-		nVox_validInputData=size(t_pats,2);
-	end%if
+		t_pats = t_pats(:, validYspace_logical);  
+		nVox_validInputData = size(t_pats, 2);
+  end
 
-	mappingMask_request_INDs=find(mappingMask_request);
-	nVox_mappingMask_request=length(mappingMask_request_INDs);
+	mappingMask_request_INDs = find(mappingMask_request);
+	nVox_mappingMask_request = length(mappingMask_request_INDs);
 
-	if monitor
-		disp([num2str(round(nVox_mappingMask_request/prod(volSize_vox)*10000)/100),'% of the cuboid volume requested to be mapped.']);
-		disp([num2str(round(nVox_validInputData/prod(volSize_vox)*10000)/100),'% of the cuboid volume to be used as input data.']);
-		disp([num2str(nVox_validInputData),' of ',num2str(sum(inputDataMask(:))),' declared input-data voxels included in the analysis.']);
-	end
+  % report the voxles that included in the searchlight
+  fprintf('%s%% of the cuboid volume requested to be mapped.\n', num2str(round(nVox_mappingMask_request / prod(volSize_vox) * 10000) / 100));
+  fprintf('%s%% of the cuboid volume to be used as input data.\n', num2str(round(nVox_validInputData / prod(volSize_vox) * 10000) / 100));
+  fprintf('%s of %s declared input-data voxels included in the analysis.\n', num2str(nVox_validInputData), num2str(sum(inputDataMask(:))));
 
-	volIND2YspaceIND=nan(volSize_vox);
-	volIND2YspaceIND(validInputDataMask)=1:nVox_validInputData;
+	volIND2YspaceIND = nan(volSize_vox);
+	volIND2YspaceIND(validInputDataMask) = 1:nVox_validInputData;
 
 	% n voxels contributing to infobased t at each location
-	n=nan(volSize_vox);
+	n = nan(volSize_vox);
 
-	%% similarity-graph-map the volume with the searchlight
-	smm_bestModel=nan(volSize_vox);
-	smm_ps=nan([volSize_vox,nModelRDMs]);
-	smm_rs=nan([volSize_vox,nModelRDMs]);
-	searchlightRDMs = nan([nConditions, nConditions, volSize_vox]);
-
-	if monitor
-		h_progressMonitor=progressMonitor(1, nVox_mappingMask_request,  'Similarity-graph-mapping...');
-	end
+	% similarity-graph-map the volume with the searchlight
+	smm_bestModel = nan(volSize_vox);
+	smm_ps = nan([volSize_vox, nModelRDMs]);
+	smm_rs = nan([volSize_vox, nModelRDMs]);
+  
+  if localOptions.saveRDMs
+    searchlightRDMs = nan([nConditions, nConditions, volSize_vox]);  % Be careful, it would be too huge!
+  end
 
 	%% THE BIG LOOP! %%
 
-	for cMappingVoxI=1:nVox_mappingMask_request
+	for cMappingVoxI = 1:nVox_mappingMask_request
 		
-		if mod(cMappingVoxI,1000)==0
-			if monitor
-				progressMonitor(cMappingVoxI, nVox_mappingMask_request, 'Searchlight mapping Mahalanobis distance...', h_progressMonitor);
-				%                 cMappingVoxI/nVox_mappingMask_request
-			else
-				fprintf('.');
-			end%if
-		end%if
+		if mod(cMappingVoxI, 1000) == 0; fprintf('.'); end  % show progress every 1000 voxles
 
-		[x y z]=ind2sub(volSize_vox,mappingMask_request_INDs(cMappingVoxI));
+		[x, y, z] = ind2sub(volSize_vox, mappingMask_request_INDs(cMappingVoxI));  % the subindices of this voxel
 
 		% compute (sub)indices of (vox)els (c)urrently (ill)uminated by the spherical searchlight
-		cIllVoxSUBs=repmat([x,y,z],[size(ctrRelSphereSUBs,1) 1])+ctrRelSphereSUBs;
+		cIllVoxSUBs = repmat([x, y, z], [size(ctrRelSphereSUBs, 1) 1]) + ctrRelSphereSUBs;
 
 		% exclude out-of-volume voxels
-		outOfVolIs=(cIllVoxSUBs(:,1)<1 | cIllVoxSUBs(:,1)>volSize_vox(1)|...
-					cIllVoxSUBs(:,2)<1 | cIllVoxSUBs(:,2)>volSize_vox(2)|...
-					cIllVoxSUBs(:,3)<1 | cIllVoxSUBs(:,3)>volSize_vox(3));
-
-		cIllVoxSUBs=cIllVoxSUBs(~outOfVolIs,:);
+		outOfVolIs = (cIllVoxSUBs(:, 1) < 1 | cIllVoxSUBs(:, 1) > volSize_vox(1) | ...
+                  cIllVoxSUBs(:, 2) < 1 | cIllVoxSUBs(:, 2) > volSize_vox(2) | ...
+                  cIllVoxSUBs(:, 3) < 1 | cIllVoxSUBs(:, 3) > volSize_vox(3));
+		cIllVoxSUBs = cIllVoxSUBs(~outOfVolIs, :);
 
 		% list of (IND)ices pointing to (vox)els (c)urrently (ill)uminated by the spherical searchlight
-		cIllVox_volINDs=sub2ind(volSize_vox,cIllVoxSUBs(:,1),cIllVoxSUBs(:,2),cIllVoxSUBs(:,3));
+		cIllVox_volINDs = sub2ind(volSize_vox, cIllVoxSUBs(:, 1), cIllVoxSUBs(:, 2), cIllVoxSUBs(:, 3));
 
 		% restrict searchlight to voxels inside validDataBrainMask
-		cIllValidVox_volINDs=cIllVox_volINDs(validInputDataMask(cIllVox_volINDs));
-		cIllValidVox_YspaceINDs=volIND2YspaceIND(cIllValidVox_volINDs);
+		cIllValidVox_volINDs = cIllVox_volINDs(validInputDataMask(cIllVox_volINDs));
+		cIllValidVox_YspaceINDs = volIND2YspaceIND(cIllValidVox_volINDs);
 
 		% note how many voxels contributed to this locally multivariate stat
-		n(x,y,z)=length(cIllValidVox_YspaceINDs);
+		n(x, y, z) = length(cIllValidVox_YspaceINDs);
 		
-		if n(x,y,z) < 2, continue; end%if % This stops the function crashing if it accidentally encounters an out-of-brain floating voxel (these can occur if, for example, skull stripping fails)
+		if n(x, y, z) < 2, continue; end  % This stops the function crashing if it accidentally encounters an out-of-brain floating voxel (these can occur if, for example, skull stripping fails)
 		
 		if localOptions.averageSessions
 			searchlightRDM = zeros(localOptions.nConditions, localOptions.nConditions);
@@ -490,73 +479,41 @@ function [smm_rs, smm_ps, n, searchlightRDMs] = searchlightMapping_fMRI(fullBrai
 			end%for:sessions
 			searchlightRDM = searchlightRDM / localOptions.nSessions;
 		else
-			searchlightRDM = squareform(pdist(t_pats(:,cIllValidVox_YspaceINDs), 'correlation'));
+			searchlightRDM = squareform(pdist(t_pats(:, cIllValidVox_YspaceINDs), 'correlation'));
 		end%if
 		
 		searchlightRDM = vectorizeRDM(searchlightRDM);
 		
 		% Locally store the full brain's worth of indexed RDMs.
-		searchlightRDMs(:, :, x, y, z) = squareform(searchlightRDM);
+    if localOptions.saveRDMs
+      searchlightRDMs(:, :, x, y, z) = squareform(searchlightRDM);
+    end
 		
-		try
+    % calculate the Spearman-based similarity between neural RDM and model RDM
+    try
 			[rs, ps] = corr(searchlightRDM', modelRDMs_ltv', 'type', 'Spearman', 'rows', 'pairwise');
 		catch
 			[rs, ps] = corr(searchlightRDM', modelRDMs_ltv, 'type', 'Spearman', 'rows', 'pairwise');
-		end%try
+    end
 		
-		if localOptions.fisher
-			for i = 1:numel(rs)
+    if localOptions.fisher
+      for i = 1:numel(rs)
 				rs(i) = fisherTransform(rs(i));
-			end%for:i
-		end%if
+      end
+    end
 		
-	%	[ignore, bestModelI] = max(rs);
+    [~, bestModelI] = max(rs);
 		
-	%    smm_bestModel(x,y,z) = bestModelI;
-		smm_ps(x,y,z,:) = ps;
-		smm_rs(x,y,z,:) = rs;
+    smm_bestModel(x, y, z) = bestModelI;
+		smm_ps(x, y, z, :) = ps;
+		smm_rs(x, y, z, :) = rs;
 		
-	end%for:cMappingVoxI
+  end
 
 	%% END OF THE BIG LOOP! %%
 
-	if monitor
-		fprintf('\n');
-		close(h_progressMonitor);
-	end
+	mappingMask_actual = mappingMask_request;
+	mappingMask_actual(isnan(sum(smm_rs, 4))) = 0;
 
-	mappingMask_actual=mappingMask_request;
-	mappingMask_actual(isnan(sum(smm_rs,4)))=0;
 
-	%% visualize
-	if monitor
-		aprox_p_uncorr=0.001;
-		singleModel_p_crit=aprox_p_uncorr/nModelRDMs; % conservative assumption model proximities nonoverlapping
-
-		smm_min_p=min(smm_ps,[],4);
-		smm_significant=smm_min_p<singleModel_p_crit;
-
-		vol=map2vol(mask);
-		vol2=map2vol(mask);
-		
-		colors=[1 0 0
-				0 1 0
-				0 1 1
-				1 1 0
-				1 0 1];
-		
-		for modelRDMI=1:nModelRDMs
-			vol=addBinaryMapToVol(vol, smm_significant&(smm_bestModel==modelRDMI), colors(modelRDMI,:));
-	% 		vol2=addBinaryMapToVol(vol2, smm_bestModel==modelRDMI, colors(modelRDMI,:));
-		end
-		
-		showVol(vol);
-		
-	% 	vol2 = vol2*0.1;
-	% 	vol2(vol<1) = vol(vol<1);
-	% 	
-	% 	showVol(vol2);
-		
-	end%if
-
-end%function
+end
