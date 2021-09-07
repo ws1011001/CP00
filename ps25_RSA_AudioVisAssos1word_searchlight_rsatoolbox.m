@@ -82,7 +82,7 @@ for j = 1:n
   sid = subjects{j};               % original subject ID
   fprintf('Perform trial-wise volume-based searchlight RSA for subject: %s ......\n', sid)  
   % load up working data
-  fout = fullfile(ds_working.rootPath, 'SWAP', sprintf('%s_tvsRSA_working_data.mat', sid));
+  fout = fullfile(vdir, sid, 'tvsRSA', 'SWAP', sprintf('%s_tvsRSA_working_data.mat', sid));
   load(fout);
   % searchlight RSA
   fMRISingleSearchlight(data_betas, data_masks, Models, betas, ds_working, 0);  % 0: do not save voxel-wise RDMs  
