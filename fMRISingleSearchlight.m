@@ -440,6 +440,8 @@ function [smm_rs, smm_ps, smm_bestModel, n, searchlightRDMs] = searchlightMappin
   
   if localOptions.saveRDMs
     searchlightRDMs = nan([nConditions, nConditions, volSize_vox]);  % Be careful, it would be too huge!
+  else
+    searchlightRDMs = [];
   end
 
 	%% THE BIG LOOP! %%
