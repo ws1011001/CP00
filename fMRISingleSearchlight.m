@@ -152,8 +152,9 @@ fprintf('Finished the searchlight RSA with %s seconds.\n', num2str(ceil(t)) );
 %% output results
 for modelNumber = 1:numel(models)
   modelName  = models(modelNumber).name;
-  modelLabel = strrep(modelName, ' ', '-');  % return to the original model name to be saved as filename
-% modelName = spacesToUnderscores(models(modelNumber).name);  
+  modelName = strrep(modelName, ' ', '_');   % modelName = spacesToUnderscores(models(modelNumber).name);
+  modelLabel = strrep(modelName, '_', '-');  % return the model name to be saved as filename
+  
   gotoDir(userOptions.rootPath, 'Maps');
 
   % store results in indexed volumes
