@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J tvsMVPA
+#SBATCH -J tvrMVPA
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
@@ -14,10 +14,10 @@
 #SBATCH --mail-type=BEGIN,END
 
 # set an array of scripts
-scripts_ni[0]='ps17_MVPA_classifier_selection_nilearn.py'
-scripts_ni[1]='ps18_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
+scripts_ni[0]='ps19_MVPA_classifier_selection_nilearn.py'
+scripts_ni[1]='ps20_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
 scripts_ni[2]='ps21_MVPA_AudioVisAssos1word_searchlight_classification_nilearn.py'
-script_id=2
+script_id=1
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}

@@ -43,11 +43,13 @@ mods = ['visual', 'auditory']       # stimulus modalities
 # prepare classifiers without tuning parameters - only use linear-SVM
 clf_models = [svm.SVC(kernel = 'linear', max_iter = -1)]
 clf_tokens = ['SVClin']  # classifier abbreviations
-nmodels = len(clf_tokens)
+nmodels    = len(clf_tokens)
 # ROI-based parameters
-fs_perc = [57, 93, 171, 389, 751]  # feature selection K best: radius 4, 5, 6, 8, 10 mm
-nperm = 100                       # number of permutations
-njobs = -1                         # -1 means all CPUs
+fs_perc = [57, 93, 171, 389]               # feature selection K best: [57, 93, 171, 389, 751] = radius 4, 5, 6, 8, 10 mm
+nperm   = 1000                             # number of permutations
+pperm   = 0.01                             # the threshold p-value 
+C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
+njobs   = -1                               # -1 means all CPUs
 # read ROIs information
 froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
 rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
@@ -67,8 +69,8 @@ labs_run = labels['runs']        # 5 runs, from run1 to run5
 runs = np.unique(labs_run)       # run labels
 nrun = len(runs)                 # number of runs 
 # initialize performance tables
-facc = os.path.join(vdir, "group_%s_MVPA-PermACC_unimodal+crossmodal.csv" % task)  # performance table
-dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'Perm', 'P'])
+facc = os.path.join(vdir, "group_%s_MVPA-Perm%d_unimodal+crossmodal.csv" % (task, nperm))  # performance table
+dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
 # do MVPA for each subject
 CV = LeaveOneGroupOut()  # leave-one-run-out cross-validation
 for i in range(0, n):
@@ -96,8 +98,8 @@ for i in range(0, n):
         fbox = os.path.join(kdir, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisroi))
       mbox = load_img(fbox)
       nvox = np.sum(mbox.get_data())
-      masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer
-      betas_box = masker_box.fit_transform(betas)                                     # masked betas
+      masker_box = NiftiMasker(mask_img = mbox, standardize = False, detrend = False)  # mask transformer; no standardize for searchlight
+      betas_box = masker_box.fit_transform(betas)                                      # masked betas
       # do MVPA with each classifier
       for clf_token, clf_model in zip(clf_tokens, clf_models):
         # permutation MVPA
@@ -106,7 +108,8 @@ for i in range(0, n):
           acc, perm, pval = permutation_test_score(clf_model, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
                                                    n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
           # cross-modal MVPA
-          acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
+          perm_crs = np.array([])         # initialize permutation scores array
+          acc_crs  = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
           for j in range(0, nrun):
             thisrun = runs[j]
             # select labels for cross-modal decoding CV
@@ -120,13 +123,18 @@ for i in range(0, n):
             # carry out MVPA for this run
             jacc, jperm, jpval = permutation_test_score(clf_model, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
                                                         n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
-            acc_crs[j, 0] = jacc            # ACC of this run
-            acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
-            acc_crs[j, 2] = jpval            # p-value of this run            
+            perm_crs = np.append(perm_crs, jperm)
+            acc_crs[j, 0] = jacc                 # ACC of this run
+            acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
+            acc_crs[j, 2] = jpval                # p-value of this run
           acc_crs = np.mean(acc_crs, axis=0)  # averaged performance
-          # output ACC
-          dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, nvox, acc, np.mean(perm), pval]
-          dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, nvox, acc_crs[0], acc_crs[1], acc_crs[2]]       
+          # output ACC and perm scores
+          dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, nvox, acc, -np.sort(-perm)[C], pval, pperm]
+          dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, nvox, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
+          funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s.1D" % (subj, clf_token, nperm, imod, thisroi))
+          fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s.1D" % (subj, clf_token, nperm, imod, thisroi))
+          perm.tofile(file = funip, sep = '\n')
+          perm_crs.tofile(file = fcrsp, sep = '\n')
         else:
           # select features if the ROI is too big (not fixed)
           for iperc in fs_perc:
@@ -136,6 +144,7 @@ for i in range(0, n):
             acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
                                                      n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
             # cross-modal MVPA
+            perm_crs = np.array([])        # initialize permutation scores array
             acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
             for j in range(0, nrun):
               thisrun = runs[j]
@@ -150,13 +159,18 @@ for i in range(0, n):
               # carry out MVPA for this run
               jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
                                                           n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
-              acc_crs[j, 0] = jacc            # ACC of this run
-              acc_crs[j, 1] = np.mean(jperm)  # random ACC of this run
-              acc_crs[j, 2] = jpval            # p-value of this run            
+              perm_crs = np.append(perm_crs, jperm)
+              acc_crs[j, 0] = jacc                 # ACC of this run
+              acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
+              acc_crs[j, 2] = jpval                # p-value of this run
             acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
-            # output ACC
-            dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, np.mean(perm), pval]
-            dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2]]
+            # output ACC and perm scores
+            dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, pperm]
+            dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
+            funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+            fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+            perm.tofile(file = funip, sep = '\n')
+            perm_crs.tofile(file = fcrsp, sep = '\n')
             
   print("Finish ROI-based MVPA for subject: %s.\n" % subj) 
 # output the performance table
