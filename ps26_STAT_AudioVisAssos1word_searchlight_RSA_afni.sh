@@ -52,15 +52,13 @@ echo -e "========== START JOB at $(date) =========="
 ## group T-tests
 for roi in ${rois[@]};do
   mask="$kdir/group/group_${spac}_mask-${roi}.nii.gz"
-  for clf in ${clfs[@]};do
-    echo -e "carry out T-tests for classifier $clf within ROI $roi ......"
+  echo -e "carry out T-tests on RSA searchlight maps within ROI $roi ......"
+  for imod in ${mods[@]};do
     # stack up subjects for group analysis
-    for imod in ${mods[@]};do
-      frsa="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz"
-      3dbucket -fbuc -aglueto $frsa $vdir/sub-*/$rsas/sub-*_searchlight-rMap_model-${imod}_mask-${roi}.nii.gz
-      # T-test on one sample againest the chance level
-      3dttest++ -setA $frsa -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
-    done
+    frsa="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz"
+    3dbucket -fbuc -aglueto $frsa $vdir/sub-*/$rsas/sub-*_searchlight-rMap_model-${imod}_mask-${roi}.nii
+    # T-test on one sample againest the chance level
+    3dttest++ -setA $frsa -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
   done
 done
 ## ---------------------------
