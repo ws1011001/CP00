@@ -10,14 +10,14 @@
 #SBATCH -o ./run_slurm.log/nilearn_%j.out
 #SBATCH -e ./run_slurm.log/nilearn_%j.err
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=ws1011001@gmail.com
+#SBATCH --mail-user=shuai.wang.notes@gmail.com
 #SBATCH --mail-type=BEGIN,END
 
 # set an array of scripts
 scripts_ni[0]='ps19_MVPA_classifier_selection_nilearn.py'
 scripts_ni[1]='ps20_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
 scripts_ni[2]='ps21_MVPA_AudioVisAssos1word_searchlight_classification_nilearn.py'
-script_id=1
+script_id=0
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}
