@@ -24,8 +24,7 @@ from nilearn.input_data import NiftiMasker
 from sklearn import svm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import LeaveOneGroupOut
-from sklearn.model_selection import permutation_test_score
+from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 # setup path
