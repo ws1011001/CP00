@@ -17,7 +17,7 @@
 scripts_ni[0]='ps19_MVPA_classifier_selection_nilearn.py'
 scripts_ni[1]='ps20_MVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
 scripts_ni[2]='ps21_MVPA_AudioVisAssos1word_searchlight_classification_nilearn.py'
-script_id=0
+script_id=2
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}

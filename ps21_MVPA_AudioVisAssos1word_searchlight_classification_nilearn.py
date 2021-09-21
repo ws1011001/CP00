@@ -42,11 +42,12 @@ clf_models = [svm.SVC(kernel = 'linear', max_iter = -1)]
 clf_tokens = ['SVClin']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # searchlight parameters
-radius = 4   # number of permutations
+radius = 4   # searchlight kernel size (57 voxels)
 njobs  = -1  # -1 means all CPUs
 # read searchlight masks
 froi = os.path.join(vdir, 'group_masks_labels-searchlight.csv')  # masks info
 rois = pd.read_csv(froi).set_index('label')                      # the list of masks
+rois = rois[rois.input == 1]                                     # only inculde new ROIs
 nroi = len(rois)
 ## ---------------------------
 
