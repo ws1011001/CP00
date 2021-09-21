@@ -135,8 +135,9 @@ subjectMetadataStruct = spm_vol(readFile);
 %		subjectMetadataStruct = spawnSPMStruct;
 
 % get the mask
-maskName = userOptions.maskNames{1};
-mask     = binaryMasks_nS.(subject).(maskName);
+maskName  = userOptions.maskNames{1};
+mask      = binaryMasks_nS.(subject).(maskName);
+maskLabel = strrep(maskName, '_', '-');  % return the mask name to be used as filename
 
 % do the searchlight! ZOMG, this takes a while...
 singleSubjectVols                        = fullBrainVols.(subject);  % full brain data volume to perform searchlight on
@@ -152,8 +153,8 @@ fprintf('Finished the searchlight RSA with %s seconds.\n', num2str(ceil(t)) );
 %% output results
 for modelNumber = 1:numel(models)
   modelName  = models(modelNumber).name;
-  modelName = strrep(modelName, ' ', '_');   % modelName = spacesToUnderscores(models(modelNumber).name);
-  modelLabel = strrep(modelName, '_', '-');  % return the model name to be saved as filename
+  modelName  = strrep(modelName, ' ', '_');  % modelName = spacesToUnderscores(models(modelNumber).name);
+  modelLabel = strrep(modelName, '_', '-');  % return the model name to be used as filename
   
   gotoDir(userOptions.rootPath, 'Maps');
 
@@ -163,14 +164,14 @@ for modelNumber = 1:numel(models)
 
   % write the r-map to a file
   rMapMetadataStruct_nS         = subjectMetadataStruct;
-  rMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-rMap_model-%s_mask-%s.nii', userOptions.analysisName, modelLabel, maskName));
+  rMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-rMap_model-%s_mask-%s.nii', userOptions.analysisName, modelLabel, maskLabel));
   rMapMetadataStruct_nS.descrip = 'R-map';
   rMapMetadataStruct_nS.dim     = size(rMaps_nS.(modelName).(subject).(maskName));
   spm_write_vol(rMapMetadataStruct_nS, rMaps_nS.(modelName).(subject).(maskName));        
 
   % write the p-map to a file
   pMapMetadataStruct_nS         = subjectMetadataStruct;
-  pMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-pMap_model-%s_mask-%s.nii', userOptions.analysisName, modelLabel, maskName));
+  pMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-pMap_model-%s_mask-%s.nii', userOptions.analysisName, modelLabel, maskLabel));
   pMapMetadataStruct_nS.descrip = 'P-map';
   pMapMetadataStruct_nS.dim     = size(pMaps_nS.(modelName).(subject).(maskName));        
   spm_write_vol(pMapMetadataStruct_nS, pMaps_nS.(modelName).(subject).(maskName));  
@@ -239,14 +240,14 @@ clear fullBrainVolumes rs ps ns;
 
 % write the b-map (best model indices) to a file
 bMapMetadataStruct_nS         = subjectMetadataStruct;
-bMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-bMap_model-best_mask-%s.nii', userOptions.analysisName, maskName));
+bMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-bMap_model-best_mask-%s.nii', userOptions.analysisName, maskLabel));
 bMapMetadataStruct_nS.descrip = 'B-map_bestmodel-index';
 bMapMetadataStruct_nS.dim     = size(bMaps_nS.(subject).(maskName));        
 spm_write_vol(bMapMetadataStruct_nS, bMaps_nS.(subject).(maskName));
 
 % write the n-map to a file
 nMapMetadataStruct_nS         = subjectMetadataStruct;
-nMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-nMap_mask-%s.nii', userOptions.analysisName, maskName));
+nMapMetadataStruct_nS.fname   = fullfile(userOptions.rootPath, 'Maps', sprintf('%s_searchlight-nMap_mask-%s.nii', userOptions.analysisName, maskLabel));
 nMapMetadataStruct_nS.descrip = 'N-map';
 nMapMetadataStruct_nS.dim     = size(nMaps_nS.(subject).(maskName));        
 spm_write_vol(nMapMetadataStruct_nS, nMaps_nS.(subject).(maskName));
