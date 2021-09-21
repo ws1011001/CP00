@@ -152,7 +152,7 @@ if $isCopyMaskRSA;then
         else
           froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
         fi
-        3dcopy $froi $tvrRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+        3dcopy $froi $tvrRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
       else
         echo -e "Pass mask $thisroi since it has been copied."
       fi
@@ -168,7 +168,7 @@ if $isCopyMaskRSA;then
         else
           froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
         fi
-        3dcopy $froi $tvsRSA/${thisroi/-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+        3dcopy $froi $tvsRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
       else
         echo -e "Pass mask $thisroi since it has been copied."
       fi
