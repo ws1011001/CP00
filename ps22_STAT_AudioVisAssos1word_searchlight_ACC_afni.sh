@@ -40,7 +40,7 @@ task='task-AudioVisAssos1word'                    # task name
 spac='space-MNI152NLin2009cAsym'                  # anatomical template that used for preprocessing by fMRIPrep
 mvpc='tvsMVPC'                                    # MVPA methods
 clfs=("SVClin")                                   # classifier tokens
-rois=("bvOT-Bouhali2019")                         # anatomical defined left-vOT mask (Bouhali et al., 2019)
+rois=("bvOT-Bouhali2019-gGM")                     # anatomical defined left-vOT mask (Bouhali et al., 2019)
 mods=("visual" "auditory" "visual2" "auditory2")  # decoding modality
 base_acc=0.5                                      # the chance level i.e. 50%
 ## ---------------------------
@@ -52,14 +52,14 @@ for roi in ${rois[@]};do
   mask="$kdir/group/group_${spac}_mask-${roi}.nii.gz"
   for clf in ${clfs[@]};do
     echo -e "carry out T-tests for classifier $clf within ROI $roi ......"
-#    # calculate the average for cross-modal maps
-#    for subj in ${subjects[@]};do
-#      sdir="$vdir/$subj/$mvpc"
-#      # auditory-to-visual maps
-#      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-auditory2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-auditory2_mask-${roi}.nii.gz
-#      # visual-to-auditory maps
-#      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-visual2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-visual2_mask-${roi}.nii.gz
-#    done
+    # calculate the average for cross-modal maps
+    for subj in ${subjects[@]};do
+      sdir="$vdir/$subj/$mvpc"
+      # auditory-to-visual maps
+      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-auditory2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-auditory2_mask-${roi}.nii.gz
+      # visual-to-auditory maps
+      3dMean -prefix $sdir/${subj}_${mvpc}-${clf}_LOROCV_ACC-visual2_mask-${roi}.nii.gz $sdir/${subj}_${mvpc}-${clf}_LOROCV-run*_ACC-visual2_mask-${roi}.nii.gz
+    done
     # stack up subjects for group analysis
     for imod in ${mods[@]};do
       facc="$gdir/stats.acc_group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz"

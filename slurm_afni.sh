@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#SBATCH -J AFNI-tvsRSA
+#SBATCH -J AFNI
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
-#SBATCH -t 1-12
+#SBATCH -t 3-12
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128gb
 #SBATCH -o ./run_slurm.log/AFNI_%j.out
 #SBATCH -e ./run_slurm.log/AFNI_%j.err
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=ws1011001@gmail.com
+#SBATCH --mail-user=shuai.wang.notes@gmail.com
 #SBATCH --mail-type=BEGIN,END
 
 # setup path
@@ -33,10 +33,10 @@ scripts_afni[10]='ps14_LSS_AudioVisAssos1word_estimates_afni.sh'
 scripts_afni[11]='ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh'
 scripts_afni[12]='ps16_GLM_AudioVisAssos2words_wBIM_wPSC_wTENT_wNR24a_afni.sh'
 scripts_afni[13]='ps17_STAT_AudioVisAssos1word_factorial_afni.sh'
-scripts_afni[14]='ps22_STAT_AudioVisAssos1word_searchlight_maps_afni.sh'
+scripts_afni[14]='ps22_STAT_AudioVisAssos1word_searchlight_ACC_afni.sh'
 scripts_afni[15]='ps26_STAT_AudioVisAssos1word_searchlight_RSA_afni.sh'
 scripts_afni[16]='psmeta_individual_and_group_masks_afni.sh'
-script_id=16
+script_id=14
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
