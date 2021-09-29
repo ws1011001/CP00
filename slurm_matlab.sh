@@ -10,7 +10,7 @@
 #SBATCH -o ./run_slurm.log/MATLAB_%j.out
 #SBATCH -e ./run_slurm.log/MATLAB_%j.err
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=ws1011001@gmail.com
+#SBATCH --mail-user=shuai.wang.notes@gmail.com
 #SBATCH --mail-type=BEGIN,END
 
 # setup path
@@ -21,7 +21,7 @@ scripts='/CP00/scripts'           # scripts folder in Sy
 # set an array of scripts
 scripts_matlab[0]='ps24_RSA_AudioVisAssos1word_ROI_rsatoolbox.m'
 scripts_matlab[1]='ps25_RSA_AudioVisAssos1word_searchlight_rsatoolbox.m'
-script_id=1
+script_id=0
 
 # run MATLAB script
 script_run=${scripts_matlab[$script_id]}
