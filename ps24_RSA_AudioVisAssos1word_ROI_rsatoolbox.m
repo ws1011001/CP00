@@ -44,65 +44,72 @@ ds_common.maskNames      = ROIs;
 ds_common.distance       = 'Correlation';
 ds_common.RoIColor       = [0 0 1];
 ds_common.displayFigures = false;
-ds_common.saveFiguresJpg = true;  
+ds_common.saveFiguresJpg = true;
+% set switches
+isROIsRSA = false;
+isRDMCorr = true;
 %% ---------------------------
 
 %% perform ROI-based RSA
-for i = 1:n
-  sid = subjects{i};               % original subject ID
-  subj = {strrep(sid, '-', '_')};  % replace '-' by '_' 
-  fprintf('Perform trial-wise volume-based ROIs-only RSA for subject: %s ......\n', sid)
-  % RSA settings
-  ds_working              = ds_common;  % inherit common parameters
-  ds_working.analysisName = sid;   % original subject ID
-  ds_working.subjectNames = subj;  % subject ID (in a cell) without any '-'
-  ds_working.rootPath     = fullfile(vdir, sid, 'tvrRSA');  % Trial-wise Volume-based ROIs-only RSA    
-  ds_working.maskPath     = fullfile(ds_working.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
-  if ~exist(fullfile(ds_working.rootPath, 'SWAP'), 'dir')
-    mkdir(fullfile(ds_working.rootPath, 'SWAP'));
+if isROIsRSA
+  for i = 1:n
+    sid = subjects{i};               % original subject ID
+    subj = {strrep(sid, '-', '_')};  % replace '-' by '_' 
+    fprintf('Perform trial-wise volume-based ROIs-only RSA for subject: %s ......\n', sid)
+    % RSA settings
+    ds_working              = ds_common;  % inherit common parameters
+    ds_working.analysisName = sid;   % original subject ID
+    ds_working.subjectNames = subj;  % subject ID (in a cell) without any '-'
+    ds_working.rootPath     = fullfile(vdir, sid, 'tvrRSA');  % Trial-wise Volume-based ROIs-only RSA    
+    ds_working.maskPath     = fullfile(ds_working.rootPath, 'masks', '[[maskName]].nii');  % prepare masks  
+    if ~exist(fullfile(ds_working.rootPath, 'SWAP'), 'dir')
+      mkdir(fullfile(ds_working.rootPath, 'SWAP'));
+    end
+    % prepare fMRI data
+    bdir = fullfile(vdir, sid, 'betas_afni');  % betas folder
+    fbet = dir(fullfile(bdir, '*.nii'));       % beta files in NIFTI .nii format
+    betas_label = extractfield(fbet, 'name');  % to be used as trial labels
+    betas = cell2struct(betas_label(:), 'identifier', 2);
+    betas = betas';  % to be used as the first argument in the function fMRIDataPreparation()
+    ds_working.betaPath = fullfile(bdir, '[[betaIdentifier]]');
+    ds_working.conditionLabels = betas_label;
+    data_betas = fMRIDataPreparation(betas, ds_working);
+    data_masks = fMRIMaskPreparation(ds_working);
+    % calculate RDMs
+    data_masked_betas = fMRIDataMasking(data_betas, data_masks, betas, ds_working);
+    data_RDMs = constructRDMs(data_masked_betas, betas, ds_working);
+    % output figures of RDM 
+    for iROI = 1:nROI
+      figureRDMs(data_RDMs(iROI), ds_working, struct('fileName', sprintf('RDM_mask-%s', ROIs{iROI})));   
+    end
+    fout = fullfile(ds_working.rootPath, 'SWAP', sprintf('%s_tvrRSA_working_data.mat', sid));
+    save(fout, 'ds_working', 'betas*');
+    clear betas* data_*
   end
-  % prepare fMRI data
-  bdir = fullfile(vdir, sid, 'betas_afni');  % betas folder
-  fbet = dir(fullfile(bdir, '*.nii'));       % beta files in NIFTI .nii format
-  betas_label = extractfield(fbet, 'name');  % to be used as trial labels
-  betas = cell2struct(betas_label(:), 'identifier', 2);
-  betas = betas';  % to be used as the first argument in the function fMRIDataPreparation()
-  ds_working.betaPath = fullfile(bdir, '[[betaIdentifier]]');
-  ds_working.conditionLabels = betas_label;
-  data_betas = fMRIDataPreparation(betas, ds_working);
-  data_masks = fMRIMaskPreparation(ds_working);
-  % calculate RDMs
-  data_masked_betas = fMRIDataMasking(data_betas, data_masks, betas, ds_working);
-  data_RDMs = constructRDMs(data_masked_betas, betas, ds_working);
-  % output figures of RDM 
-  for iROI = 1:nROI
-    figureRDMs(data_RDMs(iROI), ds_working, struct('fileName', sprintf('RDM_mask-%s', ROIs{iROI})));   
-  end
-  fout = fullfile(ds_working.rootPath, 'SWAP', sprintf('%s_tvrRSA_working_data.mat', sid));
-  save(fout, 'ds_working', 'betas*');
-  clear betas* data_*
 end
 %% ---------------------------
 
 %% compare neural RDMs with model RDMs
-% load RDM models
-frdm = fullfile(vdir, 'RSA_AudioVisAssos1word_WAWVPAPV_Models.mat');
-load(frdm);  % Models
-% calculate RDM correlation matrix
-for i = 1:n
-  sid = subjects{i};               % original subject ID
-  subj = {strrep(sid, '-', '_')};  % replace '-' by '_'   
-  sdir = fullfile(vdir, sid, 'tvrRSA', 'RDMs');
-  fprintf('calculate correlation matrix of neural and model RDMs for subject: %s ......\n', sid)
-  % load up neural RDMs
-  load(fullfile(sdir, sprintf('%s_%s_RDMs.mat', sid, subj{1})));  % RDMs
-  % calculate RDM correlations  
-  RDMsCorr.M = concatenateRDMs(Models, RDMs);      % combine model RDMs and neural RDMs  
-  RDMsCorr.R = RDMCorrMat(RDMs_model_and_nerual);  % Spearman's rho
-  RDMsCorr.R(1:length(RDMsCorr.R) + 1:end) = 0;    % make the diagonal artificially zero
-  RDMsCorr.Z = atanh(RDMsCorr.R);                  % Fisher-z transform
-  % output results
-  fcor = fullfile(sdir, sprintf('%s_RDMs-correlatons.mat', sid));
-  save(fcor, 'RDMsCorr');
+if isRDMCorr
+  % load RDM models
+  frdm = fullfile(vdir, 'RSA_AudioVisAssos1word_WAWVPAPV_Models.mat');
+  load(frdm);  % Models
+  % calculate RDM correlation matrix
+  for i = 1:n
+    sid = subjects{i};               % original subject ID
+    subj = {strrep(sid, '-', '_')};  % replace '-' by '_'   
+    sdir = fullfile(vdir, sid, 'tvrRSA', 'RDMs');
+    fprintf('calculate correlation matrix of neural and model RDMs for subject: %s ......\n', sid)
+    % load up neural RDMs
+    load(fullfile(sdir, sprintf('%s_%s_RDMs.mat', sid, subj{1})));  % RDMs
+    % calculate RDM correlations  
+    RDMsCorr.M = concatenateRDMs(Models, RDMs);      % combine model RDMs and neural RDMs  
+    RDMsCorr.R = RDMCorrMat(RDMs_model_and_nerual);  % Spearman's rho
+    RDMsCorr.R(1:length(RDMsCorr.R) + 1:end) = 0;    % make the diagonal artificially zero
+    RDMsCorr.Z = atanh(RDMsCorr.R);                  % Fisher-z transform
+    % output results
+    fcor = fullfile(sdir, sprintf('%s_RDMs-correlatons.mat', sid));
+    save(fcor, 'RDMsCorr');
+  end
 end
 %% ---------------------------
