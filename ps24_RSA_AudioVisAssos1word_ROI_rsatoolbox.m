@@ -103,10 +103,10 @@ if isRDMCorr
     % load up neural RDMs
     load(fullfile(sdir, sprintf('%s_%s_RDMs.mat', sid, subj{1})));  % RDMs
     % calculate RDM correlations  
-    RDMsCorr.M = concatenateRDMs(Models, RDMs);      % combine model RDMs and neural RDMs  
-    RDMsCorr.R = RDMCorrMat(RDMs_model_and_nerual);  % Spearman's rho
-    RDMsCorr.R(1:length(RDMsCorr.R) + 1:end) = 0;    % make the diagonal artificially zero
-    RDMsCorr.Z = atanh(RDMsCorr.R);                  % Fisher-z transform
+    RDMsCorr.M = concatenateRDMs(Models, RDMs);    % combine model RDMs and neural RDMs  
+    RDMsCorr.R = RDMCorrMat(RDMsCorr.M);           % Spearman's rho
+    RDMsCorr.R(1:length(RDMsCorr.R) + 1:end) = 0;  % make the diagonal artificially zero
+    RDMsCorr.Z = atanh(RDMsCorr.R);                % Fisher-z transform
     % output results
     fcor = fullfile(sdir, sprintf('%s_RDMs-correlatons.mat', sid));
     save(fcor, 'RDMsCorr');
