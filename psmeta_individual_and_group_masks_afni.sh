@@ -43,11 +43,12 @@ regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regre
 anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
 deno='NR24a'                      # denoising strategy
 gmth=0.2                          # gray matter threshold between [0 1]
-tasks=("task-LocaVis1p75" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+#tasks=("task-LocaVis1p75" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+tasks=("task-LocaAudio2p5")
 # switches
-isCreateGMind=false
-isCreateGMgrp=false
-isCopyMaskRSA=true
+isCreateGMind=true
+isCreateGMgrp=true
+isCopyMaskRSA=false
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
