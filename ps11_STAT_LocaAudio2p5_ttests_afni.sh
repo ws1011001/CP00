@@ -40,9 +40,9 @@ spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocess
 mask="$kdir/group/group_${spac}_mask-gm-final_res-${task}.nii.gz"  # GM mask
 models=("GLM.wPSC.wNR24a")
 # index the stat volumes
-eidx=10                  # coefficients
-fidx=11                  # T values
-flab='words-consonants'  # contrast label
+eidx=(13 16 19)  # coefficients
+fidx=(14 17 20)  # T values
+flab=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -55,11 +55,15 @@ for subj in ${subjects[@]};do
   for model in ${models[@]};do
     oglm="${subj}_${task}_${model}"
     stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
-    coef="$wdir/$oglm/stats.beta_${oglm}_${flab}.nii.gz"
     # extract coef maps for group analysis
-    if [ ! -f $coef ];then
-      3dbucket -fbuc -prefix $coef "${stat}[$eidx]"
-    fi
+    i=0
+    for ilab in ${flab[@]};do
+      coef="$wdir/$oglm/stats.beta_${oglm}_${ilab}.nii.gz"
+      if [ ! -f $coef ];then
+        3dbucket -fbuc -prefix $coef "${stat}[${eidx[i]}]"
+      fi
+      let i+=1
+    done
   done
 done
 ## ---------------------------
@@ -68,13 +72,15 @@ done
 tdir="$adir/group/$task"
 if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
-  # stack up subjects for group analysis
-  gcoef="$tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz"
-  if [ ! -f $gcoef ];then
-    3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${flab}.nii.gz
-  fi
-  # T-test
-  3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz -mask $mask -exblur 4 -prefix $tdir/stats.group_${task}_${model}_${flab}
+  for ilab in ${flab[@]};do
+    # stack up subjects for group analysis
+    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
+    if [ ! -f $gcoef ];then
+      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
+    fi
+    # T-test
+    3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${ilab}
+  done  
 done
 ## ---------------------------
 
