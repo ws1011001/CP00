@@ -74,6 +74,9 @@ if $isCreateGMind;then
       # setup path
       wdir="$adir/$subj/$task"                       # the task Working folder
       oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
+      if [ ! -d $oglm ];then
+        oglm="${subj}_${task}_GLM.wPSC.w${deno}"     # the token for the Output GLM without BIM
+      fi
       # create F-based masks
       stats_afni="$wdir/$oglm/stats.${subj}_${task}+tlrc.[0]"               # AFNI statistics
       stats_mask="$sdir/${subj}_${spac}_mask-full-F_res-${task}.nii.gz"     # functional mask based on full F statistics
