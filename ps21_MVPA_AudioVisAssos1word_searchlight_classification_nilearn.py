@@ -20,6 +20,8 @@ import numpy as np
 from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from sklearn import svm
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit
 # setup path
 mdir = '/scratch/swang/agora/CP00/AudioVisAsso'   # the project main folder
