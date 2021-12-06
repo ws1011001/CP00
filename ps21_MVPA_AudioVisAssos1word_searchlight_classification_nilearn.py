@@ -37,9 +37,11 @@ mods = ['visual', 'auditory']       # stimulus modalities
 ## ---------------------------
 
 ## MVPA parameters
-# prepare classifiers without tuning parameters - only use linear-SVM
-clf_models = [svm.SVC(kernel = 'linear', max_iter = -1)]
-clf_tokens = ['SVClin']  # classifier abbreviations
+# prepare classifiers without tuning parameters
+clf_models = [LinearDiscriminantAnalysis(),
+              GaussianNB(),
+              svm.SVC(max_iter = -1)]
+clf_tokens = ['LDA', 'GNB', 'SVCrbf']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # searchlight parameters
 radius = 4   # searchlight kernel size (57 voxels)
