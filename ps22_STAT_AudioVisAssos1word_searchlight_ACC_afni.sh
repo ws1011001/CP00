@@ -64,8 +64,12 @@ for roi in ${rois[@]};do
     for imod in ${mods[@]};do
       facc="$gdir/stats.acc_group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz"
 #      3dbucket -fbuc -aglueto $facc $vdir/sub-*/$mvpc/sub-*_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
+      # calculate above-chance ACC
+      fabv="$gdir/stats.acc_group_${mvpc}-${clf}_LOROCV_ACC-above-chance-${imod}_mask-${roi}.nii.gz"
+      3dcalc -a $facc -expr "ispositive(a-$base_acc)*(a-$base_acc)" -prefix $fabv
       # T-test on one sample againest the chance level
-      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -exblur 6 -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}_blur-6mm.nii.gz
+      3dttest++ -setA $fabv -mask $mask -exblur 6 -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-above-chance-${imod}_mask-${roi}.nii.gz
+#      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -exblur 6 -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}_blur-6mm.nii.gz  # -singletonA doesn't work well with -exblur
     done
   done
 done
