@@ -39,7 +39,7 @@ readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos1word'                    # task name
 spac='space-MNI152NLin2009cAsym'                  # anatomical template that used for preprocessing by fMRIPrep
 mvpc='tvsMVPC'                                    # MVPA methods
-clfs=("SVClin")                                   # classifier tokens
+clfs=("LDA" "GNB" "SVCrbf")                                   # classifier tokens
 rois=("bvOT-Bouhali2019-gGM")                     # anatomical defined left-vOT mask (Bouhali et al., 2019)
 mods=("visual" "auditory" "visual2" "auditory2")  # decoding modality
 base_acc=0.5                                      # the chance level i.e. 50%
