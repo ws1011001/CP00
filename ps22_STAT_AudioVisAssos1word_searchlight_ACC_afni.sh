@@ -39,7 +39,7 @@ readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos1word'                    # task name
 spac='space-MNI152NLin2009cAsym'                  # anatomical template that used for preprocessing by fMRIPrep
 mvpc='tvsMVPC'                                    # MVPA methods
-clfs=("LDA" "GNB" "SVCrbf")                                   # classifier tokens
+clfs=("LDA" "GNB" "SVClin" "SVCrbf")              # classifier tokens
 rois=("bvOT-Bouhali2019-gGM")                     # anatomical defined left-vOT mask (Bouhali et al., 2019)
 mods=("visual" "auditory" "visual2" "auditory2")  # decoding modality
 base_acc=0.5                                      # the chance level i.e. 50%
@@ -65,7 +65,7 @@ for roi in ${rois[@]};do
       facc="$gdir/stats.acc_group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz"
       3dbucket -fbuc -aglueto $facc $vdir/sub-*/$mvpc/sub-*_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
       # T-test on one sample againest the chance level
-      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}.nii.gz
+      3dttest++ -singletonA $base_acc -setB $facc -mask $mask -exblur 6 -prefix $gdir/stats.group_${mvpc}-${clf}_LOROCV_ACC-${imod}_mask-${roi}_blur-6mm.nii.gz
     done
   done
 done
