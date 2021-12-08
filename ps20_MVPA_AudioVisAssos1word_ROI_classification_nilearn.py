@@ -21,6 +21,8 @@ from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from nilearn.input_data import NiftiMasker
 from sklearn import svm
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -41,18 +43,22 @@ mods = ['visual', 'auditory']       # stimulus modalities
 
 ## MVPA parameters
 # prepare classifiers without tuning parameters - only use linear-SVM
-clf_models = [svm.SVC(kernel = 'linear', max_iter = -1)]
-clf_tokens = ['SVClin']  # classifier abbreviations
+clf_models = [LinearDiscriminantAnalysis(),
+              GaussianNB(),
+              svm.SVC(kernel = 'linear', max_iter = -1),
+              svm.SVC(max_iter = -1)]
+clf_tokens = ['LDA', 'GNB', 'SVClin', 'SVCrbf']  # classifier abbreviations
 nmodels    = len(clf_tokens)
 # ROI-based parameters
 fs_perc = [57, 93, 171, 389]               # feature selection K best: [57, 93, 171, 389, 751] = radius 4, 5, 6, 8, 10 mm
-nperm   = 1000                             # number of permutations
-pperm   = 0.01                             # the threshold p-value 
+nperm   = 100                             # number of permutations
+pperm   = 0.05                             # the threshold p-value 
 C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
 njobs   = -1                               # -1 means all CPUs
 # read ROIs information
 froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
 rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
+rois = rois[rois.input == 1]                             # only inculde new ROIs
 nroi = len(rois)
 ## ---------------------------
 
