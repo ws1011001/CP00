@@ -46,7 +46,7 @@ ds_common.RoIColor       = [0 0 1];
 ds_common.displayFigures = false;
 ds_common.saveFiguresJpg = true;
 % set switches
-isROIsRSA = false;
+isROIsRSA = true;
 isRDMCorr = true;
 %% ---------------------------
 
