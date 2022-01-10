@@ -63,7 +63,7 @@ for subj in ${subjects[@]};do
       firf="$wdir/$tent/TENT_IRF_${icon}.${subj}_${task}+tlrc."
       x=$(3dmaskave -q -mask $froi ${fglm}[$i])
       readarray t <<< $(3dmaskave -q -mask $froi $firf)
-      echo -e "$subj,$iroi,$icon,$x,${t[0]},${t[1]},${t[2]},${t[3]},${t[4]},${t[5]},${t[6]},${t[7]},${t[8]}" >> $fpsc
+      echo -e "$subj,$iroi,$icon,$x,${t[0]%$'\n'},${t[1]%$'\n'},${t[2]%$'\n'},${t[3]%$'\n'},${t[4]%$'\n'},${t[5]%$'\n'},${t[6]%$'\n'},${t[7]%$'\n'},${t[8]%$'\n'}" >> $fpsc
       let i+=3
     done
   done
