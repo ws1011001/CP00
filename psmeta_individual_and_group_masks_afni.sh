@@ -46,9 +46,9 @@ gmth=0.2                          # gray matter threshold between [0 1]
 #tasks=("task-LocaVis1p75" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 tasks=("task-LocaAudio2p5")
 # switches
-isCreateGMind=true
-isCreateGMgrp=true
-isCopyMaskRSA=false
+isCreateGMind=false
+isCreateGMgrp=false
+isCopyMaskRSA=true
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
