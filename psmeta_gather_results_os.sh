@@ -70,7 +70,7 @@ fi
 ## ---------------------------
 
 ## gather AFNI results for each task
-if [ $isClean_Models -o $isCollect_AFNI -o $isClean_QCVols -o $isClean_LSSraw];then
+if [ $isClean_Models -o $isCollect_AFNI -o $isClean_QCVols -o $isClean_LSSraw ];then
   for task in ${tasks[@]};do
     echo -e "========== start gathering results (stats.* files) for $task =========="
     tdir="$rdir/$task"
