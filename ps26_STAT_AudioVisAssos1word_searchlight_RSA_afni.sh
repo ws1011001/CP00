@@ -53,13 +53,23 @@ echo -e "========== START JOB at $(date) =========="
 for roi in ${rois[@]};do
   mask="$kdir/group/group_${spac}_mask-${roi}.nii.gz"
   echo -e "carry out T-tests on RSA searchlight maps within ROI $roi ......"
-  for imod in ${mods[@]};do
-    # stack up subjects for group analysis
-    frsa="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz"
-    3dbucket -fbuc -aglueto $frsa $vdir/sub-*/$rsas/Maps/sub-*_searchlight-rMap_model-${imod}_mask-${roi}.nii
-    # T-test on one sample againest the chance level
-    3dttest++ -setA $frsa -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
-  done
+  #for imod in ${mods[@]};do
+  #  # stack up subjects for group analysis
+  #  frsa="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz"
+  #  3dbucket -fbuc -aglueto $frsa $vdir/sub-*/$rsas/Maps/sub-*_searchlight-rMap_model-${imod}_mask-${roi}.nii
+  #  # T-test on one sample againest the chance level
+  #  3dttest++ -setA $frsa -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
+  #done
+  # model comparisons (lexical sensitive vs. insensitive)
+  faudlex="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-audmod-lexico_mask-${roi}.nii.gz"
+  faudnol="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-audmod-nolexi_mask-${roi}.nii.gz"
+  fvislex="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-vismod-lexico_mask-${roi}.nii.gz"
+  fvisnol="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-vismod-nolexi_mask-${roi}.nii.gz"
+  fmmolex="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-mmodal-lexico_mask-${roi}.nii.gz"
+  fmmonol="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-mmodal-nolexi_mask-${roi}.nii.gz"
+  3dttest++ -setA $faudlex -setB $faudnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-audmod-lex2non_mask-${roi}.nii.gz
+  3dttest++ -setA $fvislex -setB $fvisnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-vismod-lex2non_mask-${roi}.nii.gz
+  3dttest++ -setA $fmmolex -setB $fmmonol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-mmodal-lex2non_mask-${roi}.nii.gz
 done
 ## ---------------------------
 
