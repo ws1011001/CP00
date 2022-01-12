@@ -39,7 +39,7 @@ readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos1word'    # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 rsas='tvsRSA'                     # RSA methods
-rois=("bvOT-Bouhali2019")         # anatomical defined left-vOT mask (Bouhali et al., 2019)
+rois=("bvOT-Bouhali2019-gGM")         # anatomical defined left-vOT mask (Bouhali et al., 2019)
 # RSA models
 mods=("amodal-lexico" "amodal-lexipw" "amodal-lexiwd" 
       "audmod-lexico" "audmod-lexipw" "audmod-lexiwd" "audmod-nolexi" 
@@ -58,7 +58,7 @@ for roi in ${rois[@]};do
     frsa="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz"
     3dbucket -fbuc -aglueto $frsa $vdir/sub-*/$rsas/Maps/sub-*_searchlight-rMap_model-${imod}_mask-${roi}.nii
     # T-test on one sample againest the chance level
-    3dttest++ -setA $frsa -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
+    3dttest++ -setA $frsa -mask $mask -exblur 4 -prefix $gdir/stats.group_${rsas}_Fisher-z_model-${imod}_mask-${roi}.nii.gz
   done
 done
 ## ---------------------------
