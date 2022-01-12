@@ -67,9 +67,11 @@ for roi in ${rois[@]};do
   fvisnol="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-vismod-nolexi_mask-${roi}.nii.gz"
   fmmolex="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-mmodal-lexico_mask-${roi}.nii.gz"
   fmmonol="$gdir/stats.rsa_group_${rsas}_Fisher-z_model-mmodal-nolexi_mask-${roi}.nii.gz"
-  3dttest++ -setA $faudlex -setB $faudnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-audmod-lex2non_mask-${roi}.nii.gz
-  3dttest++ -setA $fvislex -setB $fvisnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-vismod-lex2non_mask-${roi}.nii.gz
-  3dttest++ -setA $fmmolex -setB $fmmonol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-mmodal-lex2non_mask-${roi}.nii.gz
+  #3dttest++ -setA $faudlex -setB $faudnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-audmod-lex2non_mask-${roi}.nii.gz
+  #3dttest++ -setA $fvislex -setB $fvisnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-vismod-lex2non_mask-${roi}.nii.gz
+  #3dttest++ -setA $fmmolex -setB $fmmonol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-mmodal-lex2non_mask-${roi}.nii.gz
+  3dttest++ -setA $fmmolex -setB $fvislex -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-mmo2vis-lexico_mask-${roi}.nii.gz
+  3dttest++ -setA $fmmonol -setB $fvisnol -mask $mask -prefix $gdir/stats.group_${rsas}_Fisher-z_model-mmo2vis-nolexi_mask-${roi}.nii.gz
 done
 ## ---------------------------
 
