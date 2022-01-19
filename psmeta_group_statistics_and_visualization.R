@@ -17,6 +17,10 @@ rm(list=ls())
 
 ## set environment (packages, functions, working path etc.)
 # load up packages
+library(psych)
+library(plyr)
+library(plotrix)  # std.errors()
+library(DescTools)
 library(rmatio)
 library(reshape2)
 library(ggplot2)
@@ -33,6 +37,7 @@ rdir <- file.path(wdir, 'results')
 vdir <- file.path(rdir, 'multivariate')
 pdir <- file.path(mdir, 'manuscript', 'report')
 # setup MVPA parameters
+n           <- 22  # number of subjects
 classifiers <- c('LDA', 'GNB', 'SVClin', 'SVCrbf')
 colors_clfs <- c('gray40', 'gray50', 'gray60', 'gray70')
 modalities  <- c('visual', 'auditory', 'visual2', 'auditory2')
@@ -134,11 +139,55 @@ save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC
 ## ---------------------------
 
 ## ROI-based RSA
-d <- read.mat('test.mat')
-data <- as.matrix(d$RDMsCorr$Z[[1]])
-dnames <- d$RDMsCorr$M$name
-colnames(data) <- dnames
-rownames(data) <- dnames
-data_m <- melt(data)
-p <- ggplot(data = data_m, aes(x=Var1,y=Var2,fill=value))+geom_tile()
+rdm_models <- c('amodal lexico', 'audmod nolexi', 'audmod lexico', 'vismod nolexi', 'vismod lexico', 'mmodal nolexi', 'mmodal lexico')
+rdm_models_label <- c('Amodal lexicon-sensitive', 'Auditory lexicon-insensitive', 'Auditory lexicon-sensitive', 
+                      'Visual lexicon-insensitive', 'Visual lexicon-sensitive', 'Multimodal lexicon-insensitive', 'Multimodal lexicon-sensitive')
+rdm_models_color <- c('gray', 'cyan1', 'cyan3', 'gold1', 'gold3', 'orchid1', 'orchid3')
+rdm_rois <- c('lvOT-Bouhali2019-gGM', 'lvOT-visual', 'lvOT-auditory', 'lSTG-auditory', 'rSTG-auditory', 'ilvOT', 'ilvOT-sph4mm')
+rdm_rois_label <- c('lvOT-Bouhali2019', 'gvLVOT', 'gaLVOT', 'gaLSTG', 'gaRSTG', 'ivLVOT', 'ivLVOT (4mm)')
+names(rdm_rois_label) <- rdm_rois
+# extract correlation data
+rdm_cor_group <- data.frame(v1 = character(), v2 = factor(), v3 = factor(), v4 = numeric())
+for (i in 1:n){
+  # reshape correlation data
+  frdms <- file.path(vdir, 'tvrRSA', sprintf('sub-%02d_RDMs-correlatons.mat', i))
+  rdm_data <- read.mat(frdms)
+  rdm_cor1 <- as.matrix(rdm_data$RDMsCorr$Z[[1]])
+  rdm_size <- dim(rdm_cor1)[1]
+  rdm_cor1[seq(1, rdm_size * rdm_size, rdm_size + 1)] <- NA
+  rdm_name <- unlist(lapply(rdm_data$RDMsCorr$M$name, function (x) strsplit(x, split = ' | ', fixed = TRUE)[[1]][[1]]))
+  colnames(rdm_cor1) <- rdm_name
+  rownames(rdm_cor1) <- rdm_name
+  rdm_cor2 <- melt(rdm_cor1)
+  # group correlation data
+  rdm_cor_group <- rbind(rdm_cor_group, cbind(rep(sprintf('sub-%02d', i), rdm_size^2), rdm_cor2), deparse.level = 0)
+}
+names(rdm_cor_group) <- c('participant_id', 'rdm1', 'rdm2', 'z')
+# plot correlation matrix of models
+rdm_cor_models <- rdm_cor2[rdm_cor2$Var1 %in% rdm_models & rdm_cor2$Var2 %in% rdm_models,]
+rdm_cor_models$Var1 <- factor(rdm_cor_models$Var1, levels = rdm_models)
+rdm_cor_models$Var2 <- factor(rdm_cor_models$Var2, levels = rdm_models)
+rdm_cor_models$value <- FisherZInv(rdm_cor_models$value)  # convert Fisher-z to rho
+p_rdm_models <- rplot_heatmap(rdm_cor_models, zrange = c(-0.5, 1.0), colors = 'Blue-Red', xLabel = rdm_models_label, ctitle = 'Spearman\nCorrelation')
+save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_RSA-models-correlations_v1.0.png'), p_rdm_models, base_height = 10, base_asp = 1)
+# compare models for each ROI
+rdm_cor_limits <- list(c(0, 0.15), c(-0.03, 0.05), c(-0.03, 0.05), c(-0.1, 0.35), c(-0.1, 0.5), c(-0.03, 0.05), c(-0.03, 0.05))
+names(rdm_cor_limits) <- rdm_rois
+for (iroi in rdm_rois){
+  # group data for this ROI
+  rdm_iroi <- rdm_cor_group[rdm_cor_group$rdm1 == iroi & rdm_cor_group$rdm2 %in% rdm_models, ]
+  # summarize statistics
+  rdm_iroi_desc <- ddply(rdm_iroi, .(rdm2), summarize, mean = mean(z), std = std.error(z))
+  cat(sprintf('The range of correlation values is %f to %f for ROI %s. \n', min(rdm_iroi_desc$mean), max(rdm_iroi_desc$mean), iroi))
+  # plot correlations (Fisher-z)
+  p_iroi <- rplot_barI(x = 1:length(rdm_models), y = rdm_iroi_desc$mean, errs = rdm_iroi_desc$std, yLimit = rdm_cor_limits[iroi][[1]],
+                       f = 1:length(rdm_models), fPalette = rdm_models_color, gLabel = rdm_models_label, Xangle = 90, Xvjust = 0.5,
+                       aLabel = c('RDM Models', 'Correlation (Fisher-z)'), title = rdm_rois_label[iroi])
+  # add images and output figure
+  p_imgs_pos <- rdm_cor_limits[iroi][[1]][1] - (rdm_cor_limits[iroi][[1]][2] - rdm_cor_limits[iroi][[1]][1]) * 0.15
+  png(filename = file.path(pdir, sprintf('group_RSA-models_ROI-%s_correlation.png', iroi)), width = 4, height = 6, unit = 'in', res = 300)
+    rplot_Ximages(p_iroi, imgs, ypos = p_imgs_pos)
+  dev.off()
+}
+
 ## ---------------------------
