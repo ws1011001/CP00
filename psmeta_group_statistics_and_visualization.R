@@ -17,15 +17,14 @@ rm(list=ls())
 
 ## set environment (packages, functions, working path etc.)
 # load up packages
-library(psych)
-library(plyr)
+library(plyr)  # ddply()
 library(plotrix)  # std.errors()
 library(DescTools)
-library(rmatio)
-library(reshape2)
+library(rmatio)  # read.mat()
+library(reshape2)  # melt()
 library(ggplot2)
 library(cowplot)
-library(plot3D)
+library(plot3D)    # scatter3D()
 library(EnvStats)  # oneSamplePermutationTest()
 source('~/Projects/nitools/rcomparison.R')
 source('~/Projects/nitools/rplot.R')
@@ -35,63 +34,78 @@ wdir <- file.path(mdir, 'AudioVisAsso')
 ddir <- file.path(wdir, 'derivatives')
 rdir <- file.path(wdir, 'results')
 vdir <- file.path(rdir, 'multivariate')
+tdir <- file.path(rdir, 'repetition')
 pdir <- file.path(mdir, 'manuscript', 'report')
-# setup MVPA parameters
+# setup general parameters
 n           <- 22  # number of subjects
-classifiers <- c('LDA', 'GNB', 'SVClin', 'SVCrbf')
-colors_clfs <- c('gray40', 'gray50', 'gray60', 'gray70')
-modalities  <- c('visual', 'auditory', 'visual2', 'auditory2')
-colors_mods <- c('gold3', 'gold', 'seagreen4', 'seagreen1')
+
+
 # define data files
 flocav <- file.path(rdir, 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
 fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.csv')
+frepet <- file.path(tdir, 'group_task-AudioVisAssos2words_RSE_PSC+TENT.csv')
 # read data
 locav_xyz <- read.csv(file = flocav, stringsAsFactors = FALSE)
 mvpac_acc <- read.csv(file = fmvpac, stringsAsFactors = FALSE)
 mvpar_acc <- read.csv(file = fmvpar, stringsAsFactors = FALSE)
+repet_psc <- read.csv(file = frepet, stringsAsFactors = FALSE)
 ## ---------------------------
 
 
 ## Visual localizer
+# PLOT individual peaks
 png(filename = file.path(pdir, 'group_localizer-visual_individual-peaks.png'), width = 8, height = 6, unit = 'in', res = 300)
   scatter3D(locav_xyz$x, locav_xyz$y, locav_xyz$z, colvar = locav_xyz$T, pch = 20, cex = 3, main = 'Individual Peak Coordinates (N = 22)', bty = 'g',
             xlab = 'X', ylab = 'Y', zlab = 'Z', ticktype = 'detailed', clab = 'T value', clim = c(2, 7), col = ramp.col (col = c('yellow', 'red')))
 dev.off()
 ## ---------------------------
 
-## ROI-based MVPA
-# classifiers comparison
+## MVPA classifiers comparison
+# get parameters
+classifiers       <- c('LDA', 'SVClin', 'GNB', 'SVCrbf')
+classifiers_label <- c('LDA', 'SVM-lin', 'GNB', 'SVM-RBF')
+classifiers_color <- c('gray40', 'gray50', 'gray60', 'gray70')
+# TEST
 rcomparison_sy(mvpac_acc[mvpac_acc$modality == 'auditory2',], 'ACC', 'classifier', classifiers, 'participant_id')
-# visualization - classifiers comparison
+# PLOT
+fplot <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-ACC_classifiers_unimodal+crossmodal.png')
 mvpac_acc_ps <- lapply(unique(mvpac_acc$modality), function(x)
                        rplot_box2(gdata = mvpac_acc[mvpac_acc$modality == x, 'ACC'], groups = mvpac_acc$classifier[mvpac_acc$modality == x],
-                                  gOrder = c('LDA', 'SVClin', 'GNB', 'SVCrbf'), gLabel = c('LDA', 'SVM-lin', 'GNB', 'SVM-RBF'), aLabel = c(x, 'ACC'), 
-                                  fColor = colors_clfs, Xangle = 90) + ylim(c(0.3, 0.7)) + geom_hline(yintercept = 0.5, linetype = 'dashed'))
+                                  gOrder = classifiers, gLabel = classifiers_label, fColor = classifiers_color, aLabel = c(x, 'ACC'), Xangle = 90)
+                       + ylim(c(0.3, 0.7)) + geom_hline(yintercept = 0.5, linetype = 'dashed'))
 mvpac_acc_p <- plot_grid(plotlist = mvpac_acc_ps, align = 'h', nrow = 1)
-save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-ACC_classifiers_unimodal+crossmodal.png'), mvpac_acc_p, base_height = 8, base_asp = 1)
-# ROIs comparison
-mvpar_acc_svclin <- mvpar_acc[mvpar_acc$classifier == 'SVClin',]
+save_plot(filename = fplot, mvpac_acc_p, base_height = 8, base_asp = 1)
+## ---------------------------
+
+## MVPA decoding ACC for each ROI
+# get parameters
+modalities       <- c('visual', 'auditory', 'visual2', 'auditory2')
+modalities_label <- c('Vis.', 'Aud.', 'Vis-Aud', 'Aud-Vis')
+colors_mods <- c('gold3', 'gold', 'seagreen4', 'seagreen1')
 mvpar_acc_rois <- c('lvOT-1', 'lvOT-2', 'lvOT-3', 'lvOT-4', 'lvOT-sph4mm', 'lvOT-sph5mm', 'lvOT-sph6mm', 
                     'ilvOT', 'ilvOT-sph4mm', 'ilvOT-sph5mm', 'ilvOT-sph6mm', 
                     'lvOT-visual', 'lvOT-visualonly', 'lvOT-auditory', 'lvOT-auditoryonly', 'lvOT-both', 
                     'lSTG-auditory', 'rSTG-auditory')
+# TEST
+mvpar_acc_svclin <- mvpar_acc[mvpar_acc$classifier == 'SVClin',]
 mvpar_acc_test1 <- sapply(mvpar_acc_rois, function(x) 
                           rcomparison_p1(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'modality', 'ACC', 0.5, 'greater', 10000),
                           simplify = FALSE, USE.NAMES = TRUE)
 mvpar_acc_test2 <- sapply(mvpar_acc_rois, function(x) 
                           rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'ACC', 'modality', modalities, 'participant_id'),
                           simplify = FALSE, USE.NAMES = TRUE)
-# visualization - all ROIs comparison
+# PLOT all ROIs
+fplot <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.png')
 mvpar_acc_ps <- lapply(mvpar_acc_rois, function(x)
                        rplot_box2(gdata = mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x, 'ACC'], 
                                   groups = mvpar_acc_svclin$modality[mvpar_acc_svclin$ROI_label == x],
-                                  gOrder = c('visual', 'auditory', 'visual2', 'auditory2'), gLabel = c('Vis.', 'Aud.', 'Vis-Aud', 'Aud-Vis'),
-                                  aLabel = c(x, 'ACC'), fColor = c('gray40', 'gray50', 'gray60', 'gray70'), Xangle = 90)
+                                  gOrder = modalities, gLabel = modalities_label, fColor = c('gray40', 'gray50', 'gray60', 'gray70'),
+                                  aLabel = c(x, 'ACC'), Xangle = 90)
                        + ylim(c(0.3, 0.7)) + geom_hline(yintercept = 0.5, linetype = 'dashed'))
 mvpar_acc_p <- plot_grid(plotlist = mvpar_acc_ps, nrow = 3, ncol = 6)
-save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.png'), mvpar_acc_p, base_height = 12, base_asp = 0.8)
-# visualization - ilvOT and ilvOT-sph4mm
+save_plot(filename = fplot, mvpar_acc_p, base_height = 12, base_asp = 0.8)
+# PLOT ilvOT and ilvOT-sph4mm
 mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'ilvOT'
 mvpar_acc_s_ilvot <- data.frame(sleft = c(3), sright = c(3), slabs = c('*'), spos = c(0.68, 0.68),
                                 labsize = 5, vjust = 1, stringsAsFactors = FALSE)
@@ -189,5 +203,7 @@ for (iroi in rdm_rois){
     rplot_Ximages(p_iroi, imgs, ypos = p_imgs_pos)
   dev.off()
 }
+## ---------------------------
 
+## Repetition
 ## ---------------------------

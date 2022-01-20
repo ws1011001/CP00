@@ -44,7 +44,7 @@ cons=("SISMa" "SISMv" "SIDMa" "SIDMv" "DISMa" "DISMv" "DIDMa" "DIDMv" "catch")
 
 ## extract PSC and TENT
 fpsc="$adir/group_${task}_RSE_PSC+TENT.csv"
-echo "participant_id,roi_label,condition,PSC,IRF1,IRF2,IRF3,IRF4,IRF5,ORF6,IRF7,IRF8,IRF9" >> $fpsc
+echo "participant_id,roi_label,condition,PSC,IRF1,IRF2,IRF3,IRF4,IRF5,IRF6,IRF7,IRF8,IRF9" >> $fpsc
 for subj in ${subjects[@]};do
   echo -e "extract PSC and TENT curves for $task for subject : $subj ......"
   wdir="$adir/$subj/$task"                       # the Working folder
