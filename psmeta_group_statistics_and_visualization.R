@@ -205,5 +205,12 @@ for (iroi in rdm_rois){
 }
 ## ---------------------------
 
-## Repetition
+## Repetition Suppression Effect (RSE)
+# get parameters
+conditions <- c('SISMa', 'SISMv', 'SIDMa', 'SIDMv', 'DISMa', 'DISMv', 'DIDMa', 'DIDMv')
+# TEST
+rse_psc_test <- sapply(mvpar_acc_rois, function(x) 
+  rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'PSC', 'condition', modalities, 'participant_id'),
+  simplify = FALSE, USE.NAMES = TRUE)
+# PLOT
 ## ---------------------------
