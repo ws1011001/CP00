@@ -40,9 +40,11 @@ spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocess
 mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 models=("GLM.wPSC.wNR24a")
 # index the stat volumes
-eidx=(13 16 19)  # coefficients
+eidx=(1 4 7)
+flab=("words" "pseudowords" "scrambled")
+#eidx=(13 16 19)  # coefficients
 fidx=(14 17 20)  # T values
-flab=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
+#flab=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -68,20 +70,20 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-## group T-tests
-tdir="$adir/group/$task"
-if [ ! -d $tdir ];then mkdir -p $tdir;fi
-for model in ${models[@]};do
-  for ilab in ${flab[@]};do
-    # stack up subjects for group analysis
-    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
-    if [ ! -f $gcoef ];then
-      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
-    fi
-    # T-test
-    3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${ilab}
-  done  
-done
-## ---------------------------
+### group T-tests
+#tdir="$adir/group/$task"
+#if [ ! -d $tdir ];then mkdir -p $tdir;fi
+#for model in ${models[@]};do
+#  for ilab in ${flab[@]};do
+#    # stack up subjects for group analysis
+#    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
+#    if [ ! -f $gcoef ];then
+#      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
+#    fi
+#    # T-test
+#    3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${ilab}
+#  done  
+#done
+### ---------------------------
 
 echo -e "========== ALL DONE! at $(date) =========="
