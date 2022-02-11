@@ -17,6 +17,7 @@ rm(list=ls())
 
 ## set environment (packages, functions, working path etc.)
 # load up packages
+library(psych)
 library(plyr)  # ddply()
 library(plotrix)  # std.errors()
 library(DescTools)
@@ -38,8 +39,6 @@ tdir <- file.path(rdir, 'repetition')
 pdir <- file.path(mdir, 'manuscript', 'report')
 # setup general parameters
 n           <- 22  # number of subjects
-
-
 # define data files
 flocav <- file.path(rdir, 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
@@ -51,7 +50,6 @@ mvpac_acc <- read.csv(file = fmvpac, stringsAsFactors = FALSE)
 mvpar_acc <- read.csv(file = fmvpar, stringsAsFactors = FALSE)
 repet_psc <- read.csv(file = frepet, stringsAsFactors = FALSE)
 ## ---------------------------
-
 
 ## Visual localizer
 # PLOT individual peaks
@@ -207,10 +205,85 @@ for (iroi in rdm_rois){
 
 ## Repetition Suppression Effect (RSE)
 # get parameters
-conditions <- c('SISMa', 'SISMv', 'SIDMa', 'SIDMv', 'DISMa', 'DISMv', 'DIDMa', 'DIDMv')
-# TEST
-rse_psc_test <- sapply(mvpar_acc_rois, function(x) 
-  rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'PSC', 'condition', modalities, 'participant_id'),
-  simplify = FALSE, USE.NAMES = TRUE)
-# PLOT
+conditions <- c('SISMa', 'DISMa', 'SISMv', 'DISMv', 'SIDMa', 'DIDMa', 'SIDMv', 'DIDMv')
+conditions_color <- c('gray', 'gray', 'cyan2', 'cyan2', 'red2', 'red2', 'palegreen', 'palegreen')
+conditions_tests <- c('SISMa - DISMa = 0', 'SISMv - DISMv = 0', 'SIDMa - DIDMa = 0', 'SIDMv - DIDMv = 0')
+FIRs <- c('IRF1', 'IRF2', 'IRF3', 'IRF4', 'IRF5', 'IRF6', 'IRF7', 'IRF8', 'IRF9')
+# statistical tests
+rse_psc_test <- sapply(unique(repet_psc$ROI_label), function(x) 
+                       rcomparison_sy(repet_psc[repet_psc$ROI_label == x,], 'PSC', 'condition', conditions, 'participant_id'),
+                       simplify = FALSE, USE.NAMES = TRUE)
+rse_fir_test <- list()
+for (ifir in FIRs){
+  rse_fir_test[ifir][[1]] <- sapply(unique(repet_psc$ROI_label), function(x) 
+                                    rcomparison_sy(repet_psc[repet_psc$ROI_label == x,], ifir, 'condition', conditions, 'participant_id'),
+                                    simplify = FALSE, USE.NAMES = TRUE)
+}  
+
+# PLOT PSC
+for (iroi in unique(repet_psc$ROI_label)){
+  # extract data for this ROI
+  repet_psc_iroi <- repet_psc[repet_psc$ROI_label == iroi & repet_psc$condition %in% conditions,]
+  # determine Y range
+  p_rse_iroi_y <- round(c(min(repet_psc_iroi$PSC), max(repet_psc_iroi$PSC)), digits = 1) + c(-0.1, 0.2)
+  # extract significance
+  rse_test_iroi <- rse_psc_test[iroi][[1]]$PSC_PT
+  rse_test_iroi <- rse_test_iroi[rse_test_iroi$Comparison %in% conditions_tests,]
+  rse_test_iroi$sig <- rse_test_iroi$p.value < 0.05
+  if (sum(rse_test_iroi$sig) > 0){
+    rse_test_iroi$lab <- rep('', 4)
+    rse_test_iroi$lab[rse_test_iroi$p.value < 0.05] <- '*'
+    rse_test_iroi$lab[rse_test_iroi$p.value < 0.01] <- '**' 
+    rse_test_iroi$lab[rse_test_iroi$p.value < 0.001] <- '***'
+    p_rse_iroi_sig <- data.frame(sleft = c(1, 3, 5, 7)[rse_test_iroi$sig], sright = c(2, 4, 6, 8)[rse_test_iroi$sig], 
+                                 slabs = rse_test_iroi$lab, spos = rep(p_rse_iroi_y[2] - 0.08, sum(rse_test_iroi$sig)), 
+                                 labsize = 5, vjust = 0.5, stringsAsFactors = FALSE)   
+  } else {
+    p_rse_iroi_sig <- NULL
+  }
+  # boxplot
+  p_rse_iroi <- rplot_box2(repet_psc_iroi$PSC, repet_psc_iroi$condition, title = iroi,
+                           bColor = conditions_color, fColor = conditions_color, gOrder = conditions, gLabel = conditions, 
+                           aLabel = c('', 'Percent Signal Change'), Xangle = 90, Yrange = p_rse_iroi_y, sBars = p_rse_iroi_sig)
+  # output figure
+  fplot <- file.path(tdir, sprintf('group_task-AudioVisAssos2word_Repetition-PSC_ROI-%s_v1.0.png', iroi))
+  save_plot(filename = fplot, p_rse_iroi, base_height = 6, base_asp = 0.6)
+}
+# PLOT FIR
+for (iroi in unique(repet_psc$ROI_label)){
+  # extract data for this ROI
+  repet_fir_iroi <- repet_psc[repet_psc$ROI_label == iroi & repet_psc$condition %in% conditions,]
+  repet_fir_iroi <- describeBy(repet_fir_iroi[,FIRs], group = repet_fir_iroi$condition)
+  rse_fir_test_iroi <- lapply(rse_fir_test, function(x) x[iroi][[1]][2][[1]])
+  # plot FIR curve for each test
+  for (itest in conditions_tests){
+    cat(sprintf('Extract significance for the test %s. \n', itest))
+    icond <- strsplit(itest, split = ' |-|=')[[1]][c(1, 4)]
+    # extract plot data  
+    rse_fir_iroi <- rbind(repet_fir_iroi[icond[1]][[1]], repet_fir_iroi[icond[2]][[1]])
+    rse_fir_iroi$condition <- rep(icond, each = length(FIRs))
+    # extract significance
+    isign <- p.adjust(unlist(lapply(rse_fir_test_iroi, function(x) as.numeric(x$p.value[x$Comparison == itest]))), method = 'fdr')
+    rse_fir_iroi$fdr <- isign  # FDR corrected
+    rse_fir_iroi$lab <- ''
+    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.05] <- '*'
+    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.01] <- '**' 
+    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.001] <- '***'
+    if (any(isign < 0.05)){
+      p_rse_fir_y <- round(max(rse_fir_iroi$mean + rse_fir_iroi$se), digits = 1) * 1.2
+      p_rse_fir_sig <- data.frame(x = which(isign < 0.05), y = rep(p_rse_fir_y, length(which(isign < 0.05))),
+                                  labels = rse_fir_iroi$lab[which(isign < 0.05)], size = 4, color = 'blue')   
+      p_rse_fir_suf <- 'sig'
+    } else {
+      p_rse_fir_sig <- NULL
+      p_rse_fir_suf <- 'non'
+    }
+    # lineplot
+    p_rse_fir <- rplot_line(rse_fir_iroi$vars, rse_fir_iroi$mean, errs = rse_fir_iroi$se, group = rse_fir_iroi$condition,
+                            pTitle = iroi, lColor = c('black', 'darkgray'), aLabel = c('Seconds', 'Percent Signal Change'), sLabel = p_rse_fir_sig)
+    # output figure
+    fplot <- file.path(tdir, 'FIR', sprintf('group_Repetition-FIR_ROI-%s_%s-%s-%s_v1.0.png', iroi, icond[1], icond[2], p_rse_fir_suf))
+    save_plot(filename = fplot, p_rse_fir, base_height = 5, base_asp = 1)
+  }
+}
 ## ---------------------------
