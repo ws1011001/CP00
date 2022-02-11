@@ -70,20 +70,20 @@ for subj in ${subjects[@]};do
 done
 ## ---------------------------
 
-### group T-tests
-#tdir="$adir/group/$task"
-#if [ ! -d $tdir ];then mkdir -p $tdir;fi
-#for model in ${models[@]};do
-#  for ilab in ${flab[@]};do
-#    # stack up subjects for group analysis
-#    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
-#    if [ ! -f $gcoef ];then
-#      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
-#    fi
+## group T-tests
+tdir="$adir/group/$task"
+if [ ! -d $tdir ];then mkdir -p $tdir;fi
+for model in ${models[@]};do
+  for ilab in ${flab[@]};do
+    # stack up subjects for group analysis
+    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
+    if [ ! -f $gcoef ];then
+      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
+    fi
 #    # T-test
 #    3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${ilab}
-#  done  
-#done
-### ---------------------------
+  done  
+done
+## ---------------------------
 
 echo -e "========== ALL DONE! at $(date) =========="
