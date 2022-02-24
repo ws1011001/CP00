@@ -48,12 +48,13 @@ tasks=("task-LocaAudio2p5")
 # switches
 isCreateGMind=false
 isCreateGMgrp=false
-isCopyMaskRSA=true
+isCreateCoord=true
+isCopyMaskRSA=false
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
 
-## create masks for each subject
+## create GM masks for each subject
 if $isCreateGMind;then
   for subj in ${subjects[@]};do
     gdir="$pdir/$subj/anat"  # individual folder that contains anatomical segments
@@ -97,7 +98,7 @@ if $isCreateGMind;then
 fi
 ## ---------------------------
 
-## create group-averaged masks
+## create group-averaged GM masks
 if $isCreateGMgrp;then
   if [ ! -d "$kdir/group" ];then
     mkdir -p $kdir/group
@@ -131,6 +132,24 @@ if $isCreateGMgrp;then
     # EPI constrained GM
     3dcalc -a $ggm_mask_bd -b $gepi_mask -expr 'a*b' -prefix $ggm_epi_mask  # manually check *mask-gm-epi* masks to get *mask-gm-epi-final* masks
   done
+fi
+## ---------------------------
+
+## create coordinate-based masks
+if $isCreateCoord;then
+  cdir="$kdir/coordinates"
+  fcrd="$cdir/group_${spac}_mask-coordinates.csv"
+  fmas="$kdir/group_${spac}_mask-lvOT-visual.nii.gz"
+  srad=4
+  # create mask for each coordinate
+  OLDIFS=$IFS  # original delimiter
+  IFS=','      # delimiter of CSV
+  sed 1d $fcrd | while read thisroi x y z;do
+    echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
+    echo "$x $y $z 1" > $cdir/${thisroi}.peak
+    3dUndump -master $fmas -srad $srad -prefix $cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz -xyz ${thisroi}.peak
+  done
+  IFS=$OLDIFS
 fi
 ## ---------------------------
 
