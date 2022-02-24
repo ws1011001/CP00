@@ -40,12 +40,14 @@ pdir <- file.path(mdir, 'manuscript', 'report')
 # setup general parameters
 n           <- 22  # number of subjects
 # define data files
-flocav <- file.path(rdir, 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
+flocav <- file.path(rdir, 'activation', 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
+flocaa <- file.path(rdir, 'activation', 'task-LocaAudio2p5', 'stats.beta_group_task-LocaAudio2p5_GLM.wPSC.wNR24a_mask-lvOT-visual.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
 fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.csv')
 frepet <- file.path(tdir, 'group_task-AudioVisAssos2words_RSE_PSC+TENT.csv')
 # read data
 locav_xyz <- read.csv(file = flocav, stringsAsFactors = FALSE)
+locaa_vot <- read.csv(file = flocaa, stringsAsFactors = FALSE)
 mvpac_acc <- read.csv(file = fmvpac, stringsAsFactors = FALSE)
 mvpar_acc <- read.csv(file = fmvpar, stringsAsFactors = FALSE)
 repet_psc <- read.csv(file = frepet, stringsAsFactors = FALSE)
@@ -57,6 +59,19 @@ png(filename = file.path(pdir, 'group_localizer-visual_individual-peaks.png'), w
   scatter3D(locav_xyz$x, locav_xyz$y, locav_xyz$z, colvar = locav_xyz$T, pch = 20, cex = 3, main = 'Individual Peak Coordinates (N = 22)', bty = 'g',
             xlab = 'X', ylab = 'Y', zlab = 'Z', ticktype = 'detailed', clab = 'T value', clim = c(2, 7), col = ramp.col (col = c('yellow', 'red')))
 dev.off()
+## ---------------------------
+
+## Auditory localizer
+# Compare PSC for the ROI lvOT-visual
+rcomparison_sy(locaa_vot, 'PSC', 'condition', c('words', 'pseudowords', 'scrambled'), 'participant_id')
+# PLOT
+p_locaa_vot_sig <- data.frame(sleft = c(1, 2), sright = c(3, 3), slabs = c('**', '***'), spos = c(0.55, 0.46),
+                              labsize = 4, vjust = 0, stringsAsFactors = FALSE) 
+p_locaa_vot <- rplot_box2(locaa_vot$PSC, locaa_vot$condition, bColor = c('black', 'gray40', 'gray70'), fColor = c('black', 'gray40', 'gray70'), 
+                          gOrder = c('words', 'pseudowords', 'scrambled'), gLabel = c('Words', 'Pseudowords', 'Scrambled'), textSz = 15,
+                          aLabel = c('', 'Percent of Signal Change'), Yrange = c(-0.3, 0.6), Xangle = 90, sBars = p_locaa_vot_sig)
+fplot <- file.path(rdir, 'Auditory_PSC_lvOT-visual.png')
+save_plot(filename = fplot, p_locaa_vot, base_height = 4, base_asp = 0.6)
 ## ---------------------------
 
 ## MVPA classifiers comparison
