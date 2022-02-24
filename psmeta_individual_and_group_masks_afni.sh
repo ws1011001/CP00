@@ -140,7 +140,7 @@ if $isCreateCoord;then
   cdir="$kdir/coordinates"
   fcrd="$cdir/group_${spac}_mask-coordinates.csv"
   fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
-  srad=4
+  srad=5
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
   IFS=','      # delimiter of CSV
