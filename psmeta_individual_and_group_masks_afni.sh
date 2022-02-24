@@ -144,11 +144,12 @@ if $isCreateCoord;then
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
   IFS=','      # delimiter of CSV
-  sed 1d $fcrd | while read thisroi x y z;do
+  while read thisroi x y z;do
     echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
     echo "$x $y $z 1" > $cdir/${thisroi}.peak
     3dUndump -master $fmas -srad $srad -prefix $cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz -xyz $cdir/${thisroi}.peak
-  done
+    rm -r $cdir/${thisroi}.peak
+  done < $fcrd
   IFS=$OLDIFS
 fi
 ## ---------------------------
