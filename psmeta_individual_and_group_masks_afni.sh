@@ -139,7 +139,7 @@ fi
 if $isCreateCoord;then
   cdir="$kdir/coordinates"
   fcrd="$cdir/group_${spac}_mask-coordinates.csv"
-  fmas="$kdir/group_${spac}_mask-lvOT-visual.nii.gz"
+  fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
   srad=4
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
