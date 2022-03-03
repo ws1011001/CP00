@@ -102,10 +102,10 @@ mvpar_acc_rois <- c('lvOT-1', 'lvOT-2', 'lvOT-3', 'lvOT-4', 'lvOT-sph4mm', 'lvOT
                     'lSTG-auditory', 'rSTG-auditory')
 # TEST
 mvpar_acc_svclin <- mvpar_acc[mvpar_acc$classifier == 'SVClin',]
-mvpar_acc_test1 <- sapply(mvpar_acc_rois, function(x) 
+mvpar_acc_test1 <- sapply(mvpar_acc_rois, function(x)  # if ACC is greater than 50% for each modality 
                           rcomparison_p1(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'modality', 'ACC', 0.5, 'greater', 10000),
                           simplify = FALSE, USE.NAMES = TRUE)
-mvpar_acc_test2 <- sapply(mvpar_acc_rois, function(x) 
+mvpar_acc_test2 <- sapply(mvpar_acc_rois, function(x)  # if ACCs are different between modalities
                           rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'ACC', 'modality', modalities, 'participant_id'),
                           simplify = FALSE, USE.NAMES = TRUE)
 # PLOT all ROIs
@@ -118,51 +118,33 @@ mvpar_acc_ps <- lapply(mvpar_acc_rois, function(x)
                        + ylim(c(0.3, 0.7)) + geom_hline(yintercept = 0.5, linetype = 'dashed'))
 mvpar_acc_p <- plot_grid(plotlist = mvpar_acc_ps, nrow = 3, ncol = 6)
 save_plot(filename = fplot, mvpar_acc_p, base_height = 12, base_asp = 0.8)
-# PLOT ilvOT and ilvOT-sph4mm
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'ilvOT'
-mvpar_acc_s_ilvot <- data.frame(sleft = c(3), sright = c(3), slabs = c('*'), spos = c(0.68, 0.68),
-                                labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_p_ilvot <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('ivLVOT', 'ACC'), 
-                                Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_ilvot) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_s_ilvot4 <- data.frame(sleft = c(1, 3, 4), sright = c(1, 3, 4), slabs = c('**','**', '*'), spos = c(0.68, 0.68, 0.68),
-                                 labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'ilvOT-sph4mm'
-mvpar_acc_p_ilvot4 <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                 bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('ivLVOT (4mm)', 'ACC'), 
-                                 Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_ilvot4) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_p_ilvots <- plot_grid(plotlist = list(mvpar_acc_p_ilvot, mvpar_acc_p_ilvot4), nrow = 1, ncol = 2)
-save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_ilvOT.png'), mvpar_acc_p_ilvots, base_height = 5, base_asp = 1.2)
-# visualization - visual and auditory lvOT
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'lvOT-visual'
-mvpar_acc_s_vlvot <- data.frame(sleft = c(1, 3), sright = c(1, 3), slabs = c('***', '*'), spos = c(0.68, 0.68),
-                                labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_p_vlvot <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('gvLVOT', 'ACC'), 
-                                Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_vlvot) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_s_alvot <- data.frame(sleft = c(1, 2, 3, 4), sright = c(1, 2, 3, 4), slabs = c('**','***', '*', '**'), spos = rep(0.35, 4),
-                                 labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'lvOT-auditory'
-mvpar_acc_p_alvot <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                 bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('gaLVOT', 'ACC'), 
-                                 Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_alvot) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_p_glvots <- plot_grid(plotlist = list(mvpar_acc_p_vlvot, mvpar_acc_p_alvot), nrow = 1, ncol = 2)
-save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_glvOT.png'), mvpar_acc_p_glvots, base_height = 5, base_asp = 1.2)
-# visualization - left- and right-STG
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'lSTG-auditory'
-mvpar_acc_s_lstg <- data.frame(sleft = c(2), sright = c(2), slabs = c('**'), spos = c(0.68),
-                                labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_p_lstg <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('gaLSTG', 'ACC'), 
-                                Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_lstg) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_roi_idx <- mvpar_acc_svclin$ROI_label == 'rSTG-auditory'
-mvpar_acc_s_rstg <- data.frame(sleft = c(3, 4), sright = c(3, 4), slabs = c('**', '**'), spos = rep(0.68, 2),
-                                labsize = 5, vjust = 1, stringsAsFactors = FALSE)
-mvpar_acc_p_rstg <- rplot_box2(mvpar_acc_svclin$ACC[mvpar_acc_roi_idx], mvpar_acc_svclin$modality[mvpar_acc_roi_idx],
-                                bColor = colors_mods, fColor = colors_mods, gOrder = modalities, gLabel = modalities, aLabel = c('gaRSTG', 'ACC'), 
-                                Yrange = c(0.3, 0.7), Xangle = 90, sBars = mvpar_acc_s_rstg) + geom_hline(yintercept = 0.5, linetype = 'dashed')
-mvpar_acc_p_glvots <- plot_grid(plotlist = list(mvpar_acc_p_lstg, mvpar_acc_p_rstg), nrow = 1, ncol = 2)
-save_plot(filename = file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_gSTG.png'), mvpar_acc_p_glvots, base_height = 5, base_asp = 1.2)
+# PLOT each ROI
+for (iroi in unique(mvpar_acc_svclin$ROI_label)){
+  # extract data for this ROI
+  mvpar_acc_iroi <- mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == iroi,]
+  # determine Y range
+  p_acc_iroi_y <- round(c(min(mvpar_acc_iroi$ACC), max(mvpar_acc_iroi$ACC)), digits = 1) + c(-0.1, 0.2)
+  # extract significance
+  acc_test_iroi <- data.frame(val = sapply(modalities, function(x) mvpar_acc_test1[iroi][[1]][x][[1]]$p.value))
+  acc_test_iroi$sig <- acc_test_iroi$val < 0.05
+  if (sum(acc_test_iroi$sig) > 0){
+    acc_test_iroi$lab <- rep('', 4)
+    acc_test_iroi$lab[acc_test_iroi$val < 0.05] <- '*'
+    acc_test_iroi$lab[acc_test_iroi$val < 0.01] <- '**' 
+    acc_test_iroi$lab[acc_test_iroi$val < 0.001] <- '***'
+    p_acc_iroi_sig <- data.frame(sleft = c(1:4)[acc_test_iroi$sig], sright = c(1:4)[acc_test_iroi$sig], slabs = acc_test_iroi$lab[acc_test_iroi$sig], 
+                                 spos = rep(p_acc_iroi_y[2] - 0.08, sum(acc_test_iroi$sig)), labsize = 5, vjust = 1, stringsAsFactors = FALSE)   
+  } else {
+    p_acc_iroi_sig <- NULL
+  }
+  # boxplot
+  p_acc_iroi <- rplot_box2(mvpar_acc_iroi$ACC, mvpar_acc_iroi$modality, title = iroi, bColor = colors_mods, fColor = colors_mods, 
+                           gOrder = modalities, gLabel = modalities, aLabel = c('', 'Accuracy'), Xangle = 90, Yrange = p_acc_iroi_y, 
+                           sBars = p_acc_iroi_sig) + geom_hline(yintercept = 0.5, linetype = 'dashed')
+  # output figure
+  fplot <- file.path(vdir, 'tvrMVPC', sprintf('group_task-AudioVisAssos1word_MVPA-ACC_ROI-%s_v1.0.png', iroi))
+  save_plot(filename = fplot, p_acc_iroi, base_height = 5, base_asp = 0.6)
+}
 ## ---------------------------
 
 ## ROI-based RSA
@@ -231,7 +213,7 @@ rse_psc_test <- sapply(unique(repet_psc$ROI_label), function(x)
 rse_fir_test <- list()
 for (ifir in FIRs){
   rse_fir_test[ifir][[1]] <- sapply(unique(repet_psc$ROI_label), function(x) 
-                                    rcomparison_sy(repet_psc[repet_psc$ROI_label == x,], ifir, 'condition', conditions, 'participant_id'),
+                                    rcomparison_sy(repet_psc[repet_psc$ROI_label == x,], ifir, 'condition', conditions, 'participant_id', direc = 'less'),
                                     simplify = FALSE, USE.NAMES = TRUE)
 }  
 
@@ -278,12 +260,13 @@ for (iroi in unique(repet_psc$ROI_label)){
     rse_fir_iroi <- rbind(repet_fir_iroi[icond[1]][[1]], repet_fir_iroi[icond[2]][[1]])
     rse_fir_iroi$condition <- rep(icond, each = length(FIRs))
     # extract significance
-    isign <- p.adjust(unlist(lapply(rse_fir_test_iroi, function(x) as.numeric(x$p.value[x$Comparison == itest]))), method = 'fdr')
-    rse_fir_iroi$fdr <- isign  # FDR corrected
+    isign <- unlist(lapply(rse_fir_test_iroi, function(x) as.numeric(x$p.value[x$Comparison == itest])))  # uncorrected
+    #isign <- p.adjust(unlist(lapply(rse_fir_test_iroi, function(x) as.numeric(x$p.value[x$Comparison == itest]))), method = 'fdr')  # FDR corrected
+    rse_fir_iroi$pval <- isign  
     rse_fir_iroi$lab <- ''
-    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.05] <- '*'
-    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.01] <- '**' 
-    rse_fir_iroi$lab[rse_fir_iroi$fdr < 0.001] <- '***'
+    rse_fir_iroi$lab[rse_fir_iroi$pval < 0.05] <- '*'
+    rse_fir_iroi$lab[rse_fir_iroi$pval < 0.01] <- '**' 
+    rse_fir_iroi$lab[rse_fir_iroi$pval < 0.001] <- '***'
     if (any(isign < 0.05)){
       p_rse_fir_y <- round(max(rse_fir_iroi$mean + rse_fir_iroi$se), digits = 1) * 1.2
       p_rse_fir_sig <- data.frame(x = which(isign < 0.05), y = rep(p_rse_fir_y, length(which(isign < 0.05))),
