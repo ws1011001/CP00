@@ -138,17 +138,22 @@ fi
 ## create coordinate-based masks
 if $isCreateCoord;then
   cdir="$kdir/coordinates"
-  fcrd="$cdir/group_${spac}_mask-coordinates.csv"
+  fcrd="$cdir/group_${spac}_mask-coordinates-2.csv"
   fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
-  srad=5
+  rads=(4 5 6)
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
   IFS=','      # delimiter of CSV
   while read thisroi x y z;do
-    echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
-    echo "$x $y $z 1" > $cdir/${thisroi}.peak
-    3dUndump -master $fmas -srad $srad -prefix $cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz -xyz $cdir/${thisroi}.peak
-    rm -r $cdir/${thisroi}.peak
+    for srad in ${rads[@]};do
+      froi="$cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
+      if [ ! -f "$froi" ];then
+        echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
+        echo "$x $y $z 1" > $cdir/${thisroi}.peak
+        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${thisroi}.peak
+        rm -r $cdir/${thisroi}.peak
+      fi  
+    done
   done < $fcrd
   IFS=$OLDIFS
 fi
