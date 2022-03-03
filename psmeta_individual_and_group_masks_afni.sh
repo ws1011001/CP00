@@ -138,7 +138,7 @@ fi
 ## create coordinate-based masks
 if $isCreateCoord;then
   cdir="$kdir/coordinates"
-  fcrd="$cdir/group_${spac}_mask-coordinates-2.csv"
+  fcrd="$cdir/group_${spac}_mask-coordinates.csv"
   fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
   rads=(4 5 6)
   # create mask for each coordinate
