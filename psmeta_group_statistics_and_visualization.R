@@ -67,7 +67,7 @@ rcomparison_sy(locaa_vot, 'PSC', 'condition', c('words', 'pseudowords', 'scrambl
 # PLOT
 p_locaa_vot_sig <- data.frame(sleft = c(1, 2), sright = c(3, 3), slabs = c('**', '***'), spos = c(0.55, 0.46),
                               labsize = 4, vjust = 0, stringsAsFactors = FALSE) 
-p_locaa_vot <- rplot_box2(locaa_vot$PSC, locaa_vot$condition, bColor = c('black', 'gray40', 'gray70'), fColor = c('black', 'gray40', 'gray70'), 
+p_locaa_vot <- rplot_box2(locaa_vot$PSC, locaa_vot$condition, bColor = c('gray40', 'gray60', 'gray80'), fColor = c('gray40', 'gray60', 'gray80'), 
                           gOrder = c('words', 'pseudowords', 'scrambled'), gLabel = c('Words', 'Pseudowords', 'Scrambled'), textSz = 15,
                           aLabel = c('', 'Percent of Signal Change'), Yrange = c(-0.3, 0.6), Xangle = 90, sBars = p_locaa_vot_sig)
 fplot <- file.path(rdir, 'Auditory_PSC_lvOT-visual.png')
@@ -233,7 +233,7 @@ for (iroi in unique(repet_psc$ROI_label)){
     rse_test_iroi$lab[rse_test_iroi$p.value < 0.01] <- '**' 
     rse_test_iroi$lab[rse_test_iroi$p.value < 0.001] <- '***'
     p_rse_iroi_sig <- data.frame(sleft = c(1, 3, 5, 7)[rse_test_iroi$sig], sright = c(2, 4, 6, 8)[rse_test_iroi$sig], 
-                                 slabs = rse_test_iroi$lab, spos = rep(p_rse_iroi_y[2] - 0.08, sum(rse_test_iroi$sig)), 
+                                 slabs = rse_test_iroi$lab[rse_test_iroi$sig], spos = rep(p_rse_iroi_y[2] - 0.08, sum(rse_test_iroi$sig)), 
                                  labsize = 5, vjust = 0.5, stringsAsFactors = FALSE)   
   } else {
     p_rse_iroi_sig <- NULL
