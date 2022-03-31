@@ -104,7 +104,7 @@ for i in range(0, n):
         fbox = os.path.join(kdir, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisroi))
       mbox = load_img(fbox)
       nvox = np.sum(mbox.get_data())
-      masker_box = NiftiMasker(mask_img = mbox, standardize = False, detrend = False)  # mask transformer; no standardize for searchlight
+      masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer; no standardize for searchlight
       betas_box = masker_box.fit_transform(betas)                                      # masked betas
       # do MVPA with each classifier
       for clf_token, clf_model in zip(clf_tokens, clf_models):
