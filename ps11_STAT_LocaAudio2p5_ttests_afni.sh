@@ -49,40 +49,69 @@ fidx=(14 17 20)  # T values
 
 echo -e "========== START JOB at $(date) =========="
 
-## extract beta coefficients
-for subj in ${subjects[@]};do
-  echo -e "extract beta maps for $task for subject : $subj ......"
-  wdir="$adir/$subj/$task"
-  # specify stat files
-  for model in ${models[@]};do
-    oglm="${subj}_${task}_${model}"
-    stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
-    # extract coef maps for group analysis
-    i=0
-    for ilab in ${flab[@]};do
-      coef="$wdir/$oglm/stats.beta_${oglm}_${ilab}.nii.gz"
-      if [ ! -f $coef ];then
-        3dbucket -fbuc -prefix $coef "${stat}[${eidx[i]}]"
-      fi
-      let i+=1
-    done
-  done
-done
-## ---------------------------
+### extract beta coefficients
+#for subj in ${subjects[@]};do
+#  echo -e "extract beta maps for $task for subject : $subj ......"
+#  wdir="$adir/$subj/$task"
+#  # specify stat files
+#  for model in ${models[@]};do
+#    oglm="${subj}_${task}_${model}"
+#    stat="$wdir/$oglm/stats.${subj}_${task}+tlrc.HEAD"
+#    # extract coef maps for group analysis
+#    i=0
+#    for ilab in ${flab[@]};do
+#      coef="$wdir/$oglm/stats.beta_${oglm}_${ilab}.nii.gz"
+#      if [ ! -f $coef ];then
+#        3dbucket -fbuc -prefix $coef "${stat}[${eidx[i]}]"
+#      fi
+#      let i+=1
+#    done
+#  done
+#done
+### ---------------------------
 
-## group T-tests
-tdir="$adir/group/$task"
-if [ ! -d $tdir ];then mkdir -p $tdir;fi
-for model in ${models[@]};do
-  for ilab in ${flab[@]};do
-    # stack up subjects for group analysis
-    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
-    if [ ! -f $gcoef ];then
-      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
-    fi
+### group T-tests
+#tdir="$adir/group/$task"
+#if [ ! -d $tdir ];then mkdir -p $tdir;fi
+#for model in ${models[@]};do
+#  for ilab in ${flab[@]};do
+#    # stack up subjects for group analysis
+#    gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
+#    if [ ! -f $gcoef ];then
+#      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${ilab}.nii.gz
+#    fi
 #    # T-test
 #    3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz -mask $mask -exblur 6 -prefix $tdir/stats.group_${task}_${model}_${ilab}
-  done  
+#  done  
+#done
+### ---------------------------
+
+## extract coef (PSC) with individual left-vOT mask
+model='GLM.wPSC.wNR24a'
+fpsc="$adir/group_${task}_${model}_PSC.csv"
+echo "participant_id,ROI_label,condition,PSC" >> $fpsc
+rads=(4 5 6 7 8)  # radii used for individual left-vOT ROIs
+for subj in ${subjects[@]};do
+  echo -e "Extract beta values (PSC) with ilvOT mask for $task for subject $subj."
+  wdir="$adir/$subj/$task"
+  oglm="${subj}_${task}_${model}"
+  # specify PSC beta files
+  coef_words="$wdir/$oglm/stats.beta_${oglm}_words.nii.gz"
+  coef_pword="$wdir/$oglm/stats.beta_${oglm}_pseudowords.nii.gz"
+  coef_scrab="$wdir/$oglm/stats.beta_${oglm}_scrambled.nii.gz"
+  # extract PSC beta
+  for srad in ${rads[@]};do
+    froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
+    fbig="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm_tmp.nii.gz"
+    3dresample -master $mask -input $froi -prefix $fbig
+    psc_words=$(3dBrickStat -mean -mask $fbig $coef_words)
+    psc_pword=$(3dBrickStat -mean -mask $fbig $coef_pword)
+    psc_scrab=$(3dBrickStat -mean -mask $fbig $coef_scrab)
+    echo -e "$subj,ilvOT-sph${srad}mm,words,$psc_words" >> $fpsc
+    echo -e "$subj,ilvOT-sph${srad}mm,pseudowords,$psc_pword" >> $fpsc
+    echo -e "$subj,ilvOT-sph${srad}mm,scrambled,$psc_scrab" >> $fpsc
+    rm -r $fbig
+  done
 done
 ## ---------------------------
 
