@@ -4,7 +4,7 @@
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
-#SBATCH -t 3-12
+#SBATCH -t 6-12
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=128gb
 #SBATCH -o ./run_slurm.log/nilearn_%j.out
