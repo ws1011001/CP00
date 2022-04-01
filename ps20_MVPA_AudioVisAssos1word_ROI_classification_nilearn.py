@@ -17,13 +17,14 @@ import os
 import nilearn.decoding
 import pandas as pd
 import numpy as np
+import itertools  # to create combinations for Leave-N-Runs-Out-CV for cross-modal decoding
 from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from nilearn.input_data import NiftiMasker
 from sklearn import svm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, permutation_test_score
+from sklearn.model_selection import LeaveOneGroupOut, LeavePGroupsOut, PredefinedSplit, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 # setup path
@@ -51,10 +52,12 @@ clf_tokens = ['LDA', 'GNB', 'SVClin', 'SVCrbf']  # classifier abbreviations
 nmodels    = len(clf_tokens)
 # ROI-based parameters
 fs_perc = [57, 93, 171, 389]               # feature selection K best: [57, 93, 171, 389, 751] = radius 4, 5, 6, 8, 10 mm
-nperm   = 100                             # number of permutations
+nperm   = 100                              # number of permutations
 pperm   = 0.05                             # the threshold p-value 
 C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
 njobs   = -1                               # -1 means all CPUs
+CV_type = 'LNROCV'                         # LOROCV; LNROCV
+CV_N    = 2                                # number of runs to be leaved out
 # read ROIs information
 froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
 rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
@@ -73,12 +76,17 @@ labs_trl = labels['conditions']  # WA, WV, PA, PV
 labs_lex = labels['lexicon']     # word, pseudoword
 labs_run = labels['runs']        # 5 runs, from run1 to run5
 runs = np.unique(labs_run)       # run labels
-nrun = len(runs)                 # number of runs 
 # initialize performance tables
 facc = os.path.join(vdir, "group_%s_MVPA-Perm%d_unimodal+crossmodal.csv" % (task, nperm))  # performance table
 dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
+# define cross-validation
+if CV_type == 'LOROCV':
+  CV = LeaveOneGroupOut()  # leave-one-run-out cross-validation
+else:
+  CV = LeavePGroupsOut(n_groups=CV_N)                           # leave-N-runs-out cross-validation
+  runs = [list(r) for r in itertools.combinations(runs, CV_N)]  # all combinations of N runs
+nrun = len(runs)  # number of FOLDs 
 # do MVPA for each subject
-CV = LeaveOneGroupOut()  # leave-one-run-out cross-validation
 for i in range(0, n):
   subj = subjects.index[i]
   print("Perform ROI-based MVPA using classifiers: %s with LOROCV for subject: %s ......\n" % (clf_tokens, subj))
@@ -118,9 +126,10 @@ for i in range(0, n):
           acc_crs  = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
           for j in range(0, nrun):
             thisrun = runs[j]
+            if type(thisrun) != list: thisrun = list(thisrun)  # make sure it is a list
             # select labels for cross-modal decoding CV
-            labs_train = ~labs_run.isin([thisrun]) & labs_mod     # train set of other 4 runs with this modality
-            labs_test = labs_run.isin([thisrun]) & ~labs_mod      # test set of this run with another modality
+            labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
+            labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
             labs_thisrun = labs_train | labs_test                 # selected labels
             CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
             # prepare betas
@@ -154,9 +163,10 @@ for i in range(0, n):
             acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
             for j in range(0, nrun):
               thisrun = runs[j]
+              if type(thisrun) != list: thisrun = list(thisrun)  # make sure it is a list
               # select labels for cross-modal decoding CV
-              labs_train = ~labs_run.isin([thisrun]) & labs_mod     # train set of other 4 runs with this modality
-              labs_test = labs_run.isin([thisrun]) & ~labs_mod      # test set of this run with another modality
+              labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
+              labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
               labs_thisrun = labs_train | labs_test                 # selected labels
               CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
               # prepare betas
