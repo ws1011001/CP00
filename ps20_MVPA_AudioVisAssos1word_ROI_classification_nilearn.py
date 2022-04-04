@@ -77,7 +77,7 @@ labs_lex = labels['lexicon']     # word, pseudoword
 labs_run = labels['runs']        # 5 runs, from run1 to run5
 runs = np.unique(labs_run)       # run labels
 # initialize performance tables
-facc = os.path.join(vdir, "group_%s_MVPA-Perm%d_unimodal+crossmodal.csv" % (task, nperm))  # performance table
+facc = os.path.join(vdir, "group_%s_MVPA-Perm%d_unimodal+crossmodal_%s.csv" % (task, nperm, CV_type))  # performance table
 dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
 # define cross-validation
 if CV_type == 'LOROCV':
