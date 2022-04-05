@@ -41,9 +41,9 @@ pdir <- file.path(mdir, 'manuscript', 'report')
 n           <- 22  # number of subjects
 # define data files
 flocav <- file.path(rdir, 'activation', 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
-flocaa <- file.path(rdir, 'activation', 'task-LocaAudio2p5', 'stats.beta_group_task-LocaAudio2p5_GLM.wPSC.wNR24a_mask-lvOT-visual.csv')
+flocaa <- file.path(rdir, 'activation', 'group_task-LocaAudio2p5_GLM.wPSC.wNR24a_PSC.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
-fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.csv')
+fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm100_unimodal+crossmodal_L2ROCV.csv')
 frepet <- file.path(tdir, 'group_task-AudioVisAssos2words_RSE_PSC+TENT.csv')
 # read data
 locav_xyz <- read.csv(file = flocav, stringsAsFactors = FALSE)
@@ -62,15 +62,17 @@ dev.off()
 ## ---------------------------
 
 ## Auditory localizer
+thisroi <- 'ilvOT-sph8mm'
+locaa_roi <- locaa_vot[locaa_vot$ROI_label == thisroi,]
 # Compare PSC for the ROI lvOT-visual
-rcomparison_sy(locaa_vot, 'PSC', 'condition', c('words', 'pseudowords', 'scrambled'), 'participant_id')
+rcomparison_sy(locaa_roi, 'PSC', 'condition', c('words', 'pseudowords', 'scrambled'), 'participant_id')
 # PLOT
-p_locaa_vot_sig <- data.frame(sleft = c(1, 2), sright = c(3, 3), slabs = c('**', '***'), spos = c(0.55, 0.46),
+p_locaa_vot_sig <- data.frame(sleft = c(1, 2), sright = c(3, 3), slabs = c('**', '***'), spos = c(0.65, 0.57),
                               labsize = 4, vjust = 0, stringsAsFactors = FALSE) 
-p_locaa_vot <- rplot_box2(locaa_vot$PSC, locaa_vot$condition, bColor = c('gray40', 'gray60', 'gray80'), fColor = c('gray40', 'gray60', 'gray80'), 
+p_locaa_vot <- rplot_box2(locaa_roi$PSC, locaa_roi$condition, bColor = c('gray40', 'gray60', 'gray80'), fColor = c('gray40', 'gray60', 'gray80'), 
                           gOrder = c('words', 'pseudowords', 'scrambled'), gLabel = c('Words', 'Pseudowords', 'Scrambled'), textSz = 15,
-                          aLabel = c('', 'Percent of Signal Change'), Yrange = c(-0.3, 0.6), Xangle = 90, sBars = p_locaa_vot_sig)
-fplot <- file.path(rdir, 'Auditory_PSC_lvOT-visual.png')
+                          title = thisroi, aLabel = c('', 'Percent of Signal Change'), Yrange = c(-0.3, 0.7), Xangle = 90, sBars = p_locaa_vot_sig)
+fplot <- file.path(rdir, sprintf('Auditory_PSC_%s.png', thisroi))
 save_plot(filename = fplot, p_locaa_vot, base_height = 4, base_asp = 0.6)
 ## ---------------------------
 
@@ -96,10 +98,11 @@ save_plot(filename = fplot, mvpac_acc_p, base_height = 8, base_asp = 1)
 modalities       <- c('visual', 'auditory', 'visual2', 'auditory2')
 modalities_label <- c('Vis.', 'Aud.', 'Vis-Aud', 'Aud-Vis')
 colors_mods <- c('gold3', 'gold', 'seagreen4', 'seagreen1')
-mvpar_acc_rois <- c('lvOT-1', 'lvOT-2', 'lvOT-3', 'lvOT-4', 'lvOT-sph4mm', 'lvOT-sph5mm', 'lvOT-sph6mm', 
-                    'ilvOT', 'ilvOT-sph4mm', 'ilvOT-sph5mm', 'ilvOT-sph6mm', 
-                    'lvOT-visual', 'lvOT-visualonly', 'lvOT-auditory', 'lvOT-auditoryonly', 'lvOT-both', 
-                    'lSTG-auditory', 'rSTG-auditory')
+#mvpar_acc_rois <- c('lvOT-1', 'lvOT-2', 'lvOT-3', 'lvOT-4', 'lvOT-sph4mm', 'lvOT-sph5mm', 'lvOT-sph6mm', 
+#                    'ilvOT', 'ilvOT-sph4mm', 'ilvOT-sph5mm', 'ilvOT-sph6mm', 
+#                    'lvOT-visual', 'lvOT-visualonly', 'lvOT-auditory', 'lvOT-auditoryonly', 'lvOT-both', 
+#                    'lSTG-auditory', 'rSTG-auditory')
+mvpar_acc_rois <- unique(mvpar_acc$ROI_label)
 # TEST
 mvpar_acc_svclin <- mvpar_acc[mvpar_acc$classifier == 'SVClin',]
 mvpar_acc_test1 <- sapply(mvpar_acc_rois, function(x)  # if ACC is greater than 50% for each modality 
