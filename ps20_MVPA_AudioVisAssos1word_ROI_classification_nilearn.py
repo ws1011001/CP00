@@ -59,6 +59,7 @@ C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations who
 njobs   = -1                               # -1 means all CPUs
 CV_type = 'LOROCV'                         # LOROCV; LNROCV
 CV_N    = 2                                # number of runs to be leaved out
+st_type = 'spatial-temporal'               # standardization method: none; temporal (default); spatial-temporal
 # read ROIs information
 froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
 rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
@@ -113,8 +114,18 @@ for i in range(n):
         fbox = os.path.join(kdir, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisroi))
       mbox = load_img(fbox)
       nvox = np.sum(mbox.get_data())
-      masker_box = NiftiMasker(mask_img = mbox, standardize = True, detrend = False)  # mask transformer; no standardize for searchlight
+      # data standardization
+      masker_box = NiftiMasker(mask_img = mbox, standardize = False, detrend = False)  # mask transformer; no standardize for searchlight
       betas_box = masker_box.fit_transform(betas)                                      # masked betas
+      if st_type == 'temporal':
+        print(f'Do temporal standardization for {thisroi}. ')
+        betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
+      elif st_type == 'spatial-temporal':
+        print(f'Do spatial and temporal standardization sequentially for {thisroi}. ')
+        betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
+        betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
+      else:
+        print('No standardization for {thisroi}. ')
       # do MVPA with each classifier
       for clf_token, clf_model in zip(clf_tokens, clf_models):
         # permutation MVPA
@@ -133,9 +144,18 @@ for i in range(n):
             labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
             labs_thisrun = labs_train | labs_test                 # selected labels
             CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
-            # prepare betas
+            # prepare betas and data stanardization
             betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
             betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
+            if st_type == 'temporal':
+              print(f'Do temporal standardization for {thisroi}. ')
+              betas_thisrun_box = (betas_thisrun_box - betas_thisrun_box.mean(axis=0).reshape(1, -1)) / betas_thisrun_box.std(axis=0).reshape(1, -1)  # temporal
+            elif st_type == 'spatial-temporal':
+              print(f'Do spatial and temporal standardization sequentially for {thisroi}. ')
+              betas_thisrun_box = (betas_thisrun_box - betas_thisrun_box.mean(axis=1).reshape(-1, 1)) / betas_thisrun_box.std(axis=1).reshape(-1, 1)  # spatial
+              betas_thisrun_box = (betas_thisrun_box - betas_thisrun_box.mean(axis=0).reshape(1, -1)) / betas_thisrun_box.std(axis=0).reshape(1, -1)  # temporal
+            else:
+              print(f'No standardization for {thisroi}. ')
             # carry out MVPA for this run
             jacc, jperm, jpval = permutation_test_score(clf_model, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
                                                         n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
@@ -152,42 +172,42 @@ for i in range(n):
           perm.tofile(file = funip, sep = '\n')
           perm_crs.tofile(file = fcrsp, sep = '\n')
         else:
-          # select features if the ROI is too big (not fixed)
-          for iperc in fs_perc:
-            feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
-            clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
-            # uni-modal MVPA
-            acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-                                                     n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
-            # cross-modal MVPA
-            perm_crs = np.array([])        # initialize permutation scores array
-            acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
-            for j in range(0, nrun):
-              thisrun = runs[j]
-              if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
-              # select labels for cross-modal decoding CV
-              labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
-              labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
-              labs_thisrun = labs_train | labs_test                 # selected labels
-              CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
-              # prepare betas
-              betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
-              betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
-              # carry out MVPA for this run
-              jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
-                                                          n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
-              perm_crs = np.append(perm_crs, jperm)
-              acc_crs[j, 0] = jacc                 # ACC of this run
-              acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
-              acc_crs[j, 2] = jpval                # p-value of this run
-            acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
-            # output ACC and perm scores
-            dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, pperm]
-            dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
-            funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
-            fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
-            perm.tofile(file = funip, sep = '\n')
-            perm_crs.tofile(file = fcrsp, sep = '\n')
+          ## select features if the ROI is too big (not fixed)
+          #for iperc in fs_perc:
+          #  feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
+          #  clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
+          #  # uni-modal MVPA
+          #  acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
+          #                                           n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+          #  # cross-modal MVPA
+          #  perm_crs = np.array([])        # initialize permutation scores array
+          #  acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
+          #  for j in range(0, nrun):
+          #    thisrun = runs[j]
+          #    if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
+          #    # select labels for cross-modal decoding CV
+          #    labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
+          #    labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
+          #    labs_thisrun = labs_train | labs_test                 # selected labels
+          #    CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
+          #    # prepare betas
+          #    betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
+          #    betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
+          #    # carry out MVPA for this run
+          #    jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
+          #                                                n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+          #    perm_crs = np.append(perm_crs, jperm)
+          #    acc_crs[j, 0] = jacc                 # ACC of this run
+          #    acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
+          #    acc_crs[j, 2] = jpval                # p-value of this run
+          #  acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
+          #  # output ACC and perm scores
+          #  dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, pperm]
+          #  dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
+          #  funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+          #  fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+          #  perm.tofile(file = funip, sep = '\n')
+          #  perm_crs.tofile(file = fcrsp, sep = '\n')
             
   print("Finish ROI-based MVPA for subject: %s.\n" % subj) 
 # output the performance table
