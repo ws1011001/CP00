@@ -37,6 +37,7 @@ fsub = os.path.join(vdir, 'participants_final.tsv')          # subjects info
 subjects = pd.read_table(fsub).set_index('participant_id')   # the list of subjects
 n = len(subjects)
 # experiment parameters
+np.random.seed(21)  # random seed for sklearn
 task = 'task-AudioVisAssos1word'    # task name
 spac = 'space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep 
 mods = ['visual', 'auditory']       # stimulus modalities
@@ -87,7 +88,7 @@ else:
   runs = [list(r) for r in itertools.combinations(runs, CV_N)]  # all combinations of N runs
 nrun = len(runs)  # number of FOLDs 
 # do MVPA for each subject
-for i in range(0, n):
+for i in range(n):
   subj = subjects.index[i]
   print("Perform ROI-based MVPA using classifiers: %s with LOROCV for subject: %s ......\n" % (clf_tokens, subj))
   # setup individual  path
@@ -103,7 +104,7 @@ for i in range(0, n):
     labs_crs = np.zeros(len(labs_run))  # initialize labels for PredefinedSplit() in which 0 is for test while -1 is for training
     labs_crs[labs_mod] = -1             # this modality is for training
     # do MVPA with each ROI
-    for iroi in range(0, nroi):
+    for iroi in range(nroi):
       thisroi = rois.index[iroi]
       # load up group/individual mask
       if thisroi[0] == 'i':
@@ -124,9 +125,9 @@ for i in range(0, n):
           # cross-modal MVPA
           perm_crs = np.array([])         # initialize permutation scores array
           acc_crs  = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
-          for j in range(0, nrun):
+          for j in range(nrun):
             thisrun = runs[j]
-            if type(thisrun) != list: thisrun = list(thisrun)  # make sure it is a list
+            if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
             # select labels for cross-modal decoding CV
             labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
             labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
@@ -163,7 +164,7 @@ for i in range(0, n):
             acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
             for j in range(0, nrun):
               thisrun = runs[j]
-              if type(thisrun) != list: thisrun = list(thisrun)  # make sure it is a list
+              if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
               # select labels for cross-modal decoding CV
               labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
               labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
