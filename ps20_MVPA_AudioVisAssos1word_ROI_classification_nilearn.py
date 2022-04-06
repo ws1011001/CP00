@@ -172,43 +172,42 @@ for i in range(n):
           perm.tofile(file = funip, sep = '\n')
           perm_crs.tofile(file = fcrsp, sep = '\n')
         else:
-          ## select features if the ROI is too big (not fixed)
-          #for iperc in fs_perc:
-          #  feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
-          #  clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
-          #  # uni-modal MVPA
-          #  acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-          #                                           n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
-          #  # cross-modal MVPA
-          #  perm_crs = np.array([])        # initialize permutation scores array
-          #  acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
-          #  for j in range(0, nrun):
-          #    thisrun = runs[j]
-          #    if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
-          #    # select labels for cross-modal decoding CV
-          #    labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
-          #    labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
-          #    labs_thisrun = labs_train | labs_test                 # selected labels
-          #    CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
-          #    # prepare betas
-          #    betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
-          #    betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
-          #    # carry out MVPA for this run
-          #    jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
-          #                                                n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
-          #    perm_crs = np.append(perm_crs, jperm)
-          #    acc_crs[j, 0] = jacc                 # ACC of this run
-          #    acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
-          #    acc_crs[j, 2] = jpval                # p-value of this run
-          #  acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
-          #  # output ACC and perm scores
-          #  dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, pperm]
-          #  dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
-          #  funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
-          #  fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
-          #  perm.tofile(file = funip, sep = '\n')
-          #  perm_crs.tofile(file = fcrsp, sep = '\n')
-            
+          # select features if the ROI is too big (not fixed)
+          for iperc in fs_perc:
+            feature_selected = SelectKBest(f_classif, k = iperc)  # feature selection
+            clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
+            # uni-modal MVPA
+            acc, perm, pval = permutation_test_score(clf_fs, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
+                                                     n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+            # cross-modal MVPA
+            perm_crs = np.array([])        # initialize permutation scores array
+            acc_crs = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
+            for j in range(0, nrun):
+              thisrun = runs[j]
+              if type(thisrun) != list: thisrun = [thisrun]  # make sure it is a list
+              # select labels for cross-modal decoding CV
+              labs_train = ~labs_run.isin(thisrun) & labs_mod     # train set of other 4 runs with this modality
+              labs_test = labs_run.isin(thisrun) & ~labs_mod      # test set of this run with another modality
+              labs_thisrun = labs_train | labs_test                 # selected labels
+              CV_thisrun = PredefinedSplit(labs_crs[labs_thisrun])  # pre-defined CV
+              # prepare betas
+              betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
+              betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
+              # carry out MVPA for this run
+              jacc, jperm, jpval = permutation_test_score(clf_fs, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
+                                                          n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+              perm_crs = np.append(perm_crs, jperm)
+              acc_crs[j, 0] = jacc                 # ACC of this run
+              acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
+              acc_crs[j, 2] = jpval                # p-value of this run
+            acc_crs = np.mean(acc_crs, axis=0)  # averaged performance           
+            # output ACC and perm scores
+            dacc.loc[len(dacc)] = [subj, imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, pperm]
+            dacc.loc[len(dacc)] = [subj, "%s2" % imod, thisroi, clf_token, iperc, acc_crs[0], acc_crs[1], acc_crs[2], pperm]
+            funip = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+            fcrsp = os.path.join(pdir, "%s_tvrMVPC-%s-Perm%d_LOROCV_ACC-%s2_mask-%s-k%03d.1D" % (subj, clf_token, nperm, imod, thisroi, iperc))
+            perm.tofile(file = funip, sep = '\n')
+            perm_crs.tofile(file = fcrsp, sep = '\n')
   print("Finish ROI-based MVPA for subject: %s.\n" % subj) 
 # output the performance table
 dacc = dacc.set_index('participant_id')
