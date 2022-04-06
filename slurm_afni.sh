@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH -A b222
 #SBATCH -t 3-12
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=24
 #SBATCH --mem=128gb
 #SBATCH -o ./run_slurm.log/AFNI_%j.out
 #SBATCH -e ./run_slurm.log/AFNI_%j.err
@@ -37,8 +37,9 @@ scripts_afni[14]='ps17_STAT_AudioVisAssos1word_factorial_afni.sh'
 scripts_afni[15]='ps22_STAT_AudioVisAssos1word_searchlight_ACC_afni.sh'
 scripts_afni[16]='ps26_STAT_AudioVisAssos1word_searchlight_RSA_afni.sh'
 scripts_afni[17]='ps27_RSE_AudioVisAssos2words_extract_PSC_and_TENT_afni.sh'
-scripts_afni[18]='psmeta_individual_and_group_masks_afni.sh'
-script_id=8
+scripts_afni[18]='ps28_CONN_LocaAudio2p5_gPPI_afni.sh'
+scripts_afni[19]='psmeta_individual_and_group_masks_afni.sh'
+script_id=18
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
