@@ -61,15 +61,17 @@ for subj in ${subjects[@]};do
   fwrd="$wdir/stimuli/${subj}_${task}_events-cond1.txt"  # words
   fpdw="$wdir/stimuli/${subj}_${task}_events-cond2.txt"  # pseudowords
   fscr="$wdir/stimuli/${subj}_${task}_events-cond3.txt"  # scrambled
-  timing_tool.py -timing $fwrd -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_words.1D
-  timing_tool.py -timing $fpdw -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_pseudowords.1D
-  timing_tool.py -timing $fscr -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_scrambled.1D
+  if [ ! -f "$pdir/ppi_ideal_words.1D" ];then
+    timing_tool.py -timing $fwrd -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_words.1D
+    timing_tool.py -timing $fpdw -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_pseudowords.1D
+    timing_tool.py -timing $fscr -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $pdir/ppi_ideal_scrambled.1D
+  fi
 done
 ## ---------------------------
 
 ## Prepare PPI regressors for each seed
 for seed in ${seeds[@]};do
-  echo -e "Prepare PPI regressors for $task for $subj. "
+  echo -e "Prepare PPI regressors for $seed. "
   froi="$kdir/group/group_${spac}_mask-${seed}.nii.gz"
   for subj in ${subjects[@]};do
     wdir="$adir/$subj/$task"
@@ -78,10 +80,14 @@ for seed in ${seeds[@]};do
     # extract seed time-series
     ferr="$oglm/errts.${subj}_${task}+tlrc."
     fsts="$pdir/${subj}_${task}_mask-${seed}_ts.1D"  # seed time-series
-    3dmaskave -mask $froi -quiet $ferr > $fsts
-    # deconvolve time-series
-    1dDeconv --tr-up $TRup --n-up $TPup -input $fsts  # the output file's name ends with _deconv.1D
+    if [ ! -f $fsts ];then
+      3dmaskave -mask $froi -quiet $ferr > $fsts
+      # deconvolve time-series
+      1dDeconv --tr-up $TRup --n-up $TPup -input $fsts &  # the output file's name ends with _deconv.1D
+    fi
   done
+  wait
+  echo -e "Extracted PPI regressors for $seed. "
 done
 ## ---------------------------
 
