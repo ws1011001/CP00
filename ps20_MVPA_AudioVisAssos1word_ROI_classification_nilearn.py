@@ -57,7 +57,7 @@ nperm   = 100                              # number of permutations
 pperm   = 0.05                             # the threshold p-value 
 C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
 njobs   = -1                               # -1 means all CPUs
-CV_type = 'LOROCV'                         # LOROCV; LNROCV
+CV_type = 'LNROCV'                         # LOROCV; LNROCV
 CV_N    = 2                                # number of runs to be leaved out
 st_type = 'spatial-temporal'               # standardization method: none; temporal (default); spatial-temporal
 # read ROIs information
