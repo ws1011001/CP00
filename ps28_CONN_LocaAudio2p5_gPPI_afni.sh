@@ -67,7 +67,7 @@ for subj in ${subjects[@]};do
     for i in `seq 1 3`;do  # three conditions: words pseudowords scrambled
       fcon="$wdir/stimuli/${subj}_${task}_events-cond${i}.txt"
       fvec="$pdir/${subj}_${task}_events-ideal-cond${i}.1D"
-      timing_tool.py -timing $fwrd -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $fvec
+      timing_tool.py -timing $fcon -tr $TRup -stim_dur $DurC -run_len $DurR -min_frac 0.3 -timing_to_1D $fvec
     done
   fi
 done
