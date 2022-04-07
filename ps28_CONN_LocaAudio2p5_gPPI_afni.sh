@@ -48,8 +48,8 @@ TRor=1.2  # original TR inseconds
 TRup=0.1  # upsampled TR (seconds)
 DurC=12   # duration of a condition in the design
 nTRs=335  # number of TRs
-TPup=$(echo "$TR / $TRup" | bc -l)  # upsampled scale size: original TR divided by upsampled TR
-DurR=$(echo "$TR * $nTRs" | bc -l)  # duration of the whole run
+TPup=$(echo "$TRor / $TRup" | bc -l)  # upsampled scale size: original TR divided by upsampled TR
+DurR=$(echo "$TRor * $nTRs" | bc -l)  # duration of the whole run
 mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 ## ---------------------------
 
