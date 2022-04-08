@@ -38,6 +38,7 @@ readarray subjects < $mdir/CP00_subjects_gPPI.txt
 readarray seeds < $adir/group_masks_labels-gPPI.txt  # seed regions for gPPI
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
+anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
 model='GLM.wPSC.wNR24a'
 gppi='GLM.wPSC.wNR24a.gPPI'
 deno='NR24a'                 # denoising with 12 motion parameters and 6 first PCs of WM and 6 first PCs of CSF
