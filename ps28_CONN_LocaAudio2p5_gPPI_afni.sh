@@ -48,8 +48,9 @@ TRor=1.2  # original TR inseconds
 TRup=0.1  # upsampled TR (seconds)
 DurC=12   # duration of a condition in the design
 nTRs=335  # number of TRs
-TPup=$(echo "$TRor / $TRup" | bc -l)  # upsampled scale size: original TR divided by upsampled TR
+TPup=$(echo "$TRor / $TRup" | bc)     # upsampled scale size: original TR divided by upsampled TR
 DurR=$(echo "$TRor * $nTRs" | bc -l)  # duration of the whole run
+nUPs=$(echo "$TPup * $nTRs" | bc)     # number of time points in the upsampled whole run
 mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 ## ---------------------------
 
@@ -88,7 +89,7 @@ for seed in ${seeds[@]};do
     if [ ! -f $fsts ];then
       3dmaskave -mask $froi -quiet $ferr > $fsts
       # deconvolve time-series
-      1dDeconv --tr-up $TRup --n-up $TPup -input $fsts &  # the output file's name ends with _deconv.1D
+      1dDeconv -func block -dur $DurC --tr-up $TRup --n-up $TPup -input $fsts &  # the output file's name ends with _deconv.1D
     fi
   done
   wait  # parallel processing for deconvolution since it's slow
@@ -100,13 +101,17 @@ for seed in ${seeds[@]};do
     pdir="$wdir/${subj}_${task}_${gppi}"
     # estimate interaction
     fsts="$pdir/$seed/${subj}_${task}_mask-${seed}_ts_deconv.1D"  # seed time-series
+    firf="$pdir/$seed/${subj}_${task}_mask-${seed}_ts_IRF.1D"     # impulse response function
     for i in `seq 1 3`;do
       fvec="$pdir/${subj}_${task}_events-ideal-cond${i}.1D"
       fcts="$pdir/$seed/${subj}_${task}_deconv-cond${i}.1D"
+      frec="$pdir/$seed/${subj}_${task}_reconv-cond${i}.1D"  # reconvolution
       fppi="$pdir/$seed/${subj}_${task}_gPPI-cond${i}.1D"
       if [ ! -f $fppi ];then
         1deval -a $fsts\' -b $fvec -expr 'a*b' > $fcts
-        waver -GAM -peak 1 -TR $TRor -input $fcts -numout $nTRs > $fppi
+        waver -FILE $TRup $firf -input $fcts -numout $nUPs > $frec
+        # downsample reconv.
+        1dcat $frec'{0..$('$TPup')}' > $fppi
       fi
     done  
   done
@@ -123,6 +128,7 @@ for seed in ${seeds[@]};do
     pdir="$wdir/$pglm/$seed"         # the PPI seed folder
     # prepare data for GLM
     tar -xf $wdir/confounds/${subj}_${task}_${model}.1D.tar.gz --strip-components 7  # unzip confounds files
+    ls $wdir/confounds
     # generate AFNI script
     afni_proc.py -subj_id ${subj}_${task} \
       -script $wdir/${pglm}.tcsh \
