@@ -127,7 +127,7 @@ for seed in ${seeds[@]};do
     pglm="${subj}_${task}_${gppi}"   # the token for the PPI GLM
     pdir="$wdir/$pglm/$seed"         # the PPI seed folder
     # prepare data for GLM
-    tar -vxf $wdir/confounds/${oglm}.1D.tar.gz --strip-components=7  # unzip confounds files
+    tar -vxf $wdir/confounds/${oglm}.1D.tar.gz --strip-components=7 -C $wdir/confounds  # unzip confounds files
     # generate AFNI script
     afni_proc.py -subj_id ${subj}_${task} \
       -script $wdir/${pglm}.tcsh \
