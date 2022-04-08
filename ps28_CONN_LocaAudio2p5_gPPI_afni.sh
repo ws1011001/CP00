@@ -158,8 +158,8 @@ for seed in ${seeds[@]};do
       -html_review_style pythonic
     
     # modify the script nd run it
-    #sed -e '39 {s/^/#/}' -e '46 {s/^/#/}' $wdir/${pglm}.tcsh > $wdir/${pglm}_exec.tcsh  # comment the line 39 to ignore the exist of out_dir
-    #tcsh -xef $wdir/${pglm}_exec.tcsh 2>&1 | tee $wdir/output_${pglm}_exec.tcsh         # execute the AFNI script
+    sed -e '39 {s/^/#/}' -e '46 {s/^/#/}' $wdir/${pglm}.tcsh > $wdir/${pglm}_exec.tcsh  # comment the line 39 to ignore the exist of out_dir
+    tcsh -xef $wdir/${pglm}_exec.tcsh 2>&1 | tee $wdir/output_${pglm}_exec.tcsh         # execute the AFNI script
     
     # clean up confounds .1D files used by the present GLM
     rm -r $wdir/confounds/*.1D
