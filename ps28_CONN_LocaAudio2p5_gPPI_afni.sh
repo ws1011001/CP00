@@ -19,7 +19,7 @@ case "$platform" in
   mesoc)
     mdir='/CP00'                       # the project Main folder @mesocentre
     export PATH="$mdir/nitools:$PATH"  # setup tools if @mesocentre
-    njob=16
+    njob=4
     ;;
   totti)
     mdir='/data/mesocentre/data/agora/CP00'  # the project Main folder @totti
