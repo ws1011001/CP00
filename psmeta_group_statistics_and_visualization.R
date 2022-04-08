@@ -43,7 +43,7 @@ n           <- 22  # number of subjects
 flocav <- file.path(rdir, 'activation', 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
 flocaa <- file.path(rdir, 'activation', 'group_task-LocaAudio2p5_GLM.wPSC.wNR24a_PSC.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
-fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal_LOROCV.csv')
+fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-ST3-PermACC_unimodal+crossmodal_LOROCV.csv')
 frepet <- file.path(tdir, 'group_task-AudioVisAssos2words_RSE_PSC+TENT.csv')
 # read data
 locav_xyz <- read.csv(file = flocav, stringsAsFactors = FALSE)
@@ -108,9 +108,9 @@ mvpar_acc_svclin <- mvpar_acc[mvpar_acc$classifier == 'SVClin',]
 mvpar_acc_test1 <- sapply(mvpar_acc_rois, function(x)  # if ACC is greater than 50% for each modality 
                           rcomparison_p1(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'modality', 'ACC', 0.5, 'greater', 10000),
                           simplify = FALSE, USE.NAMES = TRUE)
-mvpar_acc_test2 <- sapply(mvpar_acc_rois, function(x)  # if ACCs are different between modalities
-                          rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'ACC', 'modality', modalities, 'participant_id'),
-                          simplify = FALSE, USE.NAMES = TRUE)
+#mvpar_acc_test2 <- sapply(mvpar_acc_rois, function(x)  # if ACCs are different between modalities
+#                          rcomparison_sy(mvpar_acc_svclin[mvpar_acc_svclin$ROI_label == x,], 'ACC', 'modality', modalities, 'participant_id'),
+#                          simplify = FALSE, USE.NAMES = TRUE)
 # PLOT all ROIs
 fplot <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-PermACC_unimodal+crossmodal.png')
 mvpar_acc_ps <- lapply(mvpar_acc_rois, function(x)
