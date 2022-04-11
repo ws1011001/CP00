@@ -4,9 +4,9 @@
 #SBATCH -p skylake
 #SBATCH --nodes=1
 #SBATCH -A b222
-#SBATCH -t 3-12
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=24gb
+#SBATCH -t 6-12
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32gb
 #SBATCH -o ./run_slurm.log/AFNI_%j.out
 #SBATCH -e ./run_slurm.log/AFNI_%j.err
 #SBATCH --mail-type=ALL
