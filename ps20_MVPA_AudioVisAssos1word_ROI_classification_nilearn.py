@@ -53,13 +53,13 @@ clf_tokens = ['LDA', 'GNB', 'SVClin', 'SVCrbf']  # classifier abbreviations
 nmodels    = len(clf_tokens)
 # ROI-based parameters
 fs_perc = [57, 93, 171, 389]               # feature selection K best: [57, 93, 171, 389, 751] = radius 4, 5, 6, 8, 10 mm
-nperm   = 100                              # number of permutations
+nperm   = 1                              # number of permutations
 pperm   = 0.05                             # the threshold p-value 
 C       = np.int(pperm * (nperm + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
 njobs   = -1                               # -1 means all CPUs
 CV_type = 'LNROCV'                         # LOROCV; LNROCV
 CV_N    = 2                                # number of runs to be leaved out
-st_type = 'spatial-temporal'               # standardization method: none; temporal (default); spatial-temporal
+st_type = 'spatial'               # standardization method: none; spatial; temporal (default); spatial-temporal
 # read ROIs information
 froi = os.path.join(vdir, 'group_masks_labels-ROI.csv')  # ROIs info
 rois = pd.read_csv(froi).set_index('label')              # the list of ROIs
@@ -79,7 +79,7 @@ labs_lex = labels['lexicon']     # word, pseudoword
 labs_run = labels['runs']        # 5 runs, from run1 to run5
 runs = np.unique(labs_run)       # run labels
 # initialize performance tables
-facc = os.path.join(vdir, "group_%s_MVPA-Perm%d_unimodal+crossmodal_%s.csv" % (task, nperm, CV_type))  # performance table
+facc = os.path.join(vdir, "group_%s_MVPA-ST1-PermACC_unimodal+crossmodal_%s.csv" % (task, CV_type))  # performance table
 dacc = pd.DataFrame(columns = ['participant_id', 'modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
 # define cross-validation
 if CV_type == 'LOROCV':
@@ -117,7 +117,10 @@ for i in range(n):
       # data standardization
       masker_box = NiftiMasker(mask_img = mbox, standardize = False, detrend = False)  # mask transformer; no standardize for searchlight
       betas_box = masker_box.fit_transform(betas)                                      # masked betas
-      if st_type == 'temporal':
+      if st_type == 'spatial':
+        print(f'Do spatial standardization for {thisroi}. ')
+        betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
+      elif st_type == 'temporal':
         print(f'Do temporal standardization for {thisroi}. ')
         betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
       elif st_type == 'spatial-temporal':
@@ -132,7 +135,7 @@ for i in range(n):
         if rois.fixed[iroi]:
           # uni-modal MVPA
           acc, perm, pval = permutation_test_score(clf_model, betas_box, labs_lex[labs_mod], cv=CV, scoring='accuracy',
-                                                   n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1)
+                                                   n_permutations = nperm, groups = labs_run[labs_mod], n_jobs=-1, random_state=21)
           # cross-modal MVPA
           perm_crs = np.array([])         # initialize permutation scores array
           acc_crs  = np.zeros((nrun, 3))  # initialize performance array for cross-modal decoding
@@ -147,7 +150,10 @@ for i in range(n):
             # prepare betas and data stanardization
             betas_thisrun = index_img(fbet, labs_thisrun)                # selected betas
             betas_thisrun_box = masker_box.fit_transform(betas_thisrun)  # masked betas
-            if st_type == 'temporal':
+            if st_type == 'spatial':
+              print(f'Do spatial standardization for {thisroi}. ')
+              betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
+            elif st_type == 'temporal':
               print(f'Do temporal standardization for {thisroi}. ')
               betas_thisrun_box = (betas_thisrun_box - betas_thisrun_box.mean(axis=0).reshape(1, -1)) / betas_thisrun_box.std(axis=0).reshape(1, -1)  # temporal
             elif st_type == 'spatial-temporal':
@@ -158,7 +164,7 @@ for i in range(n):
               print(f'No standardization for {thisroi}. ')
             # carry out MVPA for this run
             jacc, jperm, jpval = permutation_test_score(clf_model, betas_thisrun_box, labs_lex[labs_thisrun], cv=CV_thisrun, scoring='accuracy',
-                                                        n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1)
+                                                        n_permutations = nperm, groups = labs_run[labs_thisrun], n_jobs=-1, random_state=21)
             perm_crs = np.append(perm_crs, jperm)
             acc_crs[j, 0] = jacc                 # ACC of this run
             acc_crs[j, 1] = -np.sort(-jperm)[C]  # permutation ACC at C of this run
