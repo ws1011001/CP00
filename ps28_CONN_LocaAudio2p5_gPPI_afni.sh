@@ -34,7 +34,7 @@ ddir="$mdir/AudioVisAsso"       # experiment Data folder (BIDS put into fMRIPrep
 adir="$ddir/derivatives/afni"   # AFNI output folder
 kdir="$ddir/derivatives/masks"  # masks folder
 # processing parameters
-readarray subjects < $mdir/CP00_subjects_gPPI.txt
+readarray subjects < $mdir/CP00_subjects.txt
 readarray seeds < $adir/group_masks_labels-gPPI.txt  # seed regions for gPPI
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
@@ -162,7 +162,8 @@ for seed in ${seeds[@]};do
     sed -e '39 {s/^/#/}' -e '46 {s/^/#/}' $wdir/${pglm}.tcsh > $wdir/${pglm}_exec.tcsh  # comment the line 39 to ignore the exist of out_dir
     tcsh -xef $wdir/${pglm}_exec.tcsh 2>&1 | tee $wdir/output_${pglm}_exec.tcsh         # execute the AFNI script
     
-    # clean up confounds .1D files used by the present GLM
+    # clean up temporary files
+    rm -r $wdir/*gPPI*.tcsh
     rm -r $wdir/confounds/*.1D
   done
 done
