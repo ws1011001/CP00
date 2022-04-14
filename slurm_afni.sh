@@ -38,8 +38,9 @@ scripts_afni[15]='ps22_STAT_AudioVisAssos1word_searchlight_ACC_afni.sh'
 scripts_afni[16]='ps26_STAT_AudioVisAssos1word_searchlight_RSA_afni.sh'
 scripts_afni[17]='ps27_RSE_AudioVisAssos2words_extract_PSC_and_TENT_afni.sh'
 scripts_afni[18]='ps28_CONN_LocaAudio2p5_gPPI_afni.sh'
-scripts_afni[19]='psmeta_individual_and_group_masks_afni.sh'
-script_id=18
+scripts_afni[19]='ps29_STAT_LocaAudio2p5_gPPI_ttests_afni.sh'
+scripts_afni[20]='psmeta_individual_and_group_masks_afni.sh'
+script_id=19
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}

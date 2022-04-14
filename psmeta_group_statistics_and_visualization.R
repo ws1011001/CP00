@@ -43,7 +43,7 @@ n           <- 22  # number of subjects
 flocav <- file.path(rdir, 'activation', 'task-LocaVis1p75', 'ROIs_left-vOT_task-LocaVis1p75.csv')
 flocaa <- file.path(rdir, 'activation', 'group_task-LocaAudio2p5_GLM.wPSC.wNR24a_PSC.csv')
 fmvpac <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-Perm10000_classifier-selection_unimodal+crossmodal.csv') 
-fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-ST3-PermACC_unimodal+crossmodal_L2ROCV.csv')
+fmvpar <- file.path(vdir, 'group_task-AudioVisAssos1word_MVPA-ST1-PermACC_unimodal+crossmodal_L2ROCV.csv')
 frepet <- file.path(tdir, 'group_task-AudioVisAssos2words_RSE_PSC+TENT.csv')
 # read data
 locav_xyz <- read.csv(file = flocav, stringsAsFactors = FALSE)
