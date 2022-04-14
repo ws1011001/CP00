@@ -59,7 +59,7 @@ for subj in ${subjects[@]};do
     # extract coef maps for group analysis
     i=0
     for ilab in ${flab[@]};do
-      coef="$wdir/$oglm/stats.beta_${pglm}_seed-${seed}_${ilab}.nii.gz"
+      coef="$wdir/$pglm/$seed/stats.beta_${pglm}_seed-${seed}_${ilab}.nii.gz"
       if [ ! -f $coef ];then
         3dbucket -fbuc -prefix $coef "${stat}[${eidx[i]}]"
       fi
@@ -77,7 +77,7 @@ for seed in ${seeds[@]};do
     # stack up subjects for group analysis
     gcoef="$tdir/stats.beta_group_${task}_${model}_seed-${seed}_${ilab}.nii.gz"
     if [ ! -f $gcoef ];then
-      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/$seed/stats.beta_sub-*_seed-${seed}_${ilab}.nii.gz
+      3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/$seed/stats.beta_sub-*_${ilab}.nii.gz
     fi
   done  
   # T-test on paried two samples
