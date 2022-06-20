@@ -35,6 +35,7 @@ adir="$ddir/derivatives/afni"   # AFNI output folder
 kdir="$ddir/derivatives/masks"  # masks folder
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
+readarray rois < $adir/group_masks_labels-AVA.txt
 task='task-LocaVis1p75'           # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 models=("GLM.wBIM.wPSC.wNR24a" "GLM.wBIGM.wPSC.wNR24a")         # the final GLM 
@@ -133,7 +134,15 @@ for subj in ${subjects[@]};do
   # specify PSC beta files
   coef_words="$wdir/$oglm/stats.beta_${oglm}_${flab_words}.nii.gz"
   coef_conso="$wdir/$oglm/stats.beta_${oglm}_${flab_conso}.nii.gz"
-  # extract PSC beta
+  # extract PSC data for group ROIs
+  for iroi in ${rois[@]};do
+    froi="$kdir/group/group_${spac}_mask-${iroi}.nii.gz"
+    psc_words=$(3dBrickStat -mean -mask $froi $coef_words)
+    psc_conso=$(3dBrickStat -mean -mask $froi $coef_conso)
+    echo -e "$subj,$iroi,words,$psc_words" >> $fpsc
+    echo -e "$subj,$iroi,consonants,$psc_conso" >> $fpsc
+  done
+  # extract PSC beta for individual ROIs
   for srad in ${rads[@]};do
     froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
     psc_words=$(3dBrickStat -mean -mask $froi $coef_words)
