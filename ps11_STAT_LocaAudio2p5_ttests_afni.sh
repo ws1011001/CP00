@@ -35,6 +35,7 @@ adir="$ddir/derivatives/afni"   # AFNI output folder
 kdir="$ddir/derivatives/masks"  # masks folder
 # processing parameters
 readarray subjects < $mdir/CP00_subjects.txt
+readarray rois < $adir/group_masks_labels-AVA.txt
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
@@ -99,7 +100,20 @@ for subj in ${subjects[@]};do
   coef_words="$wdir/$oglm/stats.beta_${oglm}_words.nii.gz"
   coef_pword="$wdir/$oglm/stats.beta_${oglm}_pseudowords.nii.gz"
   coef_scrab="$wdir/$oglm/stats.beta_${oglm}_scrambled.nii.gz"
-  # extract PSC beta
+  # extract PSC data for group ROIs
+  for iroi in ${rois[@]};do
+    froi="$kdir/group/group_${spac}_mask-${iroi}.nii.gz"
+    fbig="$kdir/group/group_${spac}_mask-${iroi}_tmp.nii.gz"
+    3dresample -master $mask -input $froi -prefix $fbig
+    psc_words=$(3dBrickStat -mean -mask $fbig $coef_words)
+    psc_pword=$(3dBrickStat -mean -mask $fbig $coef_pword)
+    psc_scrab=$(3dBrickStat -mean -mask $fbig $coef_scrab)
+    echo -e "$subj,$iroi,words,$psc_words" >> $fpsc
+    echo -e "$subj,$iroi,pseudowords,$psc_pword" >> $fpsc
+    echo -e "$subj,$iroi,scrambled,$psc_scrab" >> $fpsc
+    rm -r $fbig
+  done
+  # extract PSC beta for individual ROIs
   for srad in ${rads[@]};do
     froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
     fbig="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm_tmp.nii.gz"
