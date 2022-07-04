@@ -141,7 +141,8 @@ if $isCreateCoord;then
   fcrd="$cdir/group_${spac}_mask-coordinates.csv"
   filv="$cdir/group_${spac}_mask-ilvOT-coordinates.csv"
   fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
-  rads=(7 8)  # 4,5,6,7,8
+  fggm="$kdir/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
+  rads=(4 5 6 7 8)  # 4,5,6,7,8
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
   IFS=','      # delimiter of CSV
@@ -167,6 +168,9 @@ if $isCreateCoord;then
         3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${subj}_ilvOT.peak
         rm -r $cdir/${subj}_ilvOT.peak
       fi  
+      # constrained by the group GM
+      fnew="$kdir/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
+      3dcalc -a $froi -b $fggm -expr 'a*b' -prefix $fnew
     done
   done < $filv
   IFS=$OLDIFS
