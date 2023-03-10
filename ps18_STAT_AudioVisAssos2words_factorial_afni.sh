@@ -76,9 +76,9 @@ if [ ! -d $tdir ];then mkdir -p $tdir;fi
 for model in ${models[@]};do
 	for ilab in ${flab[@]};do
 		# Stack up subjects for group analysis
-  		gcoef="$tdir/stats.beta_group_${task}_${model}_${flab}.nii.gz"
+  		gcoef="$tdir/stats.beta_group_${task}_${model}_${ilab}.nii.gz"
   		if [ ! -f $gcoef ];then
-			3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${task}_${model}_${flab}.nii.gz
+			3dbucket -fbuc -aglueto $gcoef $adir/sub-*/$task/sub-*_${task}_${model}/stats.beta_sub-*_${task}_${model}_${ilab}.nii.gz
   		fi
 	done
   	3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_DISMa.nii.gz \
