@@ -37,7 +37,8 @@ kdir="$ddir/derivatives/masks"  # masks folder
 readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos2words'   # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
+#mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
+mask="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"  # left-vOT mask
 models=("GLM.wBIM.wPSC.wNR24a")
 # index the stat volumes
 eidx=(1 4 7 10 13 16 19 22)            # coefficients
@@ -84,19 +85,19 @@ for model in ${models[@]};do
   	3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_DISMa.nii.gz \
 		-setB $tdir/stats.beta_group_${task}_${model}_SISMa.nii.gz \
 	   	-mask $mask -exblur 6 \
-		-prefix $tdir/stats.group_${task}_${model}_DISMa-SISMa.nii.gz
+		-prefix $tdir/stats.lvOT.group_${task}_${model}_DISMa-SISMa.nii.gz
   	3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_DISMv.nii.gz \
 		-setB $tdir/stats.beta_group_${task}_${model}_SISMv.nii.gz \
 	   	-mask $mask -exblur 6 \
-		-prefix $tdir/stats.group_${task}_${model}_DISMv-SISMv.nii.gz
+		-prefix $tdir/stats.lvOT.group_${task}_${model}_DISMv-SISMv.nii.gz
   	3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_DIDMa.nii.gz \
 		-setB $tdir/stats.beta_group_${task}_${model}_SIDMa.nii.gz \
 	   	-mask $mask -exblur 6 \
-		-prefix $tdir/stats.group_${task}_${model}_DIDMa-SIDMa.nii.gz
+		-prefix $tdir/stats.lvOT.group_${task}_${model}_DIDMa-SIDMa.nii.gz
   	3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_DIDMv.nii.gz \
 		-setB $tdir/stats.beta_group_${task}_${model}_SIDMv.nii.gz \
 	   	-mask $mask -exblur 6 \
-		-prefix $tdir/stats.group_${task}_${model}_DIDMv-SIDMv.nii.gz
+		-prefix $tdir/stats.lvOT.group_${task}_${model}_DIDMv-SIDMv.nii.gz
 done
 ## ---------------------------
 
