@@ -19,11 +19,11 @@ case "$platform" in
   mesoc)
     mdir='/CP00'                       # the project Main folder @mesocentre
     export PATH="$mdir/nitools:$PATH"  # setup tools if @mesocentre
-    njob=8
+    njob=16
     ;;
   totti)
     mdir='/data/mesocentre/data/agora/CP00'  # the project Main folder @totti
-    njob=4
+    njob=8
     ;;
   *)
     echo -e "Please input a valid platform!"
@@ -165,6 +165,10 @@ for seed in ${seeds[@]};do
     # clean up temporary files
     rm -r $wdir/*gPPI*.tcsh
     rm -r $wdir/confounds/*.1D
+	rm -r $pdir/pb00.${subj}_${task}.r01.tcat+tlrc*  # big file
+	rm -r $pdir/fitts.${subj}_${task}+tlrc*  # big file
+	rm -r $pdir/errts.${subj}_${task}+tlrc*  # big file
+	rm -r $pdir/all_runs.${subj}_${task}+tlrc*  # big file
   done
 done
 ## ---------------------------
