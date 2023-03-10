@@ -34,13 +34,14 @@ scripts_afni[11]='ps14_LSS_AudioVisAssos1word_estimates_afni.sh'
 scripts_afni[12]='ps15_GLM_AudioVisAssos2words_wBIM_wPSC_wNR24a_afni.sh'
 scripts_afni[13]='ps16_GLM_AudioVisAssos2words_wBIM_wPSC_wTENT_wNR24a_afni.sh'
 scripts_afni[14]='ps17_STAT_AudioVisAssos1word_factorial_afni.sh'
-scripts_afni[15]='ps22_STAT_AudioVisAssos1word_searchlight_ACC_afni.sh'
-scripts_afni[16]='ps26_STAT_AudioVisAssos1word_searchlight_RSA_afni.sh'
-scripts_afni[17]='ps27_RSE_AudioVisAssos2words_extract_PSC_and_TENT_afni.sh'
-scripts_afni[18]='ps28_CONN_LocaAudio2p5_gPPI_afni.sh'
-scripts_afni[19]='ps29_STAT_LocaAudio2p5_gPPI_ttests_afni.sh'
-scripts_afni[20]='psmeta_individual_and_group_masks_afni.sh'
-script_id=17
+scripts_afni[15]='ps18_STAT_AudioVisAssos2words_factorial_afni.sh'
+scripts_afni[16]='ps22_STAT_AudioVisAssos1word_searchlight_ACC_afni.sh'
+scripts_afni[17]='ps26_STAT_AudioVisAssos1word_searchlight_RSA_afni.sh'
+scripts_afni[18]='ps27_RSE_AudioVisAssos2words_extract_PSC_and_TENT_afni.sh'
+scripts_afni[19]='ps28_CONN_LocaAudio2p5_gPPI_afni.sh'
+scripts_afni[20]='ps29_STAT_LocaAudio2p5_gPPI_ttests_afni.sh'
+scripts_afni[21]='psmeta_individual_and_group_masks_afni.sh'
+script_id=15
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
