@@ -37,7 +37,7 @@ kdir="$ddir/derivatives/masks"  # masks folder
 readarray subjects < $mdir/CP00_subjects.txt
 task='task-AudioVisAssos2words'   # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$kdir/group/group_${spac}_mask-gm-0.2_res-${task}.nii.gz"  # GM mask
+mask="$kdir/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 models=("GLM.wBIM.wPSC.wNR24a")
 # index the stat volumes
 eidx=(1 4 7 10 13 16 19 22)            # coefficients
