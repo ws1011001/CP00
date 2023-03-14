@@ -1,15 +1,11 @@
 #!/bin/bash
 ## ---------------------------
 ## [script name] ps29_STAT_LocaAudio2p5_gPPI_ttests_afni.sh
-##
 ## SCRIPT to perform T-tests to extract group results of gPPI.
 ##
-## By Shuai Wang, [date] 2022-04-11
-##
+## By Shuai Wang, [date] 2022
 ## ---------------------------
 ## Notes:
-##   
-##
 ## ---------------------------
 
 ## set environment (packages, functions, working path etc.)
@@ -83,28 +79,28 @@ for seed in ${seeds[@]};do
   # T-test on paried two samples
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_words.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_pseudowords.nii.gz \
-    -mask $mask -exblur 4 -paired \
+    -mask $mask -exblur 5 -paired \
     -prefix $tdir/stats.group_${task}_${model}_seed-${seed}_words-pseudowords.nii.gz
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_words.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_scrambled.nii.gz \
-    -mask $mask -exblur 4 -paired \
+    -mask $mask -exblur 5 -paired \
     -prefix $tdir/stats.group_${task}_${model}_seed-${seed}_words-scrambled.nii.gz
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_pseudowords.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_scrambled.nii.gz \
-    -mask $mask -exblur 4 -paired \
+    -mask $mask -exblur 5 -paired \
     -prefix $tdir/stats.group_${task}_${model}_seed-${seed}_pseudowords-scrambled.nii.gz
   # T-test on paried two samples within the left-vOT mask
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_words.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_pseudowords.nii.gz \
-    -mask $lvot -exblur 4 -paired \
+    -mask $lvot -exblur 5 -paired \
     -prefix $tdir/stats.lvOT.group_${task}_${model}_seed-${seed}_words-pseudowords.nii.gz
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_words.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_scrambled.nii.gz \
-    -mask $lvot -exblur 4 -paired \
+    -mask $lvot -exblur 5 -paired \
     -prefix $tdir/stats.lvOT.group_${task}_${model}_seed-${seed}_words-scrambled.nii.gz
   3dttest++ -setA $tdir/stats.beta_group_${task}_${model}_seed-${seed}_pseudowords.nii.gz \
     -setB $tdir/stats.beta_group_${task}_${model}_seed-${seed}_scrambled.nii.gz \
-    -mask $lvot -exblur 4 -paired \
+    -mask $lvot -exblur 5 -paired \
     -prefix $tdir/stats.lvOT.group_${task}_${model}_seed-${seed}_pseudowords-scrambled.nii.gz
 done
 ## ---------------------------
