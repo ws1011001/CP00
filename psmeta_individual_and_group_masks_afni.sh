@@ -146,33 +146,33 @@ if $isCreateCoord;then
   # create mask for each coordinate
   OLDIFS=$IFS  # original delimiter
   IFS=','      # delimiter of CSV
-#  # group ROIs
-#  while read thisroi x y z;do
-#    for srad in ${rads[@]};do
-#      froi="$cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
-#      if [ ! -f "$froi" ];then
-#        echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
-#        echo "$x $y $z 1" > $cdir/${thisroi}.peak
-#        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${thisroi}.peak
-#        rm -r $cdir/${thisroi}.peak
-#      fi  
-#    done
-#  done < $fcrd
-  # individual left-vOT (ilvOT)
-  while read subj x y z;do
+  # group ROIs
+  while read thisroi x y z;do
     for srad in ${rads[@]};do
-      froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
+      froi="$cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
       if [ ! -f "$froi" ];then
-        echo -e "Create a shpere ROI ilvOT with radius ${srad}mm and centre $x $y $z."
-        echo "$x $y $z 1" > $cdir/${subj}_ilvOT.peak
-        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${subj}_ilvOT.peak
-        rm -r $cdir/${subj}_ilvOT.peak
+        echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
+        echo "$x $y $z 1" > $cdir/${thisroi}.peak
+        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${thisroi}.peak
+        rm -r $cdir/${thisroi}.peak
       fi  
-      # constrained by the group GM
-      fnew="$kdir/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
-      3dcalc -a $froi -b $fggm -expr 'a*b' -prefix $fnew
     done
-  done < $filv
+  done < $fcrd
+#  # individual left-vOT (ilvOT)
+#  while read subj x y z;do
+#    for srad in ${rads[@]};do
+#      froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
+#      if [ ! -f "$froi" ];then
+#        echo -e "Create a shpere ROI ilvOT with radius ${srad}mm and centre $x $y $z."
+#        echo "$x $y $z 1" > $cdir/${subj}_ilvOT.peak
+#        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${subj}_ilvOT.peak
+#        rm -r $cdir/${subj}_ilvOT.peak
+#      fi  
+#      # constrained by the group GM
+#      fnew="$kdir/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
+#      3dcalc -a $froi -b $fggm -expr 'a*b' -prefix $fnew
+#    done
+#  done < $filv
   IFS=$OLDIFS
 fi
 ## ---------------------------
