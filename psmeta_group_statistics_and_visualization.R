@@ -334,6 +334,8 @@ for (iroi in rse_rois){
   if (iroi == 'gm-AAL3-rOG'){ ititle <- 'right Occipital'} 
   if (iroi == 'lvOT-visual'){ ititle <- 'Group ROI' } 
   if (iroi == 'ilvOT-sph8mm'){ ititle <- 'Individual ROI' }
+  if (iroi == 'Cohen-2004-sph7mm'){ ititle <- 'LIMA (7mm)' }
+  if (iroi == 'Cohen-2004-sph8mm'){ ititle <- 'LIMA (8mm)' }
   # determine Y range
   p_rse_iroi_y <- round(c(min(df_psc_rses_iroi$PSC), max(df_psc_rses_iroi$PSC)), digits = 1) + c(-0.1, 0.2)
   # extract significance
