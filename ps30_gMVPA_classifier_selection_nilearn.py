@@ -74,7 +74,7 @@ f_acc = os.path.join(dir_mvpa, "group_%s_gMVPA-Perm%d_classifier-selection_unimo
 df_acc = pd.DataFrame(columns = ['modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
 # Do MVPA with leave-one-subject-out CV
 CV = LeaveOneGroupOut()  # leave-one-subject-out cross-validation
-f_betas = "%s/group_LSS_nilearn.nii.gz" % dir_mvpa)
+f_betas = "%s/group_LSS_nilearn.nii.gz" % dir_mvpa
 for imod in mods:
     # Read labels and betas according to the modality
     labels = df_labels['correct'] * (df_labels['modality'] == imod)
