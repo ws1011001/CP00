@@ -71,7 +71,9 @@ f_roi = os.path.join(dir_mask, 'group', "group_%s_mask-%s.nii.gz" % (spac, thisr
 img_roi = load_img(f_roi)
 masker_box = NiftiMasker(mask_img=img_roi, standardize=True, detrend=False)  # mask transformer of left-vOT (3486 voxels)
 # Initialize performance tables
-f_acc = os.path.join(dir_mvpa, "group_%s_gMVPA-Perm%d_classifier-selection_unimodal+crossmodal.csv" % (task, N_PERM))  # performance table
+f_cv_acc = os.path.join(dir_mvpa, "group_%s_gMVPA_LOSOCV_classifier-selection_unimodal.csv" % task)  # performance table
+dt_cv_acc = {'participant_id': [], 'modality': [], 'ROI_label': [], 'classifier': [], 'nvox': [], 'ACC': []}
+f_acc = os.path.join(dir_mvpa, "group_%s_gMVPA-Perm%d_classifier-selection_unimodal.csv" % (task, N_PERM))  # performance table
 df_acc = pd.DataFrame(columns = ['modality', 'ROI_label', 'classifier', 'nvox', 'ACC', 'CPermACC', 'Pval', 'CPval'])
 # Do MVPA with leave-one-subject-out CV
 CV = LeaveOneGroupOut()  # leave-one-subject-out cross-validation
@@ -86,23 +88,33 @@ for imod in mods:
     # Do MVPA with each classifier
     for clf_token, clf_model in zip(clf_tokens, clf_models):
         # Select features if the ROI is too big (not fixed)
-        for iperc in FS_PERCs:
-            feature_selected = SelectKBest(f_classif, k=iperc)  # feature selection
+        for k in FS_PERCs:
+            feature_selected = SelectKBest(f_classif, k=k)  # feature selection
             clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
             # Unimodal MVPA: cross-validation
-            CV_results = cross_validate(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
-            f_cv = os.path.join(dir_mvpa, "group_tvrMVPC-%s_LOSOCV_ACC-%s_mask-%s-k%03d.pkl" % (clf_token, imod, thisroi, iperc))
+            cv_results = cross_validate(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
+            f_cv = os.path.join(dir_mvpa, "group_tvrMVPC-%s_LOSOCV_ACC-%s_mask-%s-k%03d.pkl" % (clf_token, imod, thisroi, k))
             f = open(f_cv, 'wb')
-            pickle.dump(CV_results, f)  # save the list of data
+            pickle.dump(cv_results, f)  # save the list of data
             f.close()
+            print(f'Check the performance of the classifer {clf_token} with {k} features for the modality {imod}:')
+            print(f"Averaged ACC = {cv_results['test_score'].mean()}, SD = {cv_results['test_score'].std()}.\n")
+            dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
+            dt_cv_acc['modality']       += [imod] * n
+            dt_cv_acc['ROI_label']      += [thisroi] * n
+            dt_cv_acc['classifier']     += [clf_token] * n
+            dt_cv_acc['nvox']           += [k] * n
+            dt_cv_acc['ACC']            += cv_results['test_score'].tolist()            
             ## Unimodal MVPA: permutation test
             #acc, perm, pval = permutation_test_score(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', n_permutations=N_PERM, groups=groups, n_jobs=N_JOBs)
-            #df_acc.loc[len(df_acc)] = [imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, P_PERM]  # Output ACC and perm scores
-            #f_perm = os.path.join(dir_mvpa, "group_tvrMVPC-%s-Perm%d_LOSOCV_ACC-%s_mask-%s-k%03d.1D" % (clf_token, N_PERM, imod, thisroi, iperc))
+            #df_acc.loc[len(df_acc)] = [imod, thisroi, clf_token, k, acc, -np.sort(-perm)[C], pval, P_PERM]  # Output ACC and perm scores
+            #f_perm = os.path.join(dir_mvpa, "group_tvrMVPC-%s-Perm%d_LOSOCV_ACC-%s_mask-%s-k%03d.1D" % (clf_token, N_PERM, imod, thisroi, k))
             #perm.tofile(file=f_perm, sep='\n')
 
     print('Finish ROI-based group MVPA.\n')
 # output the performance table
+df_cv_acc = pd.DataFrame.from_dict(dt_cv_acc)
+df_cv_acc.to_csv(f_cv_acc)
 #df_acc.to_csv(f_acc)
 ## ---------------------------
 
