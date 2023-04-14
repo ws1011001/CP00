@@ -157,7 +157,7 @@ for imod in mods:
                     else:
                         print('No standardization for {thisroi}.\n')
 
-                    acc = permutation_test_score(clf_model, betas_box, targets, cv=CV_cross, scoring='accuracy', n_permutations=1, groups=groups, n_jobs=N_JOBs)
+                    acc = permutation_test_score(clf_model, betas_box, targets, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
                     cross_results.append(acc)
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}2:')
                 print(f"Averaged ACC = {np.mean(cross_results)}, SD = {np.std(cross_results)}.\n")
