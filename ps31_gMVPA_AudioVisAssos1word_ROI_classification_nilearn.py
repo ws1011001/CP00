@@ -72,7 +72,6 @@ print("========== START JOB : %s ==========\n" % now.strftime("%Y-%m-%d %H:%M:%S
 # Read trial labels
 f_labels = os.path.join(dir_mvpa, f'group_{task}_labels-group-trial.tsv')  # trial-wise labels
 df_labels = pd.read_table(f_labels) # trial labels
-labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
 # Initialize performance tables
 f_cv_acc = os.path.join(dir_mvpa, f'group_{task}_gMVPA_LOSOCV_ST-{ST}_unimodal+crossmodal.csv')  # performance table
 dt_cv_acc = {'participant_id': [], 'modality': [], 'ROI_label': [], 'classifier': [], 'nvox': [], 'ACC': []}
@@ -83,6 +82,7 @@ CV = LeaveOneGroupOut()  # leave-one-subject-out cross-validation
 f_betas = "%s/group_LSS_nilearn.nii.gz" % dir_mvpa
 for imod in mods:
     # Read labels and betas according to the modality
+    labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
     labels = df_labels['correct'] * (df_labels['modality'] == imod)
     labels_cross[labels] = -1  # this modality is for cross-modal training (-1)
     groups = df_labels['participant_id'][labels].values
