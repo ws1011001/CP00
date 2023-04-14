@@ -138,7 +138,7 @@ for imod in mods:
                     subj = subjects.index[i]
                     labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
                     labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
-                    labels_all = labels_train | labels_test
+                    labels_all = labels_train | labels_valid
                     CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
                     targets = df_labels['lexicon'][labels_all].values   
                     betas = index_img(f_betas, labels_all)           # select betas with this modality
