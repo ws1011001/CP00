@@ -86,7 +86,7 @@ for imod in mods:
                 labels_uni = np.zeros(len(df_labels))  # initial labels for unimodal decoding
                 labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
                 labels_valid = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] == subj)
-                labels_all = labels_train | labels_test
+                labels_all = labels_train | labels_valid
                 labels_uni[labels_train] = -1  # these participants are for unimodal training (-1)
                 CV_uni = PredefinedSplit(labels_uni[labels_all])  # pre-defined CV for unimodal decoding
                 targets = df_labels['lexicon'][labels_all].values   
@@ -102,7 +102,7 @@ for imod in mods:
                 labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
                 labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
                 labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
-                labels_all = labels_train | labels_test
+                labels_all = labels_train | labels_valid
                 labels_cross[labels_train] = -1  # these are for cross-modal training (-1)
                 CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
                 targets = df_labels['lexicon'][labels_all].values   
