@@ -134,7 +134,7 @@ for imod in mods:
                 #perm.tofile(file=f_perm, sep='\n')
                 # Cross-modal MVPA: cross-validation
                 cross_results = []
-                for (i in range(n)):
+                for i in range(n):
                     subj = subjects.index[i]
                     labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
                     labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)

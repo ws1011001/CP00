@@ -79,7 +79,7 @@ for imod in mods:
         # Do MVPA with each classifier
         for clf_token, clf_model in zip(clf_tokens, clf_models):
             # Loop participant
-            for (i in range(n)):
+            for i in range(n):
                 subj = subjects.index[i]
                 # Unimodal searchlight
                 print(f'Searchlight using the classifer {clf_token} within {thisroi} for the modality {imod} for participant {subj}:')
