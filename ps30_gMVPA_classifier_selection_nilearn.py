@@ -13,6 +13,7 @@
 ## Set environment (packages, functions, working path etc.)
 # Load up packages
 import os
+import pickle
 import nilearn.decoding
 import pandas as pd
 import numpy as np
@@ -22,7 +23,7 @@ from nilearn.input_data import NiftiMasker
 from sklearn import svm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, permutation_test_score
+from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, cross_validate, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 # Setup path
@@ -88,17 +89,21 @@ for imod in mods:
         for iperc in FS_PERCs:
             feature_selected = SelectKBest(f_classif, k=iperc)  # feature selection
             clf_fs = Pipeline([('anova', feature_selected), ('classifier', clf_model)])
-            # Unimodal MVPA
-            acc, perm, pval = permutation_test_score(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', 
-                                                     n_permutations=N_PERM, groups=groups, n_jobs=N_JOBs)
-            # Output ACC and perm scores
-            df_acc.loc[len(df_acc)] = [imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, P_PERM]
-            f_perm = os.path.join(dir_mvpa, "group_tvrMVPC-%s-Perm%d_LOSOCV_ACC-%s_mask-%s-k%03d.1D" % (clf_token, N_PERM, imod, thisroi, iperc))
-            perm.tofile(file=f_perm, sep='\n')
+            # Unimodal MVPA: cross-validation
+            CV_results = cross_validate(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
+            f_cv = os.path.join(dir_mvpa, "group_tvrMVPC-%s_LOSOCV_ACC-%s_mask-%s-k%03d.pkl" % (clf_token, imod, thisroi, iperc))
+            f = open(f_cv, 'wb')
+            pickle.dump(CV_results, f)  # save the list of data
+            f.close()
+            ## Unimodal MVPA: permutation test
+            #acc, perm, pval = permutation_test_score(clf_fs, betas_box, targets, cv=CV, scoring='accuracy', n_permutations=N_PERM, groups=groups, n_jobs=N_JOBs)
+            #df_acc.loc[len(df_acc)] = [imod, thisroi, clf_token, iperc, acc, -np.sort(-perm)[C], pval, P_PERM]  # Output ACC and perm scores
+            #f_perm = os.path.join(dir_mvpa, "group_tvrMVPC-%s-Perm%d_LOSOCV_ACC-%s_mask-%s-k%03d.1D" % (clf_token, N_PERM, imod, thisroi, iperc))
+            #perm.tofile(file=f_perm, sep='\n')
 
-    print("Finish ROI-based group MVPA for subject: %s.\n" % subj) 
+    print('Finish ROI-based group MVPA.\n')
 # output the performance table
-df_acc.to_csv(f_acc)
+#df_acc.to_csv(f_acc)
 ## ---------------------------
 
 now=datetime.now()
