@@ -82,8 +82,8 @@ CV = LeaveOneGroupOut()  # leave-one-subject-out cross-validation
 f_betas = "%s/group_LSS_nilearn.nii.gz" % dir_mvpa
 for imod in mods:
     # Read labels and betas according to the modality
-    labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
     labels = df_labels['correct'] * (df_labels['modality'] == imod)
+    labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
     labels_cross[labels] = -1  # this modality is for cross-modal training (-1)
     groups = df_labels['participant_id'][labels].values
     targets = df_labels['lexicon'][labels].values   
@@ -115,10 +115,10 @@ for imod in mods:
             if df_roi.fixed[iroi]:
                 # Unimodal MVPA: cross-validation
                 cv_results = cross_validate(clf_model, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
-                f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}_mask-{thisroi}.pkl')
-                f = open(f_cv, 'wb')
-                pickle.dump(cv_results, f)  # save the list of data
-                f.close()
+                #f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}_mask-{thisroi}.pkl')
+                #f = open(f_cv, 'wb')
+                #pickle.dump(cv_results, f)  # save the list of data
+                #f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}:')
                 print(f"Averaged ACC = {cv_results['test_score'].mean()}, SD = {cv_results['test_score'].std()}.\n")
                 dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
@@ -140,9 +140,9 @@ for imod in mods:
                     labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
                     labels_all = labels_train | labels_valid
                     CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
-                    targets = df_labels['lexicon'][labels_all].values   
-                    betas = index_img(f_betas, labels_all)           # select betas with this modality
-                    betas_box = masker_box.fit_transform(betas)  # apply mask on betas
+                    targets_cross = df_labels['lexicon'][labels_all].values   
+                    betas_cross = index_img(f_betas, labels_all)           # select betas with this modality
+                    betas_box_cross = masker_box.fit_transform(betas_cross)  # apply mask on betas
 
                     if ST == 'spatial':
                         print(f'Do spatial standardization for {thisroi}.\n')
@@ -157,7 +157,7 @@ for imod in mods:
                     else:
                         print('No standardization for {thisroi}.\n')
 
-                    acc = permutation_test_score(clf_model, betas_box, targets, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
+                    acc = permutation_test_score(clf_model, betas_box_cross, targets_cross, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
                     cross_results.append(acc)
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}2:')
                 print(f"Averaged ACC = {np.mean(cross_results)}, SD = {np.std(cross_results)}.\n")
