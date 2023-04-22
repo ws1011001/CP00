@@ -71,7 +71,7 @@ for subj in ${subjects[@]};do
     -regress_polort 2 \
     -regress_local_times \
     -regress_stim_times $wdir/stimuli/${subj}_${task}_events-cond*.txt \
-    -regress_stim_labels WA WV PA PV \
+    -regress_stim_labels WA_cor WA_inc WV_cor WV_inc PA_cor PA_inc PV_cor PV_inc \
     -regress_basis GAM \
     -regress_motion_file $wdir/confounds/${subj}_${task}_${hmpv}.1D \
     -regress_motion_per_run \
