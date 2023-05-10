@@ -34,7 +34,8 @@ readarray subjects < $dir_main/CP00_subjects.txt
 readarray rois < $dir_afni/group_masks_labels-AVA.txt
 task='task-AudioVisAssos1word'    # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$dir_mask/group/group_${spac}_mask-gm-0.2_res-${task}.nii.gz"  # GM mask
+#mask="$dir_mask/group/group_${spac}_mask-gm-0.2_res-${task}.nii.gz"  # GM mask
+mask="$dir_mask/group/group_space-MNI152NLin2009cAsym_mask-lvOT-visual.nii.gz"
 models=("GLM.wBIM.wPSC.wNR24a")
 # index the stat volumes
 eidx=(1 4 7 10)
@@ -60,11 +61,12 @@ for model in ${models[@]};do
   	  	done
   	fi
   	# Perform MVM
-  	f_mvm="$dir_task/stats.group_${task}_${model}_MVM"
+  	f_mvm="$dir_task/stats.lvOT.group_${task}_${model}_MVM"
   	if [ ! -f "${f_mvm}+tlrc.HEAD" ];then
 		echo -e "Do MVM for the $task with $model. "
   	  	3dMVM -prefix $f_mvm \
 			-jobs $njob \
+			-mask $mask \
   	  	  	-bsVars 1 \
   	  	  	-wsVars "Modality*Lexicon" \
   	  	  	-SS_type 3 \
