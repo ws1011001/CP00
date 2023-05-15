@@ -82,37 +82,39 @@ for imod in mods:
             for i in range(n):
                 subj = subjects.index[i]
                 # Unimodal searchlight
-                print(f'Searchlight using the classifer {clf_token} within {thisroi} for the modality {imod} for participant {subj}:')
-                labels_uni = np.zeros(len(df_labels))  # initial labels for unimodal decoding
-                labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
-                labels_valid = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] == subj)
-                labels_all = labels_train | labels_valid
-                labels_uni[labels_train] = -1  # these participants are for unimodal training (-1)
-                CV_uni = PredefinedSplit(labels_uni[labels_all])  # pre-defined CV for unimodal decoding
-                targets = df_labels['lexicon'][labels_all].values   
-                betas = index_img(f_betas, labels_all)           # select betas with this modality
-                betas_mean = mean_img(betas)        # as a template to output results
                 f_map = os.path.join(dir_mvpa, 'groupMVPA', 'SearchlightMaps', f'{subj}_gMVPA-{clf_token}_LOSOCV_ACC-{imod}_searchlight-{R}mm_mask-{thisroi}.nii.gz')
-                searchlight_uni = nilearn.decoding.SearchLight(mask_img=img_mask, radius=R, estimator=clf_model, n_jobs=N_JOBs, cv=CV_uni)
-                searchlight_uni.fit(betas, targets)
-                searchlight_uni_map = new_img_like(betas_mean, searchlight_uni.scores_)
-                searchlight_uni_map.to_filename(f_map)
+                if not os.path.exists(f_map):
+                    print(f'Searchlight using the classifer {clf_token} within {thisroi} for the modality {imod} for participant {subj}:')
+                    labels_uni = np.zeros(len(df_labels))  # initial labels for unimodal decoding
+                    labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
+                    labels_valid = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] == subj)
+                    labels_all = labels_train | labels_valid
+                    labels_uni[labels_train] = -1  # these participants are for unimodal training (-1)
+                    CV_uni = PredefinedSplit(labels_uni[labels_all])  # pre-defined CV for unimodal decoding
+                    targets = df_labels['lexicon'][labels_all].values   
+                    betas = index_img(f_betas, labels_all)           # select betas with this modality
+                    betas_mean = mean_img(betas)        # as a template to output results
+                    searchlight_uni = nilearn.decoding.SearchLight(mask_img=img_mask, radius=R, estimator=clf_model, n_jobs=N_JOBs, cv=CV_uni)
+                    searchlight_uni.fit(betas, targets)
+                    searchlight_uni_map = new_img_like(betas_mean, searchlight_uni.scores_)
+                    searchlight_uni_map.to_filename(f_map)
                 # Cross-modal searchlight
-                print(f'Searchlight using the classifer {clf_token} within {thisroi} for the modality {imod}2 for participant {subj}:')
-                labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
-                labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
-                labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
-                labels_all = labels_train | labels_valid
-                labels_cross[labels_train] = -1  # these are for cross-modal training (-1)
-                CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
-                targets = df_labels['lexicon'][labels_all].values   
-                betas = index_img(f_betas, labels_all)           # select betas with this modality
-                betas_mean = mean_img(betas)        # as a template to output results
                 f_map = os.path.join(dir_mvpa, 'groupMVPA', 'SearchlightMaps', f'{subj}_gMVPA-{clf_token}_LOSOCV_ACC-{imod}2_searchlight-{R}mm_mask-{thisroi}.nii.gz')
-                searchlight_cross = nilearn.decoding.SearchLight(mask_img=img_mask, radius=R, estimator=clf_model, n_jobs=N_JOBs, cv=CV_cross)
-                searchlight_cross.fit(betas, targets)
-                searchlight_cross_map = new_img_like(betas_mean, searchlight_cross.scores_)
-                searchlight_cross_map.to_filename(f_map)
+                if not os.path.exists(f_map):
+                    print(f'Searchlight using the classifer {clf_token} within {thisroi} for the modality {imod}2 for participant {subj}:')
+                    labels_cross = np.zeros(len(df_labels))  # initial labels for cross-modal decoding
+                    labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
+                    labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
+                    labels_all = labels_train | labels_valid
+                    labels_cross[labels_train] = -1  # these are for cross-modal training (-1)
+                    CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
+                    targets = df_labels['lexicon'][labels_all].values   
+                    betas = index_img(f_betas, labels_all)           # select betas with this modality
+                    betas_mean = mean_img(betas)        # as a template to output results
+                    searchlight_cross = nilearn.decoding.SearchLight(mask_img=img_mask, radius=R, estimator=clf_model, n_jobs=N_JOBs, cv=CV_cross)
+                    searchlight_cross.fit(betas, targets)
+                    searchlight_cross_map = new_img_like(betas_mean, searchlight_cross.scores_)
+                    searchlight_cross_map.to_filename(f_map)
 
 print('Finish Searchlight group MVPA.\n')
 ## ---------------------------
