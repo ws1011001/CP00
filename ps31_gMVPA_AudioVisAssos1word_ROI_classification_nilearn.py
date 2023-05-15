@@ -57,7 +57,7 @@ N_PERM   = 1000                             # number of permutations
 P_PERM   = 0.01                             # the threshold p-value
 C        = np.int(P_PERM * (N_PERM + 1) - 1)  # C is the number of permutations whose score >= the true score given the threshold p-value
 N_JOBs   = -1                               # -1 means all CPUs
-ST       = 'temporal'               # standardization method: none; spatial; temporal (default); spatial-temporal
+ST       = 'none'               # standardization method: none; spatial; temporal (default); spatial-temporal
 # Read ROIs information
 f_roi = os.path.join(dir_mvpa, 'group_masks_labels-ROI.csv')  # ROIs info
 df_roi = pd.read_csv(f_roi).set_index('label')              # the list of ROIs
@@ -115,10 +115,10 @@ for imod in mods:
             if df_roi.fixed[iroi]:
                 # Unimodal MVPA: cross-validation
                 cv_results = cross_validate(clf_model, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
-                #f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}_mask-{thisroi}.pkl')
-                #f = open(f_cv, 'wb')
-                #pickle.dump(cv_results, f)  # save the list of data
-                #f.close()
+                f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}_mask-{thisroi}.pkl')
+                f = open(f_cv, 'wb')
+                pickle.dump(cv_results, f)  # save the list of data
+                f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}:')
                 print(f"Averaged ACC = {cv_results['test_score'].mean()}, SD = {cv_results['test_score'].std()}.\n")
                 dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
@@ -159,6 +159,10 @@ for imod in mods:
 
                     acc = permutation_test_score(clf_model, betas_box_cross, targets_cross, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
                     cross_results.append(acc)
+                f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}2_mask-{thisroi}.pkl')
+                f = open(f_cv, 'wb')
+                pickle.dump(cross_results, f)  # save the list of data
+                f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}2:')
                 print(f"Averaged ACC = {np.mean(cross_results)}, SD = {np.std(cross_results)}.\n")
                 dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
