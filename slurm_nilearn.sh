@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH -A b222
 #SBATCH -t 6-12
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=32
 #SBATCH --mem=128gb
 #SBATCH -o ./run_slurm.log/nilearn_%j.out
 #SBATCH -e ./run_slurm.log/nilearn_%j.err
@@ -20,7 +20,7 @@ scripts_ni[2]='ps21_MVPA_AudioVisAssos1word_searchlight_classification_nilearn.p
 scripts_ni[3]='ps30_gMVPA_classifier_selection_nilearn.py'
 scripts_ni[4]='ps31_gMVPA_AudioVisAssos1word_ROI_classification_nilearn.py'
 scripts_ni[5]='ps32_gMVPA_AudioVisAssos1word_searchlight_classification_nilearn.py'
-script_id=4
+script_id=5
 
 # run nilearn script
 script_run=${scripts_ni[$script_id]}
