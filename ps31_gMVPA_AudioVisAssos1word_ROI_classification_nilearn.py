@@ -114,11 +114,16 @@ for imod in mods:
         for clf_token, clf_model in zip(clf_tokens, clf_models):
             if df_roi.fixed[iroi]:
                 # Unimodal MVPA: cross-validation
-                cv_results = cross_validate(clf_model, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
                 f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}_mask-{thisroi}.pkl')
-                f = open(f_cv, 'wb')
-                pickle.dump(cv_results, f)  # save the list of data
-                f.close()
+                if not os.path.exists(f_cv):
+                    cv_results = cross_validate(clf_model, betas_box, targets, cv=CV, scoring='accuracy', groups=groups, n_jobs=N_JOBs)
+                    f = open(f_cv, 'wb')
+                    pickle.dump(cv_results, f)  # save the list of data
+                    f.close()
+                else:
+                    f = open(f_cv, 'rb')
+                    cv_results = pickle.load(f)
+                    f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}:')
                 print(f"Averaged ACC = {cv_results['test_score'].mean()}, SD = {cv_results['test_score'].std()}.\n")
                 dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
@@ -133,36 +138,41 @@ for imod in mods:
                 #f_perm = os.path.join(dir_mvpa, "group_tvrMVPC-%s-Perm%d_LOSOCV_ACC-%s_mask-%s-k%03d.1D" % (clf_token, N_PERM, imod, thisroi, k))
                 #perm.tofile(file=f_perm, sep='\n')
                 # Cross-modal MVPA: cross-validation
-                cross_results = []
-                for i in range(n):
-                    subj = subjects.index[i]
-                    labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
-                    labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
-                    labels_all = labels_train | labels_valid
-                    CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
-                    targets_cross = df_labels['lexicon'][labels_all].values   
-                    betas_cross = index_img(f_betas, labels_all)           # select betas with this modality
-                    betas_box_cross = masker_box.fit_transform(betas_cross)  # apply mask on betas
-
-                    if ST == 'spatial':
-                        print(f'Do spatial standardization for {thisroi}.\n')
-                        betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
-                    elif ST == 'temporal':
-                        print(f'Do temporal standardization for {thisroi}.\n')
-                        betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
-                    elif ST == 'spatial-temporal':
-                        print(f'Do spatial and temporal standardization sequentially for {thisroi}.\n')
-                        betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
-                        betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
-                    else:
-                        print('No standardization for {thisroi}.\n')
-
-                    acc = permutation_test_score(clf_model, betas_box_cross, targets_cross, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
-                    cross_results.append(acc)
                 f_cv = os.path.join(dir_mvpa, 'groupMVPA', f'group_gMVPA-{clf_token}_LOSOCV_ST-{ST}_ACC-{imod}2_mask-{thisroi}.pkl')
-                f = open(f_cv, 'wb')
-                pickle.dump(cross_results, f)  # save the list of data
-                f.close()
+                if not os.path.exists(f_cv):
+                    cross_results = []
+                    for i in range(n):
+                        subj = subjects.index[i]
+                        labels_train = df_labels['correct'] * (df_labels['modality'] == imod) * (df_labels['participant_id'] != subj)
+                        labels_valid = df_labels['correct'] * (df_labels['modality'] != imod) * (df_labels['participant_id'] == subj)
+                        labels_all = labels_train | labels_valid
+                        CV_cross = PredefinedSplit(labels_cross[labels_all])  # pre-defined CV for cross-modal decoding
+                        targets_cross = df_labels['lexicon'][labels_all].values   
+                        betas_cross = index_img(f_betas, labels_all)           # select betas with this modality
+                        betas_box_cross = masker_box.fit_transform(betas_cross)  # apply mask on betas
+
+                        if ST == 'spatial':
+                            print(f'Do spatial standardization for {thisroi}.\n')
+                            betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
+                        elif ST == 'temporal':
+                            print(f'Do temporal standardization for {thisroi}.\n')
+                            betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
+                        elif ST == 'spatial-temporal':
+                            print(f'Do spatial and temporal standardization sequentially for {thisroi}.\n')
+                            betas_box = (betas_box - betas_box.mean(axis=1).reshape(-1, 1)) / betas_box.std(axis=1).reshape(-1, 1)  # spatial
+                            betas_box = (betas_box - betas_box.mean(axis=0).reshape(1, -1)) / betas_box.std(axis=0).reshape(1, -1)  # temporal
+                        else:
+                            print('No standardization for {thisroi}.\n')
+
+                        acc = permutation_test_score(clf_model, betas_box_cross, targets_cross, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
+                        cross_results.append(acc)
+                    f = open(f_cv, 'wb')
+                    pickle.dump(cross_results, f)  # save the list of data
+                    f.close()
+                else:
+                    f = open(f_cv, 'rb')
+                    cross_results = pickle.load(f)
+                    f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}2:')
                 print(f"Averaged ACC = {np.mean(cross_results)}, SD = {np.std(cross_results)}.\n")
                 dt_cv_acc['participant_id'] += [f'sub-{i:02d}' for i in range(1, n+1)]
