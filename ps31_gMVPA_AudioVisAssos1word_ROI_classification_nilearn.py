@@ -165,13 +165,14 @@ for imod in mods:
                             print('No standardization for {thisroi}.\n')
 
                         acc = permutation_test_score(clf_model, betas_box_cross, targets_cross, cv=CV_cross, scoring='accuracy', n_permutations=1, n_jobs=N_JOBs)
-                        cross_results.append(acc)
+                        cross_results.append(acc[0])
                     f = open(f_cv, 'wb')
                     pickle.dump(cross_results, f)  # save the list of data
                     f.close()
                 else:
                     f = open(f_cv, 'rb')
                     cross_results = pickle.load(f)
+                    cross_results = [x[0] for x in cross_results]  # uptput from permutation_test_score() is a list, we take the first 
                     f.close()
                 print(f'Check the performance of the classifer {clf_token} with {nvox} features of {thisroi} for the modality {imod}2:')
                 print(f"Averaged ACC = {np.mean(cross_results)}, SD = {np.std(cross_results)}.\n")
