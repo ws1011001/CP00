@@ -1,42 +1,36 @@
 #!/bin/bash
 ## ---------------------------
 ## [script name] psmeta_individual_and_group_masks.sh
-##
 ## SCRIPT to create individual and group masks, such as gray matter mask, EPI-constrained GM, multiple ROIs.
 ##
-## By Shuai Wang, [date] 2021-01-20
-##
-## ---------------------------
-## Notes: 
-##
-##
+## By Shuai Wang
 ## ---------------------------
 
-## set environment (packages, functions, working path etc.)
-# platform
+## Set environment (packages, functions, working path etc.)
+# Platform
 platform='mesoc'
 case "$platform" in
-  mesoc)
-    mdir='/CP00'                       # the project Main folder @mesocentre
-    export PATH="$mdir/nitools:$PATH"  # setup tools if @mesocentre
-    njob=16
-    ;;
-  totti)
-    mdir='/data/mesocentre/data/agora/CP00'  # the project Main folder @totti
-    njob=4
-    ;;
-  *)
-    echo -e "Please input a valid platform!"
-    exit 1
+	mesoc)
+		dir_main='/CP00'                       # the project Main folder @mesocentre
+	  	export PATH="$dir_main/nitools:$PATH"  # setup tools if @mesocentre
+	  	njob=16
+	  	;;
+	local)
+		dir_main='/data/mesocentre/data/agora/CP00'  # the project Main folder @totti
+	  	njob=4
+	  	;;
+	*)
+		echo -e "Please input a valid platform!"
+	  	exit 1
 esac
-# setup path
-ddir="$mdir/AudioVisAsso"              # experiment Data folder (BIDS put into fMRIPrep)
-pdir="$ddir/derivatives/fmriprep"      # fMRIPrep output folder
-adir="$ddir/derivatives/afni"          # AFNI output folder
-kdir="$ddir/derivatives/masks"         # masks folder
-vdir="$ddir/derivatives/multivariate"  # MVPA/RSA folder
-# processing parameters
-readarray subjects < $mdir/CP00_subjects.txt
+# Setup path
+dir_data="$dir_main/AudioVisAsso"              # experiment Data folder (BIDS put into fMRIPrep)
+dir_fmri="$dir_data/derivatives/fmriprep"      # fMRIPrep output folder
+dir_afni="$dir_data/derivatives/afni"          # AFNI output folder
+dir_mask="$dir_data/derivatives/masks"         # masks folder
+dir_mvpa="$dir_data/derivatives/multivariate"  # MVPA/RSA folder
+# Processing parameters
+readarray subjects < $dir_main/CP00_subjects.txt
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 bold='desc-preproc_bold'          # the token for the preprocessed BOLD data (without smoothing)
 regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regressors
@@ -57,9 +51,9 @@ echo -e "========== START JOB at $(date) =========="
 ## create GM masks for each subject
 if $isCreateGMind;then
   for subj in ${subjects[@]};do
-    gdir="$pdir/$subj/anat"  # individual folder that contains anatomical segments
-    sdir="$kdir/$subj"       # individual masks folder
-    if [ ! -d $sdir ];then mkdir -p $sdir;fi
+    gdir="$dir_fmri/$subj/anat"  # individual folder that contains anatomical segments
+    sdir="$dir_mask/$subj"       # individual masks folder
+    if [ ! -d $sdir ];then mdir_mask -p $sdir;fi
     # prepare anatomical images
     gm_segment="$gdir/${subj}_${spac}_label-GM_probseg.nii.gz"         # gray matter segment in probability 
     gm_mask_t1="$sdir/${subj}_${spac}_mask-gm${gmth}_res-anat.nii.gz"  # gray matter mask in T1 resolution
@@ -73,7 +67,7 @@ if $isCreateGMind;then
     # create functional masks and functionally constrained gray matter masks
     for task in ${tasks[@]};do
       # setup path
-      wdir="$adir/$subj/$task"                       # the task Working folder
+      wdir="$dir_afni/$subj/$task"                       # the task Working folder
       oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
       if [ ! -d $oglm ];then
         oglm="${subj}_${task}_GLM.wPSC.w${deno}"     # the token for the Output GLM without BIM
@@ -100,15 +94,15 @@ fi
 
 ## create group-averaged GM masks
 if $isCreateGMgrp;then
-  if [ ! -d "$kdir/group" ];then
-    mkdir -p $kdir/group
+  if [ ! -d "$dir_mask/group" ];then
+    mdir_mask -p $dir_mask/group
   fi
   # gray matter mask
-  ggm_segment="$kdir/group/group_${spac}_label-GM_probseg.nii.gz"
-  ggm_segmean="$kdir/group/group_${spac}_label-GM_probseg-mean.nii.gz"
-  ggm_mask_t1="$kdir/group/group_${spac}_mask-gm${gmth}_res-anat.nii.gz"
+  ggm_segment="$dir_mask/group/group_${spac}_label-GM_probseg.nii.gz"
+  ggm_segmean="$dir_mask/group/group_${spac}_label-GM_probseg-mean.nii.gz"
+  ggm_mask_t1="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-anat.nii.gz"
   if [ ! -f "$ggm_segmean" ];then
-    3dbucket -fbuc -aglueto $ggm_segment $kdir/sub-*/sub-*_${spac}_label-GM_probseg.nii.gz
+    3dbucket -fbuc -aglueto $ggm_segment $dir_mask/sub-*/sub-*_${spac}_label-GM_probseg.nii.gz
     3dTstat -prefix $ggm_segmean -mean $ggm_segment
   fi
   if [ ! -f "$ggm_mask_t1" ];then
@@ -116,15 +110,15 @@ if $isCreateGMgrp;then
   fi
   # functional mask (i.e. full F) and functionally constrained gray matter mask
   for task in ${tasks[@]};do
-    gstats_mask="$kdir/group/group_${spac}_mask-full-F_res-${task}.nii.gz"
-    gepi_mask="$kdir/group/group_${task}_${spac}_desc-brain_mask.nii.gz"
-    ggm_mask_bd="$kdir/group/group_${spac}_mask-gm${gmth}_res-${task}.nii.gz"
-    ggm_fF_mask="$kdir/group/group_${spac}_mask-gm-full-F_res-${task}.nii.gz"
-    ggm_epi_mask="$kdir/group/group_${spac}_mask-gm-epi_res-${task}.nii.gz"
+    gstats_mask="$dir_mask/group/group_${spac}_mask-full-F_res-${task}.nii.gz"
+    gepi_mask="$dir_mask/group/group_${task}_${spac}_desc-brain_mask.nii.gz"
+    ggm_mask_bd="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-${task}.nii.gz"
+    ggm_fF_mask="$dir_mask/group/group_${spac}_mask-gm-full-F_res-${task}.nii.gz"
+    ggm_epi_mask="$dir_mask/group/group_${spac}_mask-gm-epi_res-${task}.nii.gz"
     # group-averaged F mask
-    3dmask_tool -input $kdir/sub-*/sub-*_${spac}_mask-full-F_res-${task}.nii.gz -prefix $gstats_mask -frac 1.0
+    3dmask_tool -input $dir_mask/sub-*/sub-*_${spac}_mask-full-F_res-${task}.nii.gz -prefix $gstats_mask -frac 1.0
     # group-averaged EPI mask
-    3dmask_tool -input $kdir/sub-*/sub-*_${task}_${spac}_desc-brain_mask.nii.gz -prefix $gepi_mask -frac 1.0
+    3dmask_tool -input $dir_mask/sub-*/sub-*_${task}_${spac}_desc-brain_mask.nii.gz -prefix $gepi_mask -frac 1.0
     # resample GM to task resolution
     3dresample -master $gstats_mask -prefix $ggm_mask_bd -input $ggm_mask_t1
     # F constrained GM
@@ -135,61 +129,61 @@ if $isCreateGMgrp;then
 fi
 ## ---------------------------
 
-## create coordinate-based masks
+## Create coordinate-based masks
 if $isCreateCoord;then
-  cdir="$kdir/coordinates"
-  fcrd="$cdir/group_${spac}_mask-coordinates.csv"
-  filv="$cdir/group_${spac}_mask-ilvOT-coordinates.csv"
-  fmas="$kdir/group/group_${spac}_mask-lvOT-visual.nii.gz"
-  fggm="$kdir/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
-  rads=(4 5 6 7 8)  # 4,5,6,7,8
-  # create mask for each coordinate
-  OLDIFS=$IFS  # original delimiter
-  IFS=','      # delimiter of CSV
-  # group ROIs
-  while read thisroi x y z;do
-    for srad in ${rads[@]};do
-      froi="$cdir/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
-      if [ ! -f "$froi" ];then
-        echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
-        echo "$x $y $z 1" > $cdir/${thisroi}.peak
-        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${thisroi}.peak
-        rm -r $cdir/${thisroi}.peak
-      fi  
-    done
-  done < $fcrd
-#  # individual left-vOT (ilvOT)
-#  while read subj x y z;do
-#    for srad in ${rads[@]};do
-#      froi="$kdir/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
-#      if [ ! -f "$froi" ];then
-#        echo -e "Create a shpere ROI ilvOT with radius ${srad}mm and centre $x $y $z."
-#        echo "$x $y $z 1" > $cdir/${subj}_ilvOT.peak
-#        3dUndump -master $fmas -srad $srad -prefix $froi -xyz $cdir/${subj}_ilvOT.peak
-#        rm -r $cdir/${subj}_ilvOT.peak
-#      fi  
-#      # constrained by the group GM
-#      fnew="$kdir/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
-#      3dcalc -a $froi -b $fggm -expr 'a*b' -prefix $fnew
-#    done
-#  done < $filv
-  IFS=$OLDIFS
+	dir_coord="$dir_mask/coordinates"
+  	f_coord="$dir_coord/group_${spac}_mask-coordinates.csv"
+  	f_ilvot="$dir_coord/group_${spac}_mask-ilvOT-coordinates.csv"
+  	f_glvot="$dir_mask/group/group_${spac}_mask-lvOT-visual.nii.gz"
+  	f_gm="$dir_mask/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
+  	rads=(4 5 6 7 8)  # 4,5,6,7,8
+  	# Create mask for each coordinate
+  	OLDIFS=$IFS  # original delimiter
+  	IFS=','      # delimiter of CSV
+  	# Group ROIs
+  	while read thisroi x y z;do
+		for srad in ${rads[@]};do
+			f_roi="$dir_coord/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
+  	  	  	if [ ! -f "$f_roi" ];then
+				echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
+  	  	  	  	echo "$x $y $z 1" > $dir_coord/${thisroi}.peak
+  	  	  	  	3dUndump -master $f_glvot -srad $srad -prefix $f_roi -xyz $dir_coord/${thisroi}.peak
+  	  	  	  	rm -r $dir_coord/${thisroi}.peak
+  	  	  	fi  
+  	  	done
+  	done < $f_coord
+ 	# Individual left-vOT (ilvOT)
+ 	while read subj x y z;do
+		for srad in ${rads[@]};do
+			f_roi="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
+ 	  	  	if [ ! -f "$f_roi" ];then
+				echo -e "Create a shpere ROI ilvOT with radius ${srad}mm and centre $x $y $z."
+ 	  	  	  	echo "$x $y $z 1" > $dir_coord/${subj}_ilvOT.peak
+ 	  	  	  	3dUndump -master $f_glvot -srad $srad -prefix $f_roi -xyz $dir_coord/${subj}_ilvOT.peak
+ 	  	  	  	rm -r $dir_coord/${subj}_ilvOT.peak
+ 	  	  	fi  
+ 	  	  	# Constrained by the group GM
+ 	  	  	f_new="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
+ 	  	  	3dcalc -a $f_roi -b $f_gm -expr 'a*b' -prefix $f_new
+ 	  	done
+ 	done < $f_ilvot
+  	IFS=$OLDIFS
 fi
 ## ---------------------------
 
 ## copy individual and group masks for RSA
 if $isCopyMaskRSA;then 
-  ftvr="$vdir/group_masks_labels-ROI.csv"
-  ftvs="$vdir/group_masks_labels-searchlight.csv"
+  ftvr="$dir_mvpa/group_masks_labels-ROI.csv"
+  ftvs="$dir_mvpa/group_masks_labels-searchlight.csv"
   for subj in ${subjects[@]};do
-    idir="$kdir/$subj"                 # individual masks folder
-    tvrRSA="$vdir/$subj/tvrRSA/masks"  # masks for ROI-base RSA
-    tvsRSA="$vdir/$subj/tvsRSA/masks"  # masks for searchlight RSA
+    idir="$dir_mask/$subj"                 # individual masks folder
+    tvrRSA="$dir_mvpa/$subj/tvrRSA/masks"  # masks for ROI-base RSA
+    tvsRSA="$dir_mvpa/$subj/tvsRSA/masks"  # masks for searchlight RSA
     # assign IFS to read CSV files
     OLDIFS=$IFS  # original delimiter
     IFS=','      # delimiter of CSV
     # copy masks for ROI-based RSA
-    if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
+    if [ ! -d $tvrRSA ];then mdir_mask -p $tvrRSA;fi
     rm -r $tvrRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvr | while read thisroi fixed input;do
       if [ $input -eq 1 ];then
@@ -197,7 +191,7 @@ if $isCopyMaskRSA;then
         if [ "${thisroi::1}" = 'i' ];then
           froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
         else
-          froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
+          froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
         fi
         3dcopy $froi $tvrRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
       else
@@ -205,7 +199,7 @@ if $isCopyMaskRSA;then
       fi
     done
     # copy masks for searchlight RSA
-    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
+    if [ ! -d $tvsRSA ];then mdir_mask -p $tvsRSA;fi
     rm -r $tvsRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvs | while read thisroi fixed input;do
       if [ $input -eq 1 ];then
@@ -213,7 +207,7 @@ if $isCopyMaskRSA;then
         if [ "${thisroi::1}" = 'i' ];then
           froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
         else
-          froi="$kdir/group/group_${spac}_mask-${thisroi}.nii.gz"
+          froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
         fi
         3dcopy $froi $tvsRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
       else
