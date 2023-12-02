@@ -8,7 +8,7 @@
 
 ## Set environment (packages, functions, working path etc.)
 # Platform
-platform='local'
+platform='mesoc'
 case "$platform" in
 	mesoc)
 		dir_main='/CP00'                       # the project Main folder @mesocentre
