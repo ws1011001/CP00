@@ -130,7 +130,7 @@ if $isCreateGMgrp;then
   	  		3dcalc -a $f_mask_gmtask -b $f_mask_epi -expr 'a*b' -prefix $f_mask_gm_epi  # EPI constrained GM: manually check *mask-gm-epi* masks to get *mask-gm-epi-final* masks
 		fi
 		if [ ! -f "$f_mask_gtsnr" ];then
-			3dbucket -fbuc -aglueto $f_tsnr_grp $dir_afni/sub-*/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/TSNR.sub-*_${task}+tlrc.[0]
+			3dbucket -fbuc -aglueto $f_tsnr_grp $dir_afni/sub-*/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/TSNR.sub-*_${task}+tlrc.HEAD
 			3dTstat -prefix $f_tsnr_avg -mean $f_tsnr_grp
 			3dcalc -a $f_tsnr_avg -expr 'within(a,20,1000)' -prefix $f_mask_gtsnr
 		fi
