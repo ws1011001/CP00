@@ -37,12 +37,12 @@ regs='desc-confounds_timeseries'  # the token for fMRIPrep output nuisance regre
 anat='desc-preproc_T1w_brain'     # skull-stripped anatomical image
 deno='NR24a'                      # denoising strategy
 gmth=0.2                          # gray matter threshold between [0 1]
-#tasks=("task-LocaVis1p75" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
-tasks=("task-LocaAudio2p5")
+#tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
+tasks=("task-AudioVisAssos1word" "task-AudioVisAssos2words")
 # switches
-isCreateGMind=false
-isCreateGMgrp=false
-isCreateCoord=true
+isCreateGMind=true
+isCreateGMgrp=true
+isCreateCoord=false
 isCopyMaskRSA=false
 ## ---------------------------
 
@@ -50,82 +50,91 @@ echo -e "========== START JOB at $(date) =========="
 
 ## create GM masks for each subject
 if $isCreateGMind;then
-  for subj in ${subjects[@]};do
-    gdir="$dir_fmri/$subj/anat"  # individual folder that contains anatomical segments
-    sdir="$dir_mask/$subj"       # individual masks folder
-    if [ ! -d $sdir ];then mdir_mask -p $sdir;fi
-    # prepare anatomical images
-    gm_segment="$gdir/${subj}_${spac}_label-GM_probseg.nii.gz"         # gray matter segment in probability 
-    gm_mask_t1="$sdir/${subj}_${spac}_mask-gm${gmth}_res-anat.nii.gz"  # gray matter mask in T1 resolution
-    if [ ! -f "$gm_segment" ];then
-      cp -r $gm_segment $sdir  # copy gray matter image to individual masks folder
-    fi
-    if [ ! -f "$gm_mask_t1" ];then
-      # create individual gray matter masks
-      3dcalc -a $gm_segment -expr "ispositive(a-$gmth)" -prefix $gm_mask_t1
-    fi
-    # create functional masks and functionally constrained gray matter masks
-    for task in ${tasks[@]};do
-      # setup path
-      wdir="$dir_afni/$subj/$task"                       # the task Working folder
-      oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
-      if [ ! -d $oglm ];then
-        oglm="${subj}_${task}_GLM.wPSC.w${deno}"     # the token for the Output GLM without BIM
-      fi
-      # create F-based masks
-      stats_afni="$wdir/$oglm/stats.${subj}_${task}+tlrc.[0]"               # AFNI statistics
-      stats_mask="$sdir/${subj}_${spac}_mask-full-F_res-${task}.nii.gz"     # functional mask based on full F statistics
-      gm_mask_bd="$sdir/${subj}_${spac}_mask-gm${gmth}_res-${task}.nii.gz"  # gray matter mask in task resolution
-      gm_fF_mask="$sdir/${subj}_${spac}_mask-gm-full-F_res-${task}.nii.gz"  # gray matter mask constrained by full F mask
-      # calculate functional mask using full F statistics
-      3dcalc -a $stats_afni -expr 'ispositive(a)' -prefix $stats_mask
-      # create functionally constrained gray matter masks
-      3dresample -master $stats_mask -prefix $gm_mask_bd -input $gm_mask_t1
-      3dcalc -a $gm_mask_bd -b $stats_mask -expr 'a*b' -prefix $gm_fF_mask
-      # copy EPI-extent mask for partial coverage tasks
-      epi_mask="${subj}_${task}_${spac}_desc-brain_mask.nii.gz"
-      gm_epi_mask="$sdir/${subj}_${spac}_mask-gm-epi_res-${task}.nii.gz"
-      cp -r $wdir/$epi_mask $sdir
-      3dcalc -a $gm_mask_bd -b $sdir/$epi_mask -expr 'a*b' -prefix $gm_epi_mask  # gray matter mask constrained by EPI
-    done
-  done
+	for subj in ${subjects[@]};do
+		echp -e "Create individual masks for subject $subj."
+		dir_anat="$dir_fmri/$subj/anat"  # individual folder that contains anatomical segments
+  	  	dir_subj="$dir_mask/$subj"       # individual masks folder
+  	  	if [ ! -d $dir_subj ];then mkdir -p $dir_subj;fi
+  	  	# prepare anatomical images
+  	  	f_segment="$dir_anat/${subj}_${spac}_label-GM_probseg.nii.gz"         # gray matter segment in probability 
+  	  	f_mask_gmt1="$dir_subj/${subj}_${spac}_mask-gm${gmth}_res-anat.nii.gz"  # gray matter mask in T1 resolution
+  	  	#if [ ! -f "$f_segment" ];then
+		#	cp -r $f_segment $dir_subj  # copy gray matter image to individual masks folder
+  	  	#fi
+  	  	if [ ! -f "$f_mask_gmt1" ];then
+  	  	  	3dcalc -a $f_segment -expr "ispositive(a-$gmth)" -prefix $f_mask_gmt1  # create individual gray matter masks
+  	  	fi
+  	  	# Create functional masks and functionally constrained gray matter masks
+  	  	for task in ${tasks[@]};do
+  	  	  	dir_task="$dir_afni/$subj/$task"                       # the task Working folder
+  	  	  	oglm="${subj}_${task}_GLM.wBIM.wPSC.w${deno}"  # the token for the Output GLM
+  	  	  	if [ ! -d "$dir_task/$oglm" ];then
+				oglm="${subj}_${task}_GLM.wPSC.w${deno}"     # the token for the Output GLM without BIM
+  	  	  	fi
+  	  	  	# Create F-based masks
+  	  	  	f_stats="$dir_task/$oglm/stats.${subj}_${task}+tlrc.[0]"               # AFNI statistics
+  	  	  	f_mask_F="$dir_subj/${subj}_${spac}_mask-full-F_res-${task}.nii.gz"     # functional mask based on full F statistics
+  	  	  	f_mask_gmtask="$dir_subj/${subj}_${spac}_mask-gm${gmth}_res-${task}.nii.gz"  # gray matter mask in task resolution
+  	  	  	f_mask_gm_F="$dir_subj/${subj}_${spac}_mask-gm-full-F_res-${task}.nii.gz"  # gray matter mask constrained by full F mask
+			if [ ! -f "$f_mask_F" ];then
+				3dcalc -a $f_stats -expr 'ispositive(a)' -prefix $f_mask_F  # calculate functional mask using full F statistics
+				3dresample -master $f_mask_F -prefix $f_mask_gmtask -input $f_mask_gmt1
+				3dcalc -a $f_mask_gmtask -b $f_mask_F -expr 'a*b' -prefix $f_mask_gm_F  # create functionally constrained gray matter masks
+			fi
+  	  	  	# Create EPI-extent mask for partial coverage tasks
+  	  	  	f_mask_epi="$dir_task/${subj}_${task}_${spac}_desc-brain_mask.nii.gz"
+  	  	  	f_mask_gm_epi="$dir_subj/${subj}_${spac}_mask-gm-epi_res-${task}.nii.gz"
+			if [ ! -f "$f_mask_gm_epi" ];then
+				3dcalc -a $f_mask_gmtask -b $f_mask_epi -expr 'a*b' -prefix $f_mask_gm_epi  # gray matter mask constrained by EPI
+			fi
+			# Create TSNR masks
+			f_tsnr="$dir_task/$oglm/TSNR.${subj}_${task}+tlrc."
+			f_mask_tsnr="$dir_mask/$subj/${subj}_${spac}_mask-TSNR20_res-${task}.nii.gz"
+			if [ ! -f "$f_mask_tsnr" ];then
+				3dcalc -a $f_tsnr -expr 'within(a,20,1000)' -prefix $f_mask_tsnr
+			fi
+  	  	done
+  	done
 fi
 ## ---------------------------
 
-## create group-averaged GM masks
+## Create group-averaged GM masks
 if $isCreateGMgrp;then
-  if [ ! -d "$dir_mask/group" ];then
-    mdir_mask -p $dir_mask/group
-  fi
-  # gray matter mask
-  ggm_segment="$dir_mask/group/group_${spac}_label-GM_probseg.nii.gz"
-  ggm_segmean="$dir_mask/group/group_${spac}_label-GM_probseg-mean.nii.gz"
-  ggm_mask_t1="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-anat.nii.gz"
-  if [ ! -f "$ggm_segmean" ];then
-    3dbucket -fbuc -aglueto $ggm_segment $dir_mask/sub-*/sub-*_${spac}_label-GM_probseg.nii.gz
-    3dTstat -prefix $ggm_segmean -mean $ggm_segment
-  fi
-  if [ ! -f "$ggm_mask_t1" ];then
-    3dcalc -a $ggm_segmean -expr "ispositive(a-$gmth)" -prefix $ggm_mask_t1
-  fi
-  # functional mask (i.e. full F) and functionally constrained gray matter mask
-  for task in ${tasks[@]};do
-    gstats_mask="$dir_mask/group/group_${spac}_mask-full-F_res-${task}.nii.gz"
-    gepi_mask="$dir_mask/group/group_${task}_${spac}_desc-brain_mask.nii.gz"
-    ggm_mask_bd="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-${task}.nii.gz"
-    ggm_fF_mask="$dir_mask/group/group_${spac}_mask-gm-full-F_res-${task}.nii.gz"
-    ggm_epi_mask="$dir_mask/group/group_${spac}_mask-gm-epi_res-${task}.nii.gz"
-    # group-averaged F mask
-    3dmask_tool -input $dir_mask/sub-*/sub-*_${spac}_mask-full-F_res-${task}.nii.gz -prefix $gstats_mask -frac 1.0
-    # group-averaged EPI mask
-    3dmask_tool -input $dir_mask/sub-*/sub-*_${task}_${spac}_desc-brain_mask.nii.gz -prefix $gepi_mask -frac 1.0
-    # resample GM to task resolution
-    3dresample -master $gstats_mask -prefix $ggm_mask_bd -input $ggm_mask_t1
-    # F constrained GM
-    3dcalc -a $ggm_mask_bd -b $gstats_mask -expr 'a*b' -prefix $ggm_fF_mask  # manually check *mask-gm-full-F* masks to get *mask-gm-full-F-final* masks
-    # EPI constrained GM
-    3dcalc -a $ggm_mask_bd -b $gepi_mask -expr 'a*b' -prefix $ggm_epi_mask  # manually check *mask-gm-epi* masks to get *mask-gm-epi-final* masks
-  done
+	if [ ! -d "$dir_mask/group" ];then mkdir -p $dir_mask/group; fi
+  	# Gray matter mask
+  	f_segment="$dir_mask/group/group_${spac}_label-GM_probseg.nii.gz"
+  	f_segment_avg="$dir_mask/group/group_${spac}_label-GM_probseg-mean.nii.gz"
+  	f_mask_gmt1="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-anat.nii.gz"
+  	if [ ! -f "$f_segment_avg" ];then
+		3dbucket -fbuc -aglueto $f_segment $dir_mask/sub-*/sub-*_${spac}_label-GM_probseg.nii.gz
+  	  	3dTstat -prefix $f_segment_avg -mean $f_segment
+  	fi
+  	if [ ! -f "$f_mask_gmt1" ];then
+		3dcalc -a $f_segment_avg -expr "ispositive(a-$gmth)" -prefix $f_mask_gmt1
+  	fi
+  	# Functional mask (i.e. full F) and functionally constrained gray matter mask
+  	for task in ${tasks[@]};do
+		f_mask_F="$dir_mask/group/group_${spac}_mask-full-F_res-${task}.nii.gz"
+  	  	f_mask_epi="$dir_mask/group/group_${task}_${spac}_desc-brain_mask.nii.gz"
+  	  	f_mask_gmtask="$dir_mask/group/group_${spac}_mask-gm${gmth}_res-${task}.nii.gz"
+  	  	f_mask_gm_F="$dir_mask/group/group_${spac}_mask-gm-full-F_res-${task}.nii.gz"
+  	  	f_mask_gm_epi="$dir_mask/group/group_${spac}_mask-gm-epi_res-${task}.nii.gz"
+		f_tsnr_grp="$dir_afni/group/$task/stats.TSNR_group_${task}.nii.gz"
+		f_tsnr_avg="$dir_afni/group/$task/stats.TSNRmean_group_${task}.nii.gz"
+		f_mask_gtsnr="$dir_mask/group/group_${spac}_mask-TSNR20_res-${task}.nii.gz"
+		if [ ! -f "$f_mask_gm_epi" ];then
+			3dmask_tool -input $dir_mask/sub-*/sub-*_${spac}_mask-full-F_res-${task}.nii.gz -prefix $f_mask_F -frac 1.0  # group-averaged F mask
+  	  		3dmask_tool -input $dir_mask/sub-*/sub-*_${task}_${spac}_desc-brain_mask.nii.gz -prefix $f_mask_epi -frac 1.0  # group-averaged EPI mask
+  	  		3dresample -master $f_mask_F -prefix $f_mask_gmtask -input $f_mask_gmt1  # resample GM to task resolution
+  	  		3dcalc -a $f_mask_gmtask -b $f_mask_F -expr 'a*b' -prefix $f_mask_gm_F  # F constrained GM: manually check *mask-gm-full-F* masks to get *mask-gm-full-F-final* masks
+  	  		3dcalc -a $f_mask_gmtask -b $f_mask_epi -expr 'a*b' -prefix $f_mask_gm_epi  # EPI constrained GM: manually check *mask-gm-epi* masks to get *mask-gm-epi-final* masks
+		fi
+		if [ ! -f "$f_mask_gtsnr" ];then
+			3dbucket -fbuc -aglueto $f_tsnr_grp $dir_afni/sub-*/sub-*_${task}_GLM.wBIM.wPSC.w${deno}/TSNR.sub-*_${task}+tlrc.
+			3dTstat -prefix $f_tsnr_avg -mean $f_tsnr_grp
+			3dcalc -a $f_tsnr_avg -expr 'within(a,20,1000)' -prefix $f_mask_gtsnr
+		fi
+  	done
 fi
 ## ---------------------------
 
@@ -183,7 +192,7 @@ if $isCopyMaskRSA;then
     OLDIFS=$IFS  # original delimiter
     IFS=','      # delimiter of CSV
     # copy masks for ROI-based RSA
-    if [ ! -d $tvrRSA ];then mdir_mask -p $tvrRSA;fi
+    if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
     rm -r $tvrRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvr | while read thisroi fixed input;do
       if [ $input -eq 1 ];then
@@ -199,7 +208,7 @@ if $isCopyMaskRSA;then
       fi
     done
     # copy masks for searchlight RSA
-    if [ ! -d $tvsRSA ];then mdir_mask -p $tvsRSA;fi
+    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
     rm -r $tvsRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
     sed 1d $ftvs | while read thisroi fixed input;do
       if [ $input -eq 1 ];then
