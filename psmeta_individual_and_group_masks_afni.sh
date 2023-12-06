@@ -40,9 +40,9 @@ gmth=0.2                          # gray matter threshold between [0 1]
 #tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 tasks=("task-AudioVisAssos1word" "task-AudioVisAssos2words")
 # switches
-isCreateGMind=true
-isCreateGMgrp=true
-isCreateCoord=false
+isCreateGMind=false
+isCreateGMgrp=false
+isCreateCoord=true
 isCopyMaskRSA=false
 ## ---------------------------
 
@@ -145,7 +145,7 @@ if $isCreateCoord;then
   	f_ilvot="$dir_coord/group_${spac}_mask-ilvOT-coordinates.csv"
   	f_glvot="$dir_mask/group/group_${spac}_mask-lvOT-visual.nii.gz"
   	f_gm="$dir_mask/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
-  	rads=(4 5 6 7 8)  # 4,5,6,7,8
+  	rads=(7 8)  # 4,5,6,7,8
   	# Create mask for each coordinate
   	OLDIFS=$IFS  # original delimiter
   	IFS=','      # delimiter of CSV
@@ -153,18 +153,23 @@ if $isCreateCoord;then
   	while read thisroi x y z;do
 		for srad in ${rads[@]};do
 			f_roi="$dir_coord/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
+			f_roi_gm="$dir_coord/group_${spac}_mask-gm-${thisroi}-sph${srad}mm.nii.gz"
   	  	  	if [ ! -f "$f_roi" ];then
 				echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
   	  	  	  	echo "$x $y $z 1" > $dir_coord/${thisroi}.peak
   	  	  	  	3dUndump -master $f_glvot -srad $srad -prefix $f_roi -xyz $dir_coord/${thisroi}.peak
   	  	  	  	rm -r $dir_coord/${thisroi}.peak
   	  	  	fi  
+			if [ ! -f "$f_roi_gm" ];then
+				3dcalc -a $f_gm -b $f_roi -expr 'a*b' -prefix $f_roi_gm
+			fi
   	  	done
   	done < $f_coord
  	# Individual left-vOT (ilvOT)
  	while read subj x y z;do
 		for srad in ${rads[@]};do
 			f_roi="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
+			f_roi_gm="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
  	  	  	if [ ! -f "$f_roi" ];then
 				echo -e "Create a shpere ROI ilvOT with radius ${srad}mm and centre $x $y $z."
  	  	  	  	echo "$x $y $z 1" > $dir_coord/${subj}_ilvOT.peak
@@ -172,8 +177,9 @@ if $isCreateCoord;then
  	  	  	  	rm -r $dir_coord/${subj}_ilvOT.peak
  	  	  	fi  
  	  	  	# Constrained by the group GM
- 	  	  	f_new="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-gm-sph${srad}mm.nii.gz"
- 	  	  	3dcalc -a $f_roi -b $f_gm -expr 'a*b' -prefix $f_new
+			if [ ! -f "$f_roi_gm" ];then
+				3dcalc -a $f_gm -b $f_roi -expr 'a*b' -prefix $f_roi_gm
+			fi
  	  	done
  	done < $f_ilvot
   	IFS=$OLDIFS
