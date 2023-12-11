@@ -33,7 +33,7 @@ readarray rois < $dir_afni/group_masks_labels-AVA.txt
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 #mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
-mask="group_${spac}_mask-gm-left-ventral-pathway_res-${task}.nii.gz"
+mask="$dir_mask/group/group_${spac}_mask-gm-left-ventral-pathway_res-${task}.nii.gz"
 models=("GLM.wPSC.wNR24a")
 conditions=("words" "pseudowords" "scrambled")
 contrasts=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
