@@ -78,11 +78,11 @@ for clf in ${clfs[@]};do
 			3dcalc -a $f_acc -expr "a-$base_acc" -prefix $f_abv  # calculate above-chance ACC
 		fi
   	  	# T-test on one sample againest the chance level with FWE estimation
-		f_test="$dir_task/stats.lVP.group_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
-		f_resid="$dir_task/stats.lVP.group.resid_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}+tlrc"
-		f_acf="$dir_task/stats.lVP.group.ACF_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
-		f_sim="$dir_task/stats.lVP.group.ACFc_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
-		f_fwe="$dir_task/stats.lVP.group.FWE_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
+		f_test="$dir_resl/stats.lVP.group_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
+		f_resid="$dir_resl/stats.lVP.group.resid_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}+tlrc"
+		f_acf="$dir_resl/stats.lVP.group.ACF_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
+		f_sim="$dir_resl/stats.lVP.group.ACFc_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
+		f_fwe="$dir_resl/stats.lVP.group.FWE_gMVPA-${clf}_LOSOCV_ACC-above-chance-${imod}_mask-gm0.2_res-${task}"
 		if [ ! -f "${f_acf}.1D" ];then
 			echo -e "Perform one-sample T-test for the $imod decoding."
 			# Perform paired T-test
