@@ -54,9 +54,9 @@ for subj in ${subjects[@]};do
   	  	# Extract coef maps for group analysis
   	  	i=0
   	  	for cond in ${conditions[@]};do
-			this_cond="${cond}_cor#0_Coef"
+			this_cond="${cond}#0_Coef"
 			f_coef="$dir_task/$oglm/stats.beta_${oglm}_${cond}.nii.gz"
-  	  	  	if [ ! -f $coef ];then
+  	  	  	if [ ! -f $f_coef ];then
 				3dbucket -fbuc -prefix $f_coef $f_stat[$this_cond]
   	  	  	fi
   	  	  	let i+=1
