@@ -145,6 +145,7 @@ if $isCreateCoord;then
   	f_ilvot="$dir_coord/group_${spac}_mask-ilvOT-coordinates.csv"
   	f_glvot="$dir_mask/group/group_${spac}_mask-lvOT-visual.nii.gz"
   	f_gm="$dir_mask/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
+	f_vp="$dir_mask/group/group_${spac}_mask-gm-left-ventral-pathway.nii.gz"
   	rads=(7 8)  # 4,5,6,7,8
   	# Create mask for each coordinate
   	OLDIFS=$IFS  # original delimiter
@@ -154,6 +155,7 @@ if $isCreateCoord;then
 		for srad in ${rads[@]};do
 			f_roi="$dir_coord/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
 			f_roi_gm="$dir_coord/group_${spac}_mask-gm-${thisroi}-sph${srad}mm.nii.gz"
+			f_roi_vp="$dir_coord/group_${spac}_mask-lVP-${thisroi}-sph${srad}mm.nii.gz"  # within the left Ventral Pathway
   	  	  	if [ ! -f "$f_roi" ];then
 				echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
   	  	  	  	echo "$x $y $z 1" > $dir_coord/${thisroi}.peak
@@ -162,6 +164,9 @@ if $isCreateCoord;then
   	  	  	fi  
 			if [ ! -f "$f_roi_gm" ];then
 				3dcalc -a $f_gm -b $f_roi -expr 'a*b' -prefix $f_roi_gm
+			fi
+			if [ ! -f "$f_roi_vp" ];then
+				3dcalc -a $f_vp -b $f_roi -expr 'a*b' -prefix $f_roi_vp
 			fi
   	  	done
   	done < $f_coord
