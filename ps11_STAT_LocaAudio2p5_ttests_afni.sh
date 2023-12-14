@@ -29,7 +29,7 @@ dir_afni="$dir_data/derivatives/afni"   # AFNI output folder
 dir_mask="$dir_data/derivatives/masks"  # masks folder
 # Processing parameters
 readarray subjects < $dir_main/CP00_subjects.txt
-readarray rois < $dir_afni/group_masks_labels-AVA.txt
+readarray rois < $dir_afni/group_masks_labels-ROI.txt
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
 mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
@@ -37,8 +37,6 @@ mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
 models=("GLM.wPSC.wNR24a")
 conditions=("words" "pseudowords" "scrambled")
 contrasts=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
-#eidx=(13 16 19)  # coefficients
-fidx=(14 17 20)  # T values
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -102,46 +100,35 @@ for model in ${models[@]};do
 done
 ## ---------------------------
 
-### Extract coef (PSC) with individual left-vOT mask
-#model='GLM.wPSC.wNR24a'
-#fpsc="$dir_afni/group_${task}_${model}_PSC.csv"
-#echo "participant_id,ROI_label,condition,PSC" >> $fpsc
-#rads=(4 5 6 7 8)  # radii used for individual left-vOT ROIs
-#for subj in ${subjects[@]};do
-#  echo -e "Extract beta values (PSC) with ilvOT mask for $task for subject $subj."
-#  wdir="$dir_afni/$subj/$task"
-#  oglm="${subj}_${task}_${model}"
-#  # specify PSC beta files
-#  coef_words="$wdir/$oglm/stats.beta_${oglm}_words.nii.gz"
-#  coef_pword="$wdir/$oglm/stats.beta_${oglm}_pseudowords.nii.gz"
-#  coef_scrab="$wdir/$oglm/stats.beta_${oglm}_scrambled.nii.gz"
-#  # extract PSC data for group ROIs
-#  for iroi in ${rois[@]};do
-#    froi="$dir_mask/group/group_${spac}_mask-${iroi}.nii.gz"
-#    fbig="$dir_mask/group/group_${spac}_mask-${iroi}_tmp.nii.gz"
-#    3dresample -master $mask -input $froi -prefix $fbig
-#    psc_words=$(3dBrickStat -mean -mask $fbig $coef_words)
-#    psc_pword=$(3dBrickStat -mean -mask $fbig $coef_pword)
-#    psc_scrab=$(3dBrickStat -mean -mask $fbig $coef_scrab)
-#    echo -e "$subj,$iroi,words,$psc_words" >> $fpsc
-#    echo -e "$subj,$iroi,pseudowords,$psc_pword" >> $fpsc
-#    echo -e "$subj,$iroi,scrambled,$psc_scrab" >> $fpsc
-#    rm -r $fbig
-#  done
-#  # extract PSC beta for individual ROIs
-#  for srad in ${rads[@]};do
-#    froi="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm.nii.gz"
-#    fbig="$dir_mask/$subj/${subj}_${spac}_mask-ilvOT-sph${srad}mm_tmp.nii.gz"
-#    3dresample -master $mask -input $froi -prefix $fbig
-#    psc_words=$(3dBrickStat -mean -mask $fbig $coef_words)
-#    psc_pword=$(3dBrickStat -mean -mask $fbig $coef_pword)
-#    psc_scrab=$(3dBrickStat -mean -mask $fbig $coef_scrab)
-#    echo -e "$subj,ilvOT-sph${srad}mm,words,$psc_words" >> $fpsc
-#    echo -e "$subj,ilvOT-sph${srad}mm,pseudowords,$psc_pword" >> $fpsc
-#    echo -e "$subj,ilvOT-sph${srad}mm,scrambled,$psc_scrab" >> $fpsc
-#    rm -r $fbig
-#  done
-#done
+## Extract coef (PSC) for various ROIs
+model='GLM.wPSC.wNR24a'
+f_psc="$dir_afni/stats.beta_group_${task}_${model}_PSC.csv"
+if [ ! -f $f_psc ];then
+	echo "participant_id,ROI_label,condition,PSC" >> $f_psc
+	for subj in ${subjects[@]};do
+		echo -e "Extract beta values (PSC) for subject $subj."
+	  	dir_task="$dir_afni/$subj/$task"
+	  	oglm="${subj}_${task}_${model}"
+	  	# Extract PSC data for each ROI
+	  	for iroi in ${rois[@]};do
+			if [ "${iroi::1}" = 'i' ];then
+				f_roi="$dir_mask/$subj/${subj}_${spac}_mask-${iroi}.nii.gz"
+	  	  	else
+				f_roi="$dir_mask/group/group_${spac}_mask-${iroi}.nii.gz"
+	  	  	fi
+			# Resample the ROI to the task resolution
+		  	f_roi_tmp="$dir_mask/group/group_${spac}_mask-${iroi}_tmp.nii.gz"
+	  	  	3dresample -master $mask -input $f_roi -prefix $f_roi_tmp	
+			# Extract PSC for each condition
+	  	  	for cond in ${conditions[@]};do
+				f_coef="$dir_task/$oglm/stats.beta_${oglm}_${cond}.nii.gz"
+				psc=$(3dBrickStat -mean -mask $f_roi_tmp $f_coef)
+				echo -e "$subj,$iroi,$cond,$psc" >> $f_psc
+	  	  	done
+			rm -r $f_roi_tmp
+	  	done
+	done
+fi
 ## ---------------------------
 
 echo -e "========== ALL DONE! at $(date) =========="
