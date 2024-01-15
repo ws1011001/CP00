@@ -32,8 +32,8 @@ readarray subjects < $dir_main/CP00_subjects.txt
 readarray rois < $dir_afni/group_masks_labels-ROI.txt
 task='task-LocaAudio2p5'          # task name
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
-#mask="$dir_mask/group/group_${spac}_mask-gm-left-ventral-pathway_res-${task}.nii.gz"
+#mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"  # GM mask
+mask="$dir_mask/group/group_${spac}_mask-gm-lVP_res-${task}.nii.gz"
 models=("GLM.wPSC.wNR24a")
 conditions=("words" "pseudowords" "scrambled")
 contrasts=("words-pseudowords" "words-scrambled" "pseudowords-scrambled")  # contrast labels
@@ -79,11 +79,11 @@ for model in ${models[@]};do
 		cond_pair=(${cont//-/ })
 		f_con1="$dir_task/stats.beta_group_${task}_${model}_${cond_pair[0]}.nii.gz"
 		f_con2="$dir_task/stats.beta_group_${task}_${model}_${cond_pair[1]}.nii.gz"
-		f_test="$dir_task/stats.group_${task}_${model}_TTest_${cont}"
-		f_resid="$dir_task/stats.group.resid_${task}_${model}_TTest_${cont}+tlrc"
-		f_acf="$dir_task/stats.group.ACF_${task}_${model}_TTest_${cont}"
-		f_sim="$dir_task/stats.group.ACFc_${task}_${model}_TTest_${cont}"
-		f_fwe="$dir_task/stats.group.FWE_${task}_${model}_TTest_${cont}"
+		f_test="$dir_task/stats.lVP.group_${task}_${model}_TTest_${cont}"
+		f_resid="$dir_task/stats.lVP.group.resid_${task}_${model}_TTest_${cont}+tlrc"
+		f_acf="$dir_task/stats.lVP.group.ACF_${task}_${model}_TTest_${cont}"
+		f_sim="$dir_task/stats.lVP.group.ACFc_${task}_${model}_TTest_${cont}"
+		f_fwe="$dir_task/stats.lVP.group.FWE_${task}_${model}_TTest_${cont}"
 		if [ ! -f "${f_acf}.1D" ];then
 			echo -e "Perform paired T-test for the contrast ${cond_pair[0]} vs. ${cond_pair[1]}."
 			# Perform paired T-test
