@@ -45,7 +45,7 @@ task='task-LocaVis1p75'
 model='GLM.wBIM.wPSC.wNR24a'
 dir_task="$dir_afni/group/$task"
 f_stat="$dir_task/stats.group_${task}_${model}_paired2-words-consonants+tlrc."
-f_mean="$dir_task/grads.lVP.group_${task}_${model}_paired2-words-consonants.csv"
+f_mean="$dir_task/grads.lVP.group_${task}_${model}_paired2-words-consonants.tsv"
 f_beta="$dir_task/stats.beta_group_${task}_${model}_words-consonants.nii.gz"
 f_grad=""
 # Extract group average
@@ -53,11 +53,11 @@ if [ ! -f $f_mean ];then
 	3dGradCurve -i $f_stat[0] -k $mask -r 1 -a -9 -p -107 -o $f_mean
 fi
 # Extract each individual
-for i in $(seq 1 $n_subjects);do
-	let idx=$i-1
-	f_temp="$dir_task/grad_temp$(printf '%02d' $i).tsv"
-	3dGradCurve -i $f_beta[$idx] -k $mask -r 1 -a -9 -p -107 -o $f_temp
-done
+#for i in $(seq 1 $n_subjects);do
+#	let idx=$i-1
+#	f_temp="$dir_task/grad_temp$(printf '%02d' $i).tsv"
+#	3dGradCurve -i $f_beta[$idx] -k $mask -r 1 -a -9 -p -107 -o $f_temp
+#done
 ## ---------------------------
 
 
