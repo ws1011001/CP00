@@ -33,7 +33,7 @@ dir_mvpa="$dir_data/derivatives/multivariate"  # MVPA/RSA folder
 readarray subjects < $dir_main/CP00_subjects.txt
 n_subjects=${#subjects[@]}
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-mask="$dir_mask/group_${spac}_mask-gm-lVP.nii.gz"
+mask="$dir_mask/group/group_${spac}_mask-gm-lVP.nii.gz"
 tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 tasks=("task-AudioVisAssos1word" "task-AudioVisAssos2words")
 ## ---------------------------
