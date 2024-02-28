@@ -155,7 +155,7 @@ if $isCreateCoord;then
 		for srad in ${rads[@]};do
 			f_roi="$dir_coord/group_${spac}_mask-${thisroi}-sph${srad}mm.nii.gz"
 			f_roi_gm="$dir_coord/group_${spac}_mask-gm-${thisroi}-sph${srad}mm.nii.gz"
-			f_roi_vp="$dir_coord/group_${spac}_mask-lVP-${thisroi}-sph${srad}mm.nii.gz"  # within the left Ventral Pathway
+			#f_roi_vp="$dir_coord/group_${spac}_mask-lVP-${thisroi}-sph${srad}mm.nii.gz"  # within the left Ventral Pathway
   	  	  	if [ ! -f "$f_roi" ];then
 				echo -e "Create a shpere ROI $thisroi with radius ${srad}mm and centre $x $y $z."
   	  	  	  	echo "$x $y $z 1" > $dir_coord/${thisroi}.peak
@@ -165,9 +165,9 @@ if $isCreateCoord;then
 			if [ ! -f "$f_roi_gm" ];then
 				3dcalc -a $f_gm -b $f_roi -expr 'a*b' -prefix $f_roi_gm
 			fi
-			if [ ! -f "$f_roi_vp" ];then
-				3dcalc -a $f_vp -b $f_roi -expr 'a*b' -prefix $f_roi_vp
-			fi
+			#if [ ! -f "$f_roi_vp" ];then
+			#	3dcalc -a $f_vp -b $f_roi -expr 'a*b' -prefix $f_roi_vp
+			#fi
   	  	done
   	done < $f_coord
  	# Individual left-vOT (ilvOT)
