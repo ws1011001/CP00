@@ -146,7 +146,7 @@ if $isCreateCoord;then
   	f_glvot="$dir_mask/group/group_${spac}_mask-lvOT-visual.nii.gz"
   	f_gm="$dir_mask/group/group_${spac}_mask-gm0.2_res-task-LocaVis1p75.nii.gz"
 	f_vp="$dir_mask/group/group_${spac}_mask-gm-left-ventral-pathway.nii.gz"
-  	rads=(7 8)  # 4,5,6,7,8
+  	rads=(7 8 10 12)  # 4,5,6,7,8
   	# Create mask for each coordinate
   	OLDIFS=$IFS  # original delimiter
   	IFS=','      # delimiter of CSV
