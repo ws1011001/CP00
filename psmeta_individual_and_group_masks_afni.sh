@@ -40,16 +40,17 @@ gmth=0.2                          # gray matter threshold between [0 1]
 #tasks=("task-LocaVis1p75" "task-LocaAudio2p5" "task-AudioVisAssos1word" "task-AudioVisAssos2words")
 tasks=("task-AudioVisAssos1word" "task-AudioVisAssos2words")
 # switches
-isCreateGMind=false
-isCreateGMgrp=false
-isCreateCoord=true
-isCopyMaskRSA=false
+is_IndGM=false
+is_GrpGM=false
+is_Coord=false
+is_BetaC=true
+is_cpRSA=false
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
 
 ## create GM masks for each subject
-if $isCreateGMind;then
+if $is_IndGM;then
 	for subj in ${subjects[@]};do
 		echo -e "Create individual masks for subject $subj."
 		dir_anat="$dir_fmri/$subj/anat"  # individual folder that contains anatomical segments
@@ -99,7 +100,7 @@ fi
 ## ---------------------------
 
 ## Create group-averaged GM masks
-if $isCreateGMgrp;then
+if $is_GrpGM;then
 	if [ ! -d "$dir_mask/group" ];then mkdir -p $dir_mask/group; fi
   	# Gray matter mask
   	f_segment="$dir_mask/group/group_${spac}_label-GM_probseg.nii.gz"
@@ -139,7 +140,7 @@ fi
 ## ---------------------------
 
 ## Create coordinate-based masks
-if $isCreateCoord;then
+if $is_Coord;then
 	dir_coord="$dir_mask/coordinates"
   	f_coord="$dir_coord/group_${spac}_mask-coordinates.csv"
   	f_ilvot="$dir_coord/group_${spac}_mask-ilvOT-coordinates.csv"
@@ -191,52 +192,81 @@ if $isCreateCoord;then
 fi
 ## ---------------------------
 
+## create RSE cluster masks for each subject
+if $is_BetaC;then
+	dir_task="$dir_afni/group/task-AudioVisAssos2words"
+	f_RSE_Grp="$dir_task/stats.lvOT.group_task-AudioVisAssos2words_GLM.wBIM.wPSC.wNR24a_RSE_Vis-Aud.nii.gz"
+	f_RSE_Ind="$dir_task/stats.lvOT.beta_group_task-AudioVisAssos2words_GLM.wBIM.wPSC.wNR24a_RSE_Vis-Aud.nii.gz"
+	# Group mask
+	f_mask_vis="$dir_mask/group/group_space-MNI152NLin2009cAsym_mask-lvOT-RSE-Vis.nii.gz"
+	f_mask_aud="$dir_mask/group/group_space-MNI152NLin2009cAsym_mask-lvOT-RSE-Aud.nii.gz"
+  	if [ ! -f "$f_mask_vis" ];then
+  	  	3dcalc -a $f_RSE_Grp[0] -expr "ispositive(a)" -prefix $f_mask_vis
+  	  	3dcalc -a $f_RSE_Grp[0] -expr "isnegative(a)" -prefix $f_mask_aud
+  	fi
+	# Individual masks
+	i=0
+	for subj in ${subjects[@]};do
+		echo -e "Extract individual masks of visual and auditory clusters for subject $subj."
+  	  	dir_subj="$dir_mask/$subj"       # individual masks folder
+  	  	if [ ! -d $dir_subj ];then mkdir -p $dir_subj;fi
+		f_mask_vis="$dir_subj/${subj}_space-MNI152NLin2009cAsym_mask-ilvOT-RSE-Vis.nii.gz"
+		f_mask_aud="$dir_subj/${subj}_space-MNI152NLin2009cAsym_mask-ilvOT-RSE-Aud.nii.gz"
+  	  	if [ ! -f "$f_mask_vis" ];then
+  	  	  	3dcalc -a $f_RSE_Ind[$i] -expr "ispositive(a)" -prefix $f_mask_vis
+  	  	  	3dcalc -a $f_RSE_Ind[$i] -expr "isnegative(a)" -prefix $f_mask_aud
+  	  	fi
+		let i=$i+1
+  	done
+fi
+## ---------------------------
+
 ## copy individual and group masks for RSA
-if $isCopyMaskRSA;then 
-  ftvr="$dir_mvpa/group_masks_labels-ROI.csv"
-  ftvs="$dir_mvpa/group_masks_labels-searchlight.csv"
-  for subj in ${subjects[@]};do
-    idir="$dir_mask/$subj"                 # individual masks folder
-    tvrRSA="$dir_mvpa/$subj/tvrRSA/masks"  # masks for ROI-base RSA
-    tvsRSA="$dir_mvpa/$subj/tvsRSA/masks"  # masks for searchlight RSA
-    # assign IFS to read CSV files
-    OLDIFS=$IFS  # original delimiter
-    IFS=','      # delimiter of CSV
-    # copy masks for ROI-based RSA
-    if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
-    rm -r $tvrRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
-    sed 1d $ftvr | while read thisroi fixed input;do
-      if [ $input -eq 1 ];then
-        echo -e "Copy mask $thisroi to ROI-based RSA for subject $subj ......"
-        if [ "${thisroi::1}" = 'i' ];then
-          froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
-        else
-          froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
-        fi
-        3dcopy $froi $tvrRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
-      else
-        echo -e "Pass mask $thisroi since it has been copied."
-      fi
-    done
-    # copy masks for searchlight RSA
-    if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
-    rm -r $tvsRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
-    sed 1d $ftvs | while read thisroi fixed input;do
-      if [ $input -eq 1 ];then
-        echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
-        if [ "${thisroi::1}" = 'i' ];then
-          froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
-        else
-          froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
-        fi
-        3dcopy $froi $tvsRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
-      else
-        echo -e "Pass mask $thisroi since it has been copied."
-      fi
-    done
-    # re-assign IFS to read subjects otherwise it will cause an error in file path
-    IFS=$OLDIFS
-  done
+if $is_cpRSA;then 
+	ftvr="$dir_mvpa/group_masks_labels-ROI.csv"
+  	ftvs="$dir_mvpa/group_masks_labels-searchlight.csv"
+  	for subj in ${subjects[@]};do
+		idir="$dir_mask/$subj"                 # individual masks folder
+  	  	tvrRSA="$dir_mvpa/$subj/tvrRSA/masks"  # masks for ROI-base RSA
+  	  	tvsRSA="$dir_mvpa/$subj/tvsRSA/masks"  # masks for searchlight RSA
+  	  	# assign IFS to read CSV files
+  	  	OLDIFS=$IFS  # original delimiter
+  	  	IFS=','      # delimiter of CSV
+  	  	# copy masks for ROI-based RSA
+  	  	if [ ! -d $tvrRSA ];then mkdir -p $tvrRSA;fi
+  	  	rm -r $tvrRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
+  	  	sed 1d $ftvr | while read thisroi fixed input;do
+			if [ $input -eq 1 ];then
+				echo -e "Copy mask $thisroi to ROI-based RSA for subject $subj ......"
+  	  	  	  	if [ "${thisroi::1}" = 'i' ];then
+					froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
+  	  	  	  	else
+					froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
+  	  	  	  	fi
+  	  	  	  	3dcopy $froi $tvrRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+  	  	  	else
+				echo -e "Pass mask $thisroi since it has been copied."
+  	  	  	fi
+  	  	done
+  	  	# copy masks for searchlight RSA
+  	  	if [ ! -d $tvsRSA ];then mkdir -p $tvsRSA;fi
+  	  	rm -r $tvsRSA/*-*.nii  # remove any NIFTI files with a '-' in name in that folder
+  	  	sed 1d $ftvs | while read thisroi fixed input;do
+			if [ $input -eq 1 ];then
+				echo -e "Copy mask $thisroi to searchlight RSA for subject $subj ......"
+  	  	  	  	if [ "${thisroi::1}" = 'i' ];then
+					froi="$idir/${subj}_${spac}_mask-${thisroi}.nii.gz"
+  	  	  	  	else
+					froi="$dir_mask/group/group_${spac}_mask-${thisroi}.nii.gz"
+  	  	  	  	fi
+  	  	  	  	3dcopy $froi $tvsRSA/${thisroi//-/_}.nii  # replace '-' by '_' for rsatoolbox in MATLAB
+  	  	  	else
+				echo -e "Pass mask $thisroi since it has been copied."
+  	  	  	fi
+  	  	done
+  	  	# re-assign IFS to read subjects otherwise it will cause an error in file path
+  	  	IFS=$OLDIFS
+  	done
 fi
 ## ---------------------------
 
