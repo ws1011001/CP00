@@ -35,9 +35,10 @@ readarray subjects < $dir_main/CP00_subjects.txt
 readarray rois < $dir_afni/group_masks_labels-RSE.txt
 n_subjects=${#subjects[@]}
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
-task='task-AudioVisAssos1word'
 masks=("gm-lVP" "gm-AAL3-MultimodalLanguage")
 seeds=("lvOT-RSE-Vis" "lvOT-RSE-Aud" "ilvOT-RSE-Vis" "ilvOT-RSE-Aud")
+task='task-AudioVisAssos1word'
+conditions=("WV+PV" "WA+PA")
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
@@ -68,11 +69,41 @@ for subj in ${subjects[@]};do
 			f_seed_aud="$dir_subj/${subj}_${task}_mask-${iseed}_beta_WA+PA.1D"
 			f_conn_vis="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WV+PV"
 			f_conn_aud="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WA+PA"
-			3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_vis $f_beta[60..119,180..239] $f_seed_vis
-			3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_aud $f_beta[0..59,120..179] $f_seed_aud
+			if [ ! -f $f_conn_vis ];then
+				3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_vis $f_beta[60..119,180..239] $f_seed_vis
+				3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_aud $f_beta[0..59,120..179] $f_seed_aud
+			fi
 		done
 	done
 done
 ## ---------------------------
 
+## Group T-tests
+for imask in ${masks[@]};do
+	f_mask="$dir_mask/group/group_${spac}_mask-${imask}.nii.gz"
+	if [ "$imask" = 'gm-lVP' ];then mask='lVP'; fi
+	if [ "$imask" = 'gm-AAL3-MultimodalLanguage' ];then mask='MLang'; fi
+	for iseed in ${seeds[@]};do
+		for icond in ${conditions[@]};do
+			# T-test on one sample with FWE estimation
+			f_test="$dir_conn/stats.${mask}.group_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_resid="$dir_conn/stats.${mask}.group.resid_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc"
+			f_acf="$dir_conn/stats.${mask}.group.ACF_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_sim="$dir_conn/stats.${mask}.group.ACFc_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_fwe="$dir_conn/stats.${mask}.group.FWE_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			if [ ! -f "${f_acf}.1D" ];then
+				echo -e "Perform one-sample T-test for the connectivity between $iseed and $imask."
+				# Perform paired T-test
+				3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc. -mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
+				# Estimate ACF
+				3dFWHMx -ACF -mask $f_mask -input $f_resid >> ${f_acf}.1D
+				mv $dir_main/scripts/3dFWHMx.1D ${f_sim}.1D
+				mv $dir_main/scripts/3dFWHMx.1D.png ${f_sim}.png
+				# Simulate FWE using 3dClustSim
+				read -ra acf <<< $(sed '4!d' ${f_acf}.1D)
+				3dClustSim -mask $f_mask -acf ${acf[0]} ${acf[1]} ${acf[2]} -athr 0.05 0.01 0.005 0.001 -prefix $f_fwe
+			fi
+		done
+	done	
+done
 echo -e "========== ALL DONE! at $(date) =========="
