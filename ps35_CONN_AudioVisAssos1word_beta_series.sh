@@ -29,18 +29,20 @@ dir_fmri="$dir_data/derivatives/fmriprep"      # fMRIPrep output folder
 dir_afni="$dir_data/derivatives/afni"          # AFNI output folder
 dir_mask="$dir_data/derivatives/masks"         # masks folder
 dir_mvpa="$dir_data/derivatives/multivariate"  # MVPA/RSA folder
+dir_conn="$dir_data/derivatives/connectivity"
 # Processing parameters
 readarray subjects < $dir_main/CP00_subjects.txt
 readarray rois < $dir_afni/group_masks_labels-RSE.txt
 n_subjects=${#subjects[@]}
 spac='space-MNI152NLin2009cAsym'  # anatomical template that used for preprocessing by fMRIPrep
+task='task-AudioVisAssos1word'
+masks=("gm-lVP" "gm-AAL3-MultimodalLanguage")
+seeds=("lvOT-RSE-Vis" "lvOT-RSE-Aud" "ilvOT-RSE-Vis" "ilvOT-RSE-Aud")
 ## ---------------------------
 
 echo -e "========== START JOB at $(date) =========="
 
 ## Beta-series connectivity
-task='task-AudioVisAssos1word'
-dir_task="$dir_mvpa/group"
 for subj in ${subjects[@]};do
 	dir_subj="$dir_mvpa/$subj/betas_afni"
 	# Extract beta-series
@@ -58,7 +60,18 @@ for subj in ${subjects[@]};do
 			3dmaskave -mask $f_roi -quiet $f_beta[0..59,120..179] > $f_beta_aud
 		fi
 	done
-	# Calculate
+	# Calculate seed-based voxel-wise connectivity
+	for imask in ${masks[@]};do
+		f_mask="$dir_mask/group/group_${spac}_mask-${imask}.nii.gz"
+		for iseed in ${seeds[@]};do
+			f_seed_vis="$dir_subj/${subj}_${task}_mask-${iseed}_beta_WV+PV.1D"
+			f_seed_aud="$dir_subj/${subj}_${task}_mask-${iseed}_beta_WA+PA.1D"
+			f_conn_vis="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WV+PV"
+			f_conn_aud="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WA+PA"
+			3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_vis $f_beta[60..119,180..239] $f_seed_vis
+			3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_aud $f_beta[0..59,120..179] $f_seed_aud
+		done
+	done
 done
 ## ---------------------------
 
