@@ -86,13 +86,13 @@ for imask in ${masks[@]};do
 	for iseed in ${seeds[@]};do
 		for icond in ${conditions[@]};do
 			# T-test on one sample with FWE estimation
-			f_test="$dir_conn/stats.${mask}.group_${task}_mask-${imask}_seed-${iseed}_${icond}"
-			f_resid="$dir_conn/stats.${mask}.group.resid_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc"
-			f_acf="$dir_conn/stats.${mask}.group.ACF_${task}_mask-${imask}_seed-${iseed}_${icond}"
-			f_sim="$dir_conn/stats.${mask}.group.ACFc_${task}_mask-${imask}_seed-${iseed}_${icond}"
-			f_fwe="$dir_conn/stats.${mask}.group.FWE_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_test="$dir_conn/group/stats.${mask}.group_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_resid="$dir_conn/group/stats.${mask}.group.resid_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc"
+			f_acf="$dir_conn/group/stats.${mask}.group.ACF_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_sim="$dir_conn/group/stats.${mask}.group.ACFc_${task}_mask-${imask}_seed-${iseed}_${icond}"
+			f_fwe="$dir_conn/group/stats.${mask}.group.FWE_${task}_mask-${imask}_seed-${iseed}_${icond}"
 			if [ ! -f "${f_acf}.1D" ];then
-				echo -e "Perform one-sample T-test for the connectivity between $iseed and $imask."
+				echo -e "Perform one-sample T-test for the connectivity between $iseed and $imask in the $icond condition."
 				# Perform paired T-test
 				3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc. -mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
 				# Estimate ACF
