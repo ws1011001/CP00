@@ -67,9 +67,9 @@ for subj in ${subjects[@]};do
 		for iseed in ${seeds[@]};do
 			f_seed_vis="$dir_subj/${subj}_${task}_mask-${iseed}_beta_WV+PV.1D"
 			f_seed_aud="$dir_subj/${subj}_${task}_mask-${iseed}_beta_WA+PA.1D"
-			f_conn_vis="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WV+PV"
-			f_conn_aud="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WA+PA"
-			if [ ! -f $f_conn_vis ];then
+			f_conn_vis="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WV+PV+tlrc"
+			f_conn_aud="$dir_conn/${subj}_${task}_mask-${imask}_seed-${iseed}_WA+PA+tlrc"
+			if [ ! -f "${f_conn_vis}.HEAD" ];then
 				3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_vis $f_beta[60..119,180..239] $f_seed_vis
 				3dTcorr1D -spearman -Fisher -mask $f_mask -prefix $f_conn_aud $f_beta[0..59,120..179] $f_seed_aud
 			fi
