@@ -94,7 +94,7 @@ for imask in ${masks[@]};do
 			if [ ! -f "${f_acf}.1D" ];then
 				echo -e "Perform one-sample T-test for the connectivity between $iseed and $imask in the $icond condition."
 				# Perform paired T-test
-				3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc. -mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
+				3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc.HEAD -mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
 				# Estimate ACF
 				3dFWHMx -ACF -mask $f_mask -input $f_resid >> ${f_acf}.1D
 				mv $dir_main/scripts/3dFWHMx.1D ${f_sim}.1D
