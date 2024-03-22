@@ -83,8 +83,8 @@ for imask in ${masks[@]};do
 	f_mask="$dir_mask/group/group_${spac}_mask-${imask}.nii.gz"
 	if [ "$imask" = 'gm-lVP' ];then mask='lVP'; fi
 	if [ "$imask" = 'gm-AAL3-MultimodalLanguage' ];then mask='MLang'; fi
-	for iseed in ${seeds[@]};do
-		for icond in ${conditions[@]};do
+	for icond in ${conditions[@]};do
+		for iseed in ${seeds[@]};do
 			# T-test on one sample with FWE estimation
 			f_test="$dir_conn/group/stats.${mask}.group_${task}_mask-${imask}_seed-${iseed}_${icond}"
 			f_resid="$dir_conn/group/stats.${mask}.group.resid_${task}_mask-${imask}_seed-${iseed}_${icond}+tlrc"
@@ -104,6 +104,46 @@ for imask in ${masks[@]};do
 				3dClustSim -mask $f_mask -acf ${acf[0]} ${acf[1]} ${acf[2]} -athr 0.05 0.01 0.005 0.001 -prefix $f_fwe
 			fi
 		done
+		# T-test on two samples with FWE estimation: group lvOT 
+		f_test="$dir_conn/group/stats.${mask}.group_${task}_mask-${imask}_${icond}_seed-lvOT-RSE_Vis-Aud"
+		f_resid="$dir_conn/group/stats.${mask}.group.resid_${task}_mask-${imask}_${icond}_seed-lvOT-RSE_Vis-Aud+tlrc"
+		f_acf="$dir_conn/group/stats.${mask}.group.ACF_${task}_mask-${imask}_${icond}_seed-lvOT-RSE_Vis-Aud"
+		f_sim="$dir_conn/group/stats.${mask}.group.ACFc_${task}_mask-${imask}_${icond}_seed-lvOT-RSE_Vis-Aud"
+		f_fwe="$dir_conn/group/stats.${mask}.group.FWE_${task}_mask-${imask}_${icond}_seed-lvOT-RSE_Vis-Aud"
+		if [ ! -f "${f_acf}.1D" ];then
+			echo -e "Perform two-sample T-test between lvOT Vis cluster and Aud cluster for the connectivity in $imask in the $icond condition."
+			# Perform paired T-test
+			3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-lvOT-RSE-Vis_${icond}+tlrc.HEAD \
+				-setB $dir_conn/sub-*_${task}_mask-${imask}_seed-lvOT-RSE-Aud_${icond}+tlrc.HEAD \
+				-mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
+			# Estimate ACF
+			3dFWHMx -ACF -mask $f_mask -input $f_resid >> ${f_acf}.1D
+			mv $dir_main/scripts/3dFWHMx.1D ${f_sim}.1D
+			mv $dir_main/scripts/3dFWHMx.1D.png ${f_sim}.png
+			# Simulate FWE using 3dClustSim
+			read -ra acf <<< $(sed '4!d' ${f_acf}.1D)
+			3dClustSim -mask $f_mask -acf ${acf[0]} ${acf[1]} ${acf[2]} -athr 0.05 0.01 0.005 0.001 -prefix $f_fwe
+		fi
+		# T-test on two samples with FWE estimation: individual lvOT 
+		f_test="$dir_conn/group/stats.${mask}.group_${task}_mask-${imask}_${icond}_seed-ilvOT-RSE_Vis-Aud"
+		f_resid="$dir_conn/group/stats.${mask}.group.resid_${task}_mask-${imask}_${icond}_seed-ilvOT-RSE_Vis-Aud+tlrc"
+		f_acf="$dir_conn/group/stats.${mask}.group.ACF_${task}_mask-${imask}_${icond}_seed-ilvOT-RSE_Vis-Aud"
+		f_sim="$dir_conn/group/stats.${mask}.group.ACFc_${task}_mask-${imask}_${icond}_seed-ilvOT-RSE_Vis-Aud"
+		f_fwe="$dir_conn/group/stats.${mask}.group.FWE_${task}_mask-${imask}_${icond}_seed-ilvOT-RSE_Vis-Aud"
+		if [ ! -f "${f_acf}.1D" ];then
+			echo -e "Perform two-sample T-test between ilvOT Vis cluster and Aud cluster for the connectivity in $imask in the $icond condition."
+			# Perform paired T-test
+			3dttest++ -setA $dir_conn/sub-*_${task}_mask-${imask}_seed-ilvOT-RSE-Vis_${icond}+tlrc.HEAD \
+				-setB $dir_conn/sub-*_${task}_mask-${imask}_seed-ilvOT-RSE-Aud_${icond}+tlrc.HEAD \
+				-mask $f_mask -exblur 6 -prefix $f_test -resid $f_resid
+			# Estimate ACF
+			3dFWHMx -ACF -mask $f_mask -input $f_resid >> ${f_acf}.1D
+			mv $dir_main/scripts/3dFWHMx.1D ${f_sim}.1D
+			mv $dir_main/scripts/3dFWHMx.1D.png ${f_sim}.png
+			# Simulate FWE using 3dClustSim
+			read -ra acf <<< $(sed '4!d' ${f_acf}.1D)
+			3dClustSim -mask $f_mask -acf ${acf[0]} ${acf[1]} ${acf[2]} -athr 0.05 0.01 0.005 0.001 -prefix $f_fwe
+		fi
 	done	
 done
 echo -e "========== ALL DONE! at $(date) =========="
