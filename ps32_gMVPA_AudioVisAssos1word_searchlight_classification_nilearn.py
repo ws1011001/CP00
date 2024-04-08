@@ -21,8 +21,10 @@ from datetime import datetime
 from nilearn.image import load_img, index_img, mean_img, new_img_like
 from nilearn.input_data import NiftiMasker
 from sklearn import svm
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import LeaveOneGroupOut, PredefinedSplit, cross_validate, permutation_test_score
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -46,10 +48,13 @@ mods = ['V', 'A']       # stimulus modalities
 ## MVPA parameters
 # Prepare classifiers without tuning parameters
 clf_models = [LinearDiscriminantAnalysis(),
+              QuadraticDiscriminantAnalysis(),
+              KNeighborsClassifier(n_jobs=-1),
               GaussianNB(),
-              svm.SVC(kernel='linear', max_iter = -1),
-              svm.SVC(max_iter = -1)]
-clf_tokens = ['LDA', 'GNB', 'SVClin', 'SVCrbf']  # classifier abbreviations
+              svm.SVC(kernel='linear', max_iter=-1),
+              svm.SVC(max_iter=-1),
+              GradientBoostingClassifier()]
+clf_tokens = ['LDA', 'QDA', 'KNN', 'GNB', 'SVClin', 'SVCrbf', 'GBC']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # Searchlight parameters
 R      = 4   # 57 voxels
