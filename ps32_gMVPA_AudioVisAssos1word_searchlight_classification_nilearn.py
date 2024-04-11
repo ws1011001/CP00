@@ -52,9 +52,9 @@ clf_models = [LinearDiscriminantAnalysis(),
               KNeighborsClassifier(n_jobs=-1),
               GaussianNB(),
               svm.SVC(kernel='linear', max_iter=-1),
-              svm.SVC(max_iter=-1),
-              GradientBoostingClassifier()]
-clf_tokens = ['LDA', 'QDA', 'KNN', 'GNB', 'SVClin', 'SVCrbf', 'GBC']  # classifier abbreviations
+              svm.SVC(max_iter=-1)]
+              #GradientBoostingClassifier()]
+clf_tokens = ['LDA', 'QDA', 'KNN', 'GNB', 'SVClin', 'SVCrbf']  # classifier abbreviations
 nmodels = len(clf_tokens)
 # Searchlight parameters
 R      = 4   # 57 voxels
