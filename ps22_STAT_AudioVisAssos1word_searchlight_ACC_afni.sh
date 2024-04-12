@@ -35,7 +35,7 @@ spac='space-MNI152NLin2009cAsym'                  # anatomical template that use
 #mask="$dir_mask/group/group_${spac}_mask-gm0.2_res-${task}.nii.gz"
 #mask="$dir_mask/group/group_${spac}_mask-gm-lVP.nii.gz"
 mask="$dir_mask/group/group_${spac}_mask-gm-AAL3-MultimodalLanguage.nii.gz"
-clfs=("LDA" "GNB" "SVClin" "SVCrbf")              # classifier tokens
+clfs=("LDA" "QDA" "GNB" "SVClin" "SVCrbf")              # classifier tokens
 base_acc=0.5                                      # the chance level i.e. 50%
 ## ---------------------------
 
