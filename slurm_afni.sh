@@ -43,7 +43,7 @@ scripts_afni[20]='ps29_STAT_LocaAudio2p5_gPPI_ttests_afni.sh'
 scripts_afni[21]='psmeta_individual_and_group_masks_afni.sh'
 scripts_afni[22]='ps34_STAT_extract_gradients_lVP.sh'
 scripts_afni[23]='ps35_CONN_AudioVisAssos1word_beta_series.sh'
-script_id=23
+script_id=16
 
 # run AFNI script
 script_run=${scripts_afni[$script_id]}
