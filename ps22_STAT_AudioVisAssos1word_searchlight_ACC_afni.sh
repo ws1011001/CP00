@@ -37,7 +37,7 @@ mask="$dir_mask/group/group_${spac}_mask-gm-lVP.nii.gz"
 #mask="$dir_mask/group/group_${spac}_mask-gm-AAL3-MultimodalLanguage.nii.gz"
 #clfs=("LDA" "QDA" "KNN" "GNB" "SVClin" "SVCrbf" "GBC")              # classifier tokens
 clfs=("GBC")
-smap='gm-0.2Lh'  # gm0.2
+smap='gm0.2Lh'  # gm0.2
 base_acc=0.5                                      # the chance level i.e. 50%
 ## ---------------------------
 
